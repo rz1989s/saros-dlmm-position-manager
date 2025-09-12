@@ -1,0 +1,293 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { PositionCard } from '@/components/position-card'
+import { WalletStatus } from '@/components/wallet-status'
+import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
+import { 
+  RefreshCw, 
+  Plus, 
+  Filter, 
+  Search, 
+  Loader2,
+  AlertCircle,
+  Wallet
+} from 'lucide-react'
+import { useUserPositions } from '@/hooks/use-dlmm'
+import { useWalletState } from '@/hooks/use-wallet-integration'
+import { DLMMPosition, PositionAnalytics } from '@/lib/types'
+import { calculatePositionAnalytics } from '@/lib/dlmm/utils'
+
+interface PositionsListProps {
+  onCreatePosition?: () => void
+  onManagePosition?: (position: DLMMPosition) => void
+  onRebalancePosition?: (position: DLMMPosition) => void
+  onClosePosition?: (position: DLMMPosition) => void
+}
+
+export function PositionsList({
+  onCreatePosition,
+  onManagePosition,
+  onRebalancePosition,
+  onClosePosition,
+}: PositionsListProps) {
+  const { isConnected } = useWalletState()
+  const { positions, loading, refreshing, refreshPositions } = useUserPositions()
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [analytics, setAnalytics] = useState<Map<string, PositionAnalytics>>(new Map())
+  const [showAddLiquidity, setShowAddLiquidity] = useState(false)
+
+  // Calculate analytics for each position
+  useEffect(() => {
+    if (positions.length > 0) {
+      const newAnalytics = new Map<string, PositionAnalytics>()
+      
+      positions.forEach(position => {
+        // Mock data for current value and fees - in real app, this would come from API
+        const currentValue = Math.random() * 10000 + 1000
+        const initialValue = currentValue * (0.8 + Math.random() * 0.4) // Random initial value
+        const totalFeesEarned = Math.random() * 100 + 10
+        
+        const positionAnalytics = calculatePositionAnalytics(
+          position,
+          currentValue,
+          initialValue,
+          totalFeesEarned
+        )
+        
+        newAnalytics.set(position.id, positionAnalytics)
+      })
+      
+      setAnalytics(newAnalytics)
+    }
+  }, [positions])
+
+  const filteredPositions = positions.filter(position => {
+    // Filter by status
+    if (filter === 'active' && !position.isActive) return false
+    if (filter === 'inactive' && position.isActive) return false
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const poolName = `${position.tokenX.symbol}/${position.tokenY.symbol}`.toLowerCase()
+      const address = position.poolAddress.toString().toLowerCase()
+      
+      if (!poolName.includes(query) && !address.includes(query)) {
+        return false
+      }
+    }
+    
+    return true
+  })
+
+  const activePositions = positions.filter(p => p.isActive).length
+  const totalValue = Array.from(analytics.values())
+    .reduce((sum, a) => sum + a.totalValue, 0)
+  const totalPnL = Array.from(analytics.values())
+    .reduce((sum, a) => sum + a.pnl.amount, 0)
+
+  if (!isConnected) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Connect Your Wallet</h3>
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
+              Connect your Solana wallet to view and manage your DLMM positions
+            </p>
+            <WalletStatus />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Positions</p>
+                <p className="text-2xl font-bold">{positions.length}</p>
+              </div>
+              <Badge variant={activePositions > 0 ? "default" : "secondary"}>
+                {activePositions} Active
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Value</p>
+                <p className="text-2xl font-bold">
+                  ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total P&L</p>
+                <p className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Your Positions</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshPositions}
+                disabled={refreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+              
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowAddLiquidity(true)
+                  onCreatePosition?.()
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New Position
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search positions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as any)}
+                className="border border-input rounded-md px-3 py-2 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="all">All Positions</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">Loading positions...</span>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && positions.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Positions Found</h3>
+              <p className="text-muted-foreground text-center mb-6 max-w-md">
+                You don't have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
+              </p>
+              <Button onClick={() => {
+                setShowAddLiquidity(true)
+                onCreatePosition?.()
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Position
+              </Button>
+            </div>
+          )}
+
+          {/* No Results */}
+          {!loading && positions.length > 0 && filteredPositions.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Search className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Positions Match</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Try adjusting your search or filter criteria
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('')
+                  setFilter('all')
+                }}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          )}
+
+          {/* Positions Grid */}
+          {!loading && filteredPositions.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredPositions.map((position) => {
+                const positionAnalytics = analytics.get(position.id)
+                if (!positionAnalytics) return null
+
+                return (
+                  <PositionCard
+                    key={position.id}
+                    position={position}
+                    analytics={positionAnalytics}
+                    onManage={onManagePosition}
+                    onRebalance={onRebalancePosition}
+                    onClose={onClosePosition}
+                  />
+                )
+              })}
+            </div>
+          )}
+
+          {/* Pagination could be added here if needed */}
+        </CardContent>
+      </Card>
+
+      {/* Add Liquidity Modal */}
+      <AddLiquidityModal
+        isOpen={showAddLiquidity}
+        onClose={() => setShowAddLiquidity(false)}
+      />
+    </div>
+  )
+}

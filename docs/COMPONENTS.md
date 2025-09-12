@@ -1,0 +1,506 @@
+# Component Documentation
+
+This document provides detailed documentation for all React components in the Saros DLMM Position Manager application.
+
+## Core Components
+
+### DashboardHeader
+
+Main navigation and header component with wallet integration.
+
+**Location:** `src/components/dashboard-header.tsx`
+
+**Features:**
+- Responsive navigation tabs (Positions, Analytics, Strategies)
+- Integrated wallet connection button
+- Live network status indicator
+- Mobile-optimized layout
+
+**Props:** None (uses routing context)
+
+**Example Usage:**
+```typescript
+import { DashboardHeader } from '@/components/dashboard-header'
+
+export default function Page() {
+  return (
+    <div className="container">
+      <DashboardHeader />
+      {/* Page content */}
+    </div>
+  )
+}
+```
+
+### PositionCard
+
+Individual DLMM position display with comprehensive analytics.
+
+**Location:** `src/components/position-card.tsx`
+
+**Props:**
+```typescript
+interface PositionCardProps {
+  position: DLMMPosition
+  analytics: PositionAnalytics
+  onManage?: (position: DLMMPosition) => void
+  onRebalance?: (position: DLMMPosition) => void
+  onClose?: (position: DLMMPosition) => void
+}
+```
+
+**Features:**
+- Real-time P&L tracking with visual indicators
+- Performance metrics (APR, fees earned, duration)
+- Impermanent loss warnings
+- Expandable detailed view
+- Action buttons for position management
+
+**Example Usage:**
+```typescript
+<PositionCard
+  position={position}
+  analytics={analytics}
+  onManage={handleManage}
+  onRebalance={handleRebalance}
+  onClose={handleClose}
+/>
+```
+
+### PositionsList
+
+Main container for displaying all user positions with search/filter functionality.
+
+**Location:** `src/components/positions-list.tsx`
+
+**Features:**
+- Search positions by pool name or token symbols
+- Filter by status (Active/Inactive), profitability
+- Sort by various metrics (Value, P&L, APR, Duration)
+- Responsive grid layout
+- Empty state handling
+
+**Props:**
+```typescript
+interface PositionsListProps {
+  showFilters?: boolean
+  defaultSort?: 'value' | 'pnl' | 'apr' | 'duration'
+}
+```
+
+## Chart Components
+
+### BinChart
+
+Interactive visualization of DLMM bin liquidity distribution.
+
+**Location:** `src/components/charts/bin-chart.tsx`
+
+**Props:**
+```typescript
+interface BinChartProps {
+  bins: BinInfo[]
+  activeBinId: number
+  userBins?: number[]
+  onBinClick?: (binId: number) => void
+  onZoomRange?: (minBin: number, maxBin: number) => void
+  height?: number
+}
+```
+
+**Features:**
+- Zoomable and pannable bin visualization
+- User position highlighting
+- Interactive bin tooltips with detailed metrics
+- Zoom controls and reset functionality
+- Responsive design with mobile optimization
+
+**Example Usage:**
+```typescript
+<BinChart
+  bins={mockBins}
+  activeBinId={0}
+  userBins={[-2, -1, 0, 1, 2]}
+  height={400}
+  onBinClick={(binId) => console.log('Clicked bin:', binId)}
+/>
+```
+
+### PriceChart
+
+Historical price and volume visualization with multiple timeframes.
+
+**Location:** `src/components/charts/price-chart.tsx`
+
+**Props:**
+```typescript
+interface PriceChartProps {
+  currentPrice: number
+  priceChange24h: number
+  height?: number
+  onTimeframeChange?: (timeframe: string) => void
+  data?: PriceData[]
+}
+```
+
+**Features:**
+- Multiple timeframes (1H, 4H, 24H, 7D, 30D)
+- Price and volume overlay
+- Interactive crosshair with data point details
+- Responsive chart scaling
+- Real-time price updates
+
+## Modal Components
+
+### AddLiquidityModal
+
+Comprehensive modal for adding liquidity to DLMM pools.
+
+**Location:** `src/components/modals/add-liquidity-modal.tsx`
+
+**Props:**
+```typescript
+interface AddLiquidityModalProps {
+  isOpen: boolean
+  onClose: () => void
+  poolAddress?: PublicKey
+  tokenX?: TokenInfo
+  tokenY?: TokenInfo
+  activeBinId?: number
+  currentPrice?: number
+}
+```
+
+**Features:**
+- Three liquidity strategies (Spot, Curve, Bid-Ask)
+- Visual bin range selector
+- Real-time fee estimates
+- Slippage tolerance configuration
+- Transaction simulation and preview
+
+### RebalanceModal
+
+Smart rebalancing interface with cost-benefit analysis.
+
+**Location:** `src/components/strategy/rebalance-modal.tsx`
+
+**Props:**
+```typescript
+interface RebalanceModalProps {
+  isOpen: boolean
+  onClose: () => void
+  position?: DLMMPosition
+  currentPrice?: number
+  onSuccess?: () => void
+}
+```
+
+**Features:**
+- Strategy selection (Conservative, Optimal, Aggressive)
+- Manual parameter adjustment
+- Impact analysis with break-even calculation
+- Risk assessment and recommendations
+- Multi-transaction execution
+
+### LimitOrderModal
+
+Advanced limit order creation using DLMM bin infrastructure.
+
+**Location:** `src/components/strategy/limit-order-modal.tsx`
+
+**Props:**
+```typescript
+interface LimitOrderModalProps {
+  isOpen: boolean
+  onClose: () => void
+  poolAddress?: PublicKey
+  tokenX?: TokenInfo
+  tokenY?: TokenInfo
+  currentPrice?: number
+  onSuccess?: () => void
+}
+```
+
+**Features:**
+- Buy/Sell order types
+- Target price configuration with presets
+- Fill probability analysis
+- Expiry time settings
+- Order value and potential savings calculation
+
+## Analytics Components
+
+### PnLTracker
+
+Comprehensive P&L tracking with historical analysis.
+
+**Location:** `src/components/analytics/pnl-tracker.tsx`
+
+**Features:**
+- Multiple timeframe analysis (24h, 7d, 30d, 90d, all)
+- Combined area/bar/line chart for P&L breakdown
+- Position-by-position P&L analysis
+- Performance insights and recommendations
+- Time-based metrics (daily P&L, win rate, etc.)
+
+**Props:**
+```typescript
+interface PnLTrackerProps {
+  timeframe?: '24h' | '7d' | '30d' | '90d' | 'all'
+  showDetails?: boolean
+}
+```
+
+### PortfolioOverview
+
+Complete portfolio analysis with risk metrics and allocation charts.
+
+**Location:** `src/components/analytics/portfolio-overview.tsx`
+
+**Features:**
+- Portfolio allocation pie chart
+- Risk analysis (concentration, correlation, volatility)
+- Performance metrics (Sharpe ratio, max drawdown)
+- Automated recommendations based on risk assessment
+- Refreshable data with loading states
+
+**Props:**
+```typescript
+interface PortfolioOverviewProps {
+  refreshInterval?: number
+  showRiskWarnings?: boolean
+}
+```
+
+## Strategy Components
+
+### StrategyDashboard
+
+Central hub for automated strategy management.
+
+**Location:** `src/components/strategy/strategy-dashboard.tsx`
+
+**Features:**
+- Strategy overview metrics
+- Quick action buttons (Smart Rebalance, Limit Orders, Analyze)
+- Available strategies with enable/disable toggles
+- Real-time recommendations with confidence scores
+- Strategy performance tracking
+
+**Props:**
+```typescript
+interface StrategyDashboardProps {
+  autoRefresh?: boolean
+  showAdvanced?: boolean
+}
+```
+
+## UI Components
+
+### WalletStatus
+
+Wallet connection status and balance display.
+
+**Location:** `src/components/wallet-status.tsx`
+
+**Props:**
+```typescript
+interface WalletStatusProps {
+  showBalance?: boolean
+  showNetwork?: boolean
+  compact?: boolean
+}
+```
+
+**Features:**
+- Connection status indicator
+- SOL balance display
+- Network selection
+- Wallet switching
+- Mobile-optimized layout
+
+## Hook Components
+
+### useUserPositions
+
+Custom hook for fetching and managing user positions.
+
+**Location:** `src/hooks/use-dlmm.ts`
+
+**Returns:**
+```typescript
+interface UseUserPositionsReturn {
+  positions: DLMMPosition[]
+  isLoading: boolean
+  error: Error | null
+  refreshPositions: () => Promise<void>
+  analytics: Record<string, PositionAnalytics>
+}
+```
+
+**Features:**
+- Automatic position fetching
+- Real-time updates via WebSocket
+- Error handling and retry logic
+- Position analytics calculation
+- Optimistic updates for better UX
+
+### useWalletIntegration
+
+Enhanced wallet integration with transaction management.
+
+**Location:** `src/hooks/use-wallet-integration.ts`
+
+**Returns:**
+```typescript
+interface UseWalletIntegrationReturn {
+  publicKey: PublicKey | null
+  isConnected: boolean
+  isSubmitting: boolean
+  sendTransaction: (transaction: Transaction) => Promise<TransactionResult>
+  signMessage: (message: Uint8Array) => Promise<Uint8Array>
+  balance: number
+  network: string
+}
+```
+
+**Features:**
+- Multi-wallet support
+- Transaction signing and submission
+- Balance tracking
+- Network detection
+- Error handling with user-friendly messages
+
+## Responsive Design Patterns
+
+### Container Layouts
+
+All major components follow consistent responsive patterns:
+
+```typescript
+// Standard responsive container
+className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8"
+
+// Responsive grid layouts
+className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+
+// Flexible header layouts
+className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
+```
+
+### Mobile Optimizations
+
+- **Touch-friendly buttons**: Minimum 44px touch targets
+- **Readable text**: Responsive text sizing with proper line heights
+- **Accessible interactions**: Proper focus states and ARIA labels
+- **Performance**: Lazy loading for non-critical components
+
+## Testing Components
+
+### Component Testing Utilities
+
+```typescript
+// Test wrapper with providers
+export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions)
+
+// Mock wallet provider
+export function MockWalletProvider({ children }: { children: React.ReactNode })
+
+// Mock position data factory
+export function createMockPosition(overrides?: Partial<DLMMPosition>): DLMMPosition
+```
+
+### Testing Examples
+
+```typescript
+import { renderWithProviders, createMockPosition } from '@/test-utils'
+import { PositionCard } from '@/components/position-card'
+
+describe('PositionCard', () => {
+  it('displays position metrics correctly', () => {
+    const mockPosition = createMockPosition({
+      tokenX: { symbol: 'SOL' },
+      tokenY: { symbol: 'USDC' }
+    })
+    
+    const { getByText } = renderWithProviders(
+      <PositionCard position={mockPosition} analytics={mockAnalytics} />
+    )
+    
+    expect(getByText('SOL/USDC')).toBeInTheDocument()
+  })
+})
+```
+
+## Performance Considerations
+
+### Optimization Strategies
+
+1. **React.memo**: Critical for position cards and chart components
+2. **useMemo/useCallback**: For expensive calculations and event handlers
+3. **Lazy loading**: Non-critical modals and chart components
+4. **Virtual scrolling**: For large position lists
+5. **Debounced inputs**: Search and filter inputs
+
+### Bundle Splitting
+
+```typescript
+// Dynamic imports for modals
+const AddLiquidityModal = lazy(() => import('./modals/add-liquidity-modal'))
+const RebalanceModal = lazy(() => import('./strategy/rebalance-modal'))
+
+// Chart components
+const BinChart = lazy(() => import('./charts/bin-chart'))
+const PriceChart = lazy(() => import('./charts/price-chart'))
+```
+
+## Accessibility
+
+### ARIA Labels and Roles
+
+All components include proper ARIA attributes:
+
+```typescript
+// Button with descriptive label
+<Button aria-label="Add liquidity to SOL/USDC pool">
+  <Plus className="h-4 w-4" />
+</Button>
+
+// Chart with description
+<div role="img" aria-label="Liquidity distribution across price bins">
+  <BinChart bins={bins} />
+</div>
+```
+
+### Keyboard Navigation
+
+- **Modal dialogs**: Proper focus trap and escape key handling
+- **Interactive charts**: Keyboard navigation for data points
+- **Form inputs**: Tab order and validation feedback
+- **Buttons**: Enter and space key activation
+
+## Error Boundaries
+
+### Component Error Handling
+
+```typescript
+export function ComponentErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary
+      fallback={({ error, resetError }) => (
+        <div className="p-4 border border-red-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-red-800">Component Error</h3>
+          <p className="text-sm text-red-600">{error.message}</p>
+          <Button onClick={resetError} className="mt-2">
+            Try Again
+          </Button>
+        </div>
+      )}
+    >
+      {children}
+    </ErrorBoundary>
+  )
+}
+```
+
+This comprehensive component documentation ensures developers can understand, maintain, and extend the application effectively.
