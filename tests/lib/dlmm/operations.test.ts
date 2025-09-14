@@ -112,11 +112,14 @@ describe('DLMMOperations', () => {
     it('should remove liquidity successfully', async () => {
       const mockUserPositions = [
         {
-          poolAddress: mockPoolAddress,
+          poolAddress: {
+            equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
+            toString: () => mockPoolAddress.toString()
+          },
           binLiquidity: { 123: '1000', 124: '2000' },
         },
       ]
-      const mockTransaction = { signature: 'mock-remove-tx' }
+      const mockTransaction = new Transaction()
 
       mockDlmmClient.getUserPositions.mockResolvedValue(mockUserPositions)
       mockDlmmClient.createRemoveLiquidityTransaction.mockResolvedValue(mockTransaction)
@@ -153,7 +156,10 @@ describe('DLMMOperations', () => {
 
     it('should rebalance position successfully', async () => {
       const mockPosition = {
-        poolAddress: mockPoolAddress,
+        poolAddress: {
+          equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
+          toString: () => mockPoolAddress.toString()
+        },
         binLiquidity: { 120: '500', 121: '800' },
         totalValue: '2000',
       }
@@ -223,7 +229,10 @@ describe('DLMMOperations', () => {
   describe('optimizePosition', () => {
     it('should optimize position successfully', async () => {
       const mockPosition = {
-        poolAddress: mockPoolAddress,
+        poolAddress: {
+          equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
+          toString: () => mockPoolAddress.toString()
+        },
         binLiquidity: { 120: '500', 121: '800' },
         totalValue: '2000',
       }
@@ -247,7 +256,10 @@ describe('DLMMOperations', () => {
 
     it('should return empty array when no optimization needed', async () => {
       const mockPosition = {
-        poolAddress: mockPoolAddress,
+        poolAddress: {
+          equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
+          toString: () => mockPoolAddress.toString()
+        },
         binLiquidity: { 122: '500', 123: '800', 124: '700' },
         totalValue: '2000',
       }
@@ -271,9 +283,13 @@ describe('DLMMOperations', () => {
   describe('estimateRebalanceProfit', () => {
     it('should estimate rebalance profit with recommendation', async () => {
       const mockPosition = {
-        poolAddress: mockPoolAddress,
+        poolAddress: {
+          equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
+          toString: () => mockPoolAddress.toString()
+        },
         currentAPR: 0.15, // 15% APR
         totalValue: '10000', // $10,000 position
+        binLiquidity: { 120: '3000', 121: '4000', 122: '3000' }, // Provide bin liquidity for calculation
       }
 
       mockDlmmClient.getUserPositions.mockResolvedValue([mockPosition])
