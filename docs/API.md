@@ -11,96 +11,187 @@ The main client for interacting with the Saros DLMM SDK.
 #### Constructor
 
 ```typescript
-constructor(connection: Connection, commitment?: Commitment)
+constructor()
 ```
 
-**Parameters:**
-- `connection`: Solana RPC connection
-- `commitment`: Transaction commitment level (default: 'confirmed')
-
-#### Methods
-
-##### `getAllLbPairs(): Promise<LbPair[]>`
-
-Fetches all available DLMM liquidity book pairs.
-
-**Returns:** Array of `LbPair` objects
+**Automatically configures:**
+- Solana RPC connection based on NEXT_PUBLIC_SOLANA_NETWORK environment variable
+- Network mode (mainnet-beta or devnet) with fallback to devnet
+- LiquidityBookServices integration with proper MODE configuration
+- Connection commitment level set to 'confirmed'
 
 **Example:**
 ```typescript
-const client = new DLMMClient(connection)
-const pairs = await client.getAllLbPairs()
+// Singleton instance automatically configured
+import { dlmmClient } from '@/lib/dlmm/client'
+
+// Access configured connection and services
+const connection = dlmmClient.getConnection()
+const network = dlmmClient.getNetwork()
+const services = dlmmClient.getLiquidityBookServices()
+```
+
+#### Methods
+
+##### `getAllLbPairs(): Promise<any[]>`
+
+Fetches all available DLMM liquidity book pairs using the integrated Saros SDK.
+
+**Returns:** Array of LB pair objects from the SDK
+
+**Implementation Status:** ✅ SDK Integration Complete
+- Uses LiquidityBookServices for data fetching
+- Automatic error handling with fallback to empty array
+- Console logging for debugging
+
+**Example:**
+```typescript
+const pairs = await dlmmClient.getAllLbPairs()
 console.log(`Found ${pairs.length} DLMM pairs`)
 ```
 
-##### `getUserPositions(userPubkey: PublicKey): Promise<DLMMPosition[]>`
+##### `getUserPositions(userPubkey: PublicKey): Promise<any[]>`
 
-Retrieves all positions for a specific user.
+Retrieves all positions for a specific user using SDK integration.
 
 **Parameters:**
 - `userPubkey`: User's public key
 
-**Returns:** Array of `DLMMPosition` objects
+**Returns:** Array of position objects from the SDK
+
+**Implementation Status:** ✅ SDK Integration Complete
+- Real-time data fetching with 30-second polling intervals
+- Automatic error handling with graceful fallback
+- Console logging for debugging and monitoring
 
 **Example:**
 ```typescript
-const positions = await client.getUserPositions(userPublicKey)
+const positions = await dlmmClient.getUserPositions(userPublicKey)
 positions.forEach(pos => {
   console.log(`Position: ${pos.tokenX.symbol}/${pos.tokenY.symbol}`)
 })
 ```
 
-##### `createAddLiquidityTransaction(params: AddLiquidityParams): Promise<Transaction>`
+##### `createAddLiquidityTransaction(...params): Promise<any>`
 
-Creates a transaction for adding liquidity to a DLMM pool.
+Creates a transaction for adding liquidity to a DLMM pool using SDK integration.
 
 **Parameters:**
-```typescript
-interface AddLiquidityParams {
-  poolAddress: PublicKey
-  userAddress: PublicKey
-  amountX: string
-  amountY: string
-  binRange: {
-    minBin: number
-    maxBin: number
-  }
-  strategy: 'spot' | 'curve' | 'bid-ask'
-  slippageTolerance: number
-}
-```
+- `poolAddress: PublicKey`: Target DLMM pool address
+- `userAddress: PublicKey`: User's wallet address
+- `amountX: string`: Amount of token X to add
+- `amountY: string`: Amount of token Y to add
+- `activeBinId: number`: Current active bin ID
+- `distributionX: number[]`: X token distribution across bins
+- `distributionY: number[]`: Y token distribution across bins
 
-**Returns:** Solana transaction object
+**Returns:** Transaction object from the SDK or null if not available
+
+**Implementation Status:** ✅ SDK Integration Complete
+- Uses LiquidityBookServices for transaction building
+- Automatic error handling with console logging
+- Ready for transaction signing and submission
 
 **Example:**
 ```typescript
-const transaction = await client.createAddLiquidityTransaction({
-  poolAddress: new PublicKey('...'),
-  userAddress: userPublicKey,
-  amountX: '1.0',
-  amountY: '150.0',
-  binRange: { minBin: -5, maxBin: 5 },
-  strategy: 'spot',
-  slippageTolerance: 0.01
-})
+const transaction = await dlmmClient.createAddLiquidityTransaction(
+  poolAddress,
+  userAddress,
+  '1000000', // 1.0 USDC (6 decimals)
+  '150000000000', // 150.0 SOL (9 decimals)
+  activeBinId,
+  [50, 50], // 50% each bin
+  [50, 50]  // 50% each bin
+)
 ```
 
 ## DLMM Operations API
 
-### `DLMMOperations` Class
+### New SDK Methods
 
-Advanced operations for position management and trading strategies.
+#### `getLbPair(poolAddress: PublicKey): Promise<any | null>`
 
-#### Methods
+Fetch detailed information about a specific DLMM pool.
 
-##### `addLiquidity(params: AddLiquidityParams): Promise<Transaction>`
+**Parameters:**
+- `poolAddress`: PublicKey of the target pool
 
-Add liquidity to a DLMM pool with advanced strategy options.
+**Returns:** Pool data object or null if not found
 
-**Strategy Types:**
-- **`spot`**: Concentrated liquidity around current price
-- **`curve`**: Distributed liquidity following price curve
-- **`bid-ask`**: Asymmetric liquidity for directional strategies
+**Implementation Status:** ✅ SDK Integration Complete
+
+#### `getBinLiquidity(poolAddress: PublicKey): Promise<any[]>`
+
+Retrieve bin liquidity data for a specific pool.
+
+**Parameters:**
+- `poolAddress`: PublicKey of the target pool
+
+**Returns:** Array of bin liquidity objects
+
+**Implementation Status:** ✅ SDK Integration Complete
+
+#### `getTokenPrices(tokenAddresses: PublicKey[]): Promise<Record<string, number>>`
+
+Fetch current token prices for multiple addresses.
+
+**Parameters:**
+- `tokenAddresses`: Array of token PublicKeys
+
+**Returns:** Map of token address to price in USD
+
+**Implementation Status:** ✅ Mock Implementation (ready for price feed integration)
+
+#### `calculateFees(...params): Promise<{ tokenX: number; tokenY: number }>`
+
+Calculate fees earned by user in a specific pool over a time period.
+
+**Parameters:**
+- `poolAddress: PublicKey`: Target pool
+- `userAddress: PublicKey`: User's wallet
+- `fromTime?: Date`: Start time for calculation
+- `toTime?: Date`: End time for calculation
+
+**Returns:** Fee amounts in both tokens
+
+**Implementation Status:** ✅ Mock Implementation (ready for fee calculation integration)
+
+### Advanced Operations API
+
+#### `createRemoveLiquidityTransaction(...params): Promise<any>`
+
+Create transaction to remove liquidity from specific bins.
+
+**Parameters:**
+- `poolAddress: PublicKey`: Target pool
+- `userAddress: PublicKey`: User's wallet
+- `binIds: number[]`: Bins to remove liquidity from
+- `liquidityShares: string[]`: Amount shares to remove per bin
+
+**Returns:** Remove liquidity transaction
+
+**Implementation Status:** ✅ SDK Integration Complete
+
+#### `simulateSwap(...params): Promise<{ amountOut: string; priceImpact: number; fee: string }>`
+
+Simulate a swap to get quote information.
+
+**Parameters:**
+- `poolAddress: PublicKey`: Target pool
+- `amountIn: string`: Input amount
+- `tokenIn: PublicKey`: Input token
+- `slippageTolerance: number`: Maximum slippage
+
+**Returns:** Swap simulation results
+
+**Implementation Status:** ✅ SDK Integration Complete
+
+### Strategy Types Implementation
+
+**Liquidity Distribution Strategies:**
+- **`spot`**: Even distribution across selected bins
+- **`curve`**: Concentrated around center with weighted distribution
+- **`bid-ask`**: Split between buy (lower bins) and sell (upper bins)
 
 ##### `removeLiquidity(params: RemoveLiquidityParams): Promise<Transaction>`
 
@@ -361,40 +452,90 @@ The application implements intelligent rate limiting:
 - **Premium RPC**: 500 requests/minute
 - **Automatic retry**: Exponential backoff for failed requests
 
-### Caching Strategy
+### Polling Strategy
 
-- **Position data**: 30 seconds cache
-- **Pool data**: 60 seconds cache
-- **Historical data**: 5 minutes cache
+- **Position data**: 30 seconds polling interval with real-time updates
+- **Analytics data**: 60 seconds polling for comprehensive metrics
+- **Price data**: 10 seconds polling for current market prices
+- **Manual refresh**: Instant updates triggered by user actions
+- **Error recovery**: Automatic retry with exponential backoff
 
-## WebSocket Events
+## Real-time Data Polling
 
-### Real-time Updates
+### Polling Implementation
 
-The application subscribes to real-time events:
+The application uses configurable polling intervals for real-time updates:
 
 ```typescript
-interface DLMMEvents {
-  'position_updated': (position: DLMMPosition) => void
-  'pool_updated': (pool: LbPair) => void
-  'transaction_confirmed': (signature: string) => void
-  'strategy_executed': (result: StrategyExecution) => void
+// From src/lib/constants.ts
+export const REFRESH_INTERVALS = {
+  positions: 30000,   // 30 seconds - position data refresh
+  analytics: 60000,   // 60 seconds - analytics data refresh
+  prices: 10000,      // 10 seconds - price data refresh
 }
 ```
 
-### Event Subscription Example
+### React Hooks with Real-time Updates
+
+#### `useUserPositions(enableRealtime: boolean = true)`
+
+Hook for fetching user positions with automatic polling.
 
 ```typescript
-dlmmClient.on('position_updated', (position) => {
-  // Update UI with new position data
-  updatePositionCard(position)
-})
+const {
+  positions,
+  loading,
+  refreshing,
+  error,
+  refreshPositions,
+  lastUpdate
+} = useUserPositions(true) // Enable real-time updates
 
-dlmmClient.on('strategy_executed', (result) => {
-  // Show success notification
-  showNotification(`Strategy executed successfully. Expected APR: ${result.expectedOutcome.newAPR}%`)
-})
+// Manual refresh
+const handleRefresh = () => {
+  refreshPositions()
+}
 ```
+
+#### `usePoolData(poolAddress: PublicKey | undefined, enableRealtime: boolean = false)`
+
+Hook for pool data with optional real-time updates.
+
+```typescript
+const {
+  poolData,
+  binData,
+  loading,
+  error,
+  refreshPoolData
+} = usePoolData(poolAddress, true)
+```
+
+#### `useSwapQuote(...params, enableRealtime: boolean = false)`
+
+Hook for swap quotes with debounced updates and real-time pricing.
+
+```typescript
+const {
+  quote,
+  loading,
+  error
+} = useSwapQuote(
+  poolAddress,
+  '1000',
+  tokenInAddress,
+  0.5, // 0.5% slippage
+  true // Enable real-time price updates
+)
+```
+
+### Polling Features
+
+- **Automatic Cleanup**: Intervals are cleared when components unmount
+- **Error Handling**: Graceful degradation when polling fails
+- **Debouncing**: Input changes are debounced to prevent excessive API calls
+- **Manual Refresh**: Users can manually trigger data refresh
+- **Loading States**: Separate loading and refreshing states for better UX
 
 ## Constants and Enums
 

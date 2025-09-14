@@ -323,27 +323,151 @@ interface WalletStatusProps {
 
 ### useUserPositions
 
-Custom hook for fetching and managing user positions.
+Custom hook for fetching and managing user positions with real-time polling.
 
 **Location:** `src/hooks/use-dlmm.ts`
+
+**Parameters:**
+```typescript
+useUserPositions(enableRealtime: boolean = true)
+```
 
 **Returns:**
 ```typescript
 interface UseUserPositionsReturn {
-  positions: DLMMPosition[]
-  isLoading: boolean
+  positions: any[]
+  loading: boolean
+  refreshing: boolean
   error: Error | null
   refreshPositions: () => Promise<void>
-  analytics: Record<string, PositionAnalytics>
+  lastUpdate: Date
 }
 ```
 
 **Features:**
-- Automatic position fetching
-- Real-time updates via WebSocket
-- Error handling and retry logic
-- Position analytics calculation
-- Optimistic updates for better UX
+- ✅ **Real-time Polling**: 30-second automatic updates when `enableRealtime` is true
+- ✅ **Manual Refresh**: `refreshPositions()` for user-triggered updates
+- ✅ **Loading States**: Separate `loading` (initial) and `refreshing` (updates) states
+- ✅ **Error Handling**: Graceful error recovery with console logging
+- ✅ **Last Update Tracking**: `lastUpdate` timestamp for UI display
+- ✅ **Automatic Cleanup**: Polling intervals cleared on component unmount
+- ✅ **Wallet Integration**: Automatically fetches when wallet is connected
+
+**Example Usage:**
+```typescript
+const {
+  positions,
+  loading,
+  refreshing,
+  refreshPositions,
+  lastUpdate
+} = useUserPositions(true) // Enable real-time updates
+
+// Manual refresh button
+<Button onClick={refreshPositions} disabled={refreshing}>
+  {refreshing ? 'Refreshing...' : 'Refresh'}
+</Button>
+
+// Last update display
+<span className="text-sm text-gray-500">
+  Last updated: {lastUpdate.toLocaleTimeString()}
+</span>
+```
+
+### usePoolData
+
+Custom hook for fetching pool data with optional real-time updates.
+
+**Location:** `src/hooks/use-dlmm.ts`
+
+**Parameters:**
+```typescript
+usePoolData(
+  poolAddress: PublicKey | undefined,
+  enableRealtime: boolean = false
+)
+```
+
+**Returns:**
+```typescript
+interface UsePoolDataReturn {
+  poolData: any | null
+  binData: any[]
+  loading: boolean
+  error: Error | null
+  refreshPoolData: () => Promise<void>
+}
+```
+
+**Features:**
+- ✅ **Pool Information**: Fetches comprehensive pool data from SDK
+- ✅ **Bin Liquidity**: Retrieves bin distribution and liquidity data
+- ✅ **Real-time Updates**: 60-second polling when enabled
+- ✅ **Manual Refresh**: User-triggered data updates
+- ✅ **Conditional Loading**: Only fetches when poolAddress is provided
+- ✅ **Error Recovery**: Graceful error handling with fallbacks
+
+**Example Usage:**
+```typescript
+const {
+  poolData,
+  binData,
+  loading,
+  refreshPoolData
+} = usePoolData(selectedPoolAddress, true)
+```
+
+### useSwapQuote
+
+Custom hook for fetching swap quotes with debouncing and real-time price updates.
+
+**Location:** `src/hooks/use-dlmm.ts`
+
+**Parameters:**
+```typescript
+useSwapQuote(
+  poolAddress: PublicKey | undefined,
+  amountIn: string | undefined,
+  tokenIn: PublicKey | undefined,
+  slippageTolerance: number,
+  enableRealtime: boolean = false
+)
+```
+
+**Returns:**
+```typescript
+interface UseSwapQuoteReturn {
+  quote: {
+    amountOut: string
+    priceImpact: number
+    fee: string
+  } | null
+  loading: boolean
+  error: Error | null
+}
+```
+
+**Features:**
+- ✅ **Debounced Requests**: 500ms debouncing to prevent excessive API calls
+- ✅ **Real-time Pricing**: 10-second price updates when enabled
+- ✅ **Input Validation**: Only fetches quotes for valid inputs
+- ✅ **Zero Amount Handling**: Skips requests for zero amounts
+- ✅ **Multiple Parameters**: Handles complex parameter validation
+
+**Example Usage:**
+```typescript
+const {
+  quote,
+  loading,
+  error
+} = useSwapQuote(
+  poolAddress,
+  '1000000', // 1 USDC
+  usdcTokenAddress,
+  0.5, // 0.5% slippage
+  true // Enable real-time price updates
+)
+```
 
 ### useWalletIntegration
 

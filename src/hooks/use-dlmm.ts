@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
 import { DLMMPosition, PoolInfo, BinInfo } from '@/lib/types'
 import { formatBinData } from '@/lib/dlmm/utils'
+import { REFRESH_INTERVALS } from '@/lib/constants'
 
 export function useDLMM() {
   const { publicKey, connected } = useWallet()
@@ -33,11 +34,13 @@ export function useDLMM() {
   }
 }
 
-export function useUserPositions() {
+export function useUserPositions(enableRealtime: boolean = true) {
   const { client, publicKey, connected, handleError } = useDLMM()
   const [positions, setPositions] = useState<DLMMPosition[]>([])
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
   const fetchPositions = useCallback(async () => {
     if (!connected || !publicKey) {
@@ -81,6 +84,7 @@ export function useUserPositions() {
       }))
       
       setPositions(formattedPositions)
+      setLastUpdate(new Date())
     } catch (error) {
       handleError(error, 'Failed to fetch positions')
     } finally {
@@ -94,9 +98,42 @@ export function useUserPositions() {
     setRefreshing(false)
   }, [fetchPositions])
 
+  // Initial fetch
   useEffect(() => {
     fetchPositions()
   }, [fetchPositions])
+
+  // Set up real-time polling
+  useEffect(() => {
+    if (enableRealtime && connected && publicKey) {
+      intervalRef.current = setInterval(() => {
+        if (!refreshing) {
+          fetchPositions()
+        }
+      }, REFRESH_INTERVALS.positions)
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      }
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [enableRealtime, connected, publicKey, refreshing, fetchPositions])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
 
   return {
     positions,
@@ -104,14 +141,17 @@ export function useUserPositions() {
     refreshing,
     refreshPositions,
     fetchPositions,
+    lastUpdate,
   }
 }
 
-export function usePoolData(poolAddress?: PublicKey) {
+export function usePoolData(poolAddress?: PublicKey, enableRealtime: boolean = true) {
   const { client, handleError } = useDLMM()
   const [poolData, setPoolData] = useState<PoolInfo | null>(null)
   const [binData, setBinData] = useState<BinInfo[]>([])
   const [loading, setLoading] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
   const fetchPoolData = useCallback(async () => {
     if (!poolAddress) {
@@ -124,7 +164,7 @@ export function usePoolData(poolAddress?: PublicKey) {
     try {
       const [pair, bins] = await Promise.all([
         client.getLbPair(poolAddress),
-        client.getBinLiquidity(poolAddress),
+        client.getBinLiquidity(poolAddress, PublicKey.default), // Provide default user address for pool-level bin data
       ])
 
       if (pair) {
@@ -165,6 +205,7 @@ export function usePoolData(poolAddress?: PublicKey) {
 
         setBinData(formatBinData(bins))
       }
+      setLastUpdate(new Date())
     } catch (error) {
       handleError(error, 'Failed to fetch pool data')
     } finally {
@@ -172,15 +213,49 @@ export function usePoolData(poolAddress?: PublicKey) {
     }
   }, [client, poolAddress, handleError])
 
+  // Initial fetch
   useEffect(() => {
     fetchPoolData()
   }, [fetchPoolData])
+
+  // Set up real-time polling
+  useEffect(() => {
+    if (enableRealtime && poolAddress) {
+      intervalRef.current = setInterval(() => {
+        if (!loading) {
+          fetchPoolData()
+        }
+      }, REFRESH_INTERVALS.analytics)
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      }
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [enableRealtime, poolAddress, loading, fetchPoolData])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
 
   return {
     poolData,
     binData,
     loading,
     refreshPoolData: fetchPoolData,
+    lastUpdate,
   }
 }
 
@@ -252,7 +327,8 @@ export function useSwapQuote(
   poolAddress?: PublicKey,
   amountIn?: string,
   tokenIn?: PublicKey,
-  slippage: number = 0.5
+  slippage: number = 0.5,
+  enableRealtime: boolean = true
 ) {
   const { client, handleError } = useDLMM()
   const [quote, setQuote] = useState<{
@@ -261,6 +337,8 @@ export function useSwapQuote(
     fee: string
   } | null>(null)
   const [loading, setLoading] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
   const getQuote = useCallback(async () => {
     if (!poolAddress || !amountIn || !tokenIn || parseFloat(amountIn) === 0) {
@@ -277,6 +355,7 @@ export function useSwapQuote(
         slippage
       )
       setQuote(swapQuote)
+      setLastUpdate(new Date())
     } catch (error) {
       handleError(error, 'Failed to get swap quote')
       setQuote(null)
@@ -285,14 +364,48 @@ export function useSwapQuote(
     }
   }, [client, poolAddress, amountIn, tokenIn, slippage, handleError])
 
+  // Debounced initial fetch
   useEffect(() => {
     const debounceTimer = setTimeout(getQuote, 500) // Debounce API calls
     return () => clearTimeout(debounceTimer)
   }, [getQuote])
 
+  // Set up real-time polling for price updates
+  useEffect(() => {
+    if (enableRealtime && poolAddress && amountIn && tokenIn && parseFloat(amountIn) > 0) {
+      intervalRef.current = setInterval(() => {
+        if (!loading) {
+          getQuote()
+        }
+      }, REFRESH_INTERVALS.prices)
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      }
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [enableRealtime, poolAddress, amountIn, tokenIn, loading, getQuote])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
+
   return {
     quote,
     loading,
     refreshQuote: getQuote,
+    lastUpdate,
   }
 }

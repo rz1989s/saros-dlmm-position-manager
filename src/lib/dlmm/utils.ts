@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
 import { BinInfo, DLMMPosition, PoolInfo, PositionAnalytics } from '@/lib/types'
-import { calculatePNL, calculateImpermanentLoss, calculateAPR } from '@/lib/utils'
+import { calculatePNL, calculateAPR } from '@/lib/utils'
 
 export function parseBinId(binId: number): { price: number; isValid: boolean } {
   try {
@@ -16,20 +16,25 @@ export function parseBinId(binId: number): { price: number; isValid: boolean } {
 export function calculateBinRange(
   activeBinId: number,
   range: number
-): { minBinId: number; maxBinId: number; binIds: number[] } {
-  const minBinId = activeBinId - range
-  const maxBinId = activeBinId + range
-  const binIds = Array.from({ length: range * 2 + 1 }, (_, i) => minBinId + i)
-  
-  return { minBinId, maxBinId, binIds }
+): { centerBin: number; minBin: number; maxBin: number; binIds: number[] } {
+  const halfRange = Math.floor(range / 2)
+  const minBin = activeBinId - halfRange
+  const maxBin = activeBinId + (range - halfRange - 1)
+  const binIds = Array.from({ length: range }, (_, i) => minBin + i)
+
+  return { centerBin: activeBinId, minBin, maxBin, binIds }
 }
 
 export function formatBinData(binData: any[]): BinInfo[] {
+  if (!binData || !Array.isArray(binData)) {
+    return []
+  }
+
   return binData.map((bin) => ({
     binId: bin.binId || 0,
-    price: parseBinId(bin.binId).price,
-    liquidityX: bin.reserveX || '0',
-    liquidityY: bin.reserveY || '0',
+    price: bin.price || parseBinId(bin.binId || 0).price,
+    liquidityX: bin.reserveX || bin.liquidityX || '0',
+    liquidityY: bin.reserveY || bin.liquidityY || '0',
     isActive: bin.isActive || false,
     feeRate: bin.feeRate || 0,
     volume24h: bin.volume24h || '0',
@@ -43,45 +48,51 @@ export function calculateLiquidityDistribution(
   totalAmount: number
 ): { binId: number; xAmount: number; yAmount: number }[] {
   const { binIds } = calculateBinRange(activeBinId, range)
-  
+  const amountPerBin = totalAmount / binIds.length
+
   switch (strategy) {
     case 'spot':
-      // Concentrate liquidity around active bin
-      return binIds.map((binId) => {
-        const distance = Math.abs(binId - activeBinId)
-        const weight = Math.max(0, 1 - distance / range)
-        const amount = totalAmount * weight / binIds.length
-        
-        if (binId < activeBinId) {
-          return { binId, xAmount: amount, yAmount: 0 }
-        } else if (binId > activeBinId) {
-          return { binId, xAmount: 0, yAmount: amount }
-        } else {
-          return { binId, xAmount: amount / 2, yAmount: amount / 2 }
-        }
-      })
-      
-    case 'curve':
-      // Uniform distribution for stable pairs
+      // Even distribution for spot strategy
       return binIds.map((binId) => ({
         binId,
-        xAmount: totalAmount / binIds.length / 2,
-        yAmount: totalAmount / binIds.length / 2,
+        xAmount: amountPerBin / 2,
+        yAmount: amountPerBin / 2,
       }))
-      
+
+    case 'curve':
+      // Concentrated around center for curve strategy
+      const centerIndex = Math.floor(binIds.length / 2)
+      return binIds.map((binId, index) => {
+        const distance = Math.abs(index - centerIndex)
+        const weight = Math.max(0.1, 1 - distance * 0.3) // More weight to center bins
+        const weightedAmount = (totalAmount * weight) / binIds.reduce((sum, _, i) => {
+          const d = Math.abs(i - centerIndex)
+          return sum + Math.max(0.1, 1 - d * 0.3)
+        }, 0)
+
+        return {
+          binId,
+          xAmount: weightedAmount / 2,
+          yAmount: weightedAmount / 2,
+        }
+      })
+
     case 'bid-ask':
-      // Split between buy and sell sides
+      // Split between buy (lower bins) and sell (upper bins)
       const midIndex = Math.floor(binIds.length / 2)
       return binIds.map((binId, index) => {
         if (index < midIndex) {
-          return { binId, xAmount: totalAmount / midIndex, yAmount: 0 }
+          // Lower bins - more X tokens (bids)
+          return { binId, xAmount: amountPerBin * 0.8, yAmount: amountPerBin * 0.2 }
         } else if (index > midIndex) {
-          return { binId, xAmount: 0, yAmount: totalAmount / (binIds.length - midIndex - 1) }
+          // Upper bins - more Y tokens (asks)
+          return { binId, xAmount: amountPerBin * 0.2, yAmount: amountPerBin * 0.8 }
         } else {
-          return { binId, xAmount: 0, yAmount: 0 }
+          // Middle bin - balanced
+          return { binId, xAmount: amountPerBin / 2, yAmount: amountPerBin / 2 }
         }
       })
-      
+
     default:
       throw new Error(`Unknown strategy: ${strategy}`)
   }
@@ -217,6 +228,78 @@ export function isPoolActive(pool: PoolInfo): boolean {
   const daysSinceCreation = (Date.now() - pool.createdAt.getTime()) / (1000 * 60 * 60 * 24)
   const hasRecentVolume = parseFloat(pool.volume24h) > 0
   const hasLiquidity = parseFloat(pool.totalLiquidity) > 1000 // Minimum $1000
-  
+
   return daysSinceCreation > 1 && hasRecentVolume && hasLiquidity
+}
+
+export function calculateProfitLoss(
+  position: any,
+  initialPrices: { tokenX: number; tokenY: number }
+): {
+  totalPnL: number
+  feesEarned: number
+  priceChangePnL: number
+  totalReturn: number
+  annualizedReturn: number
+} {
+  const currentTokenXPrice = position.tokenX.price
+  const currentTokenYPrice = position.tokenY.price
+  const initialTokenXPrice = initialPrices.tokenX
+  const initialTokenYPrice = initialPrices.tokenY
+
+  // Calculate fees earned in USD
+  const feesXAmount = parseFloat(position.feesEarned.tokenX) / Math.pow(10, position.tokenX.decimals)
+  const feesYAmount = parseFloat(position.feesEarned.tokenY) / Math.pow(10, position.tokenY.decimals)
+  const feesEarned = (feesXAmount * currentTokenXPrice) + (feesYAmount * currentTokenYPrice)
+
+  // Calculate price change P&L (simplified)
+  const initialValue = parseFloat(position.liquidityAmount)
+  const priceChangeRatio = (currentTokenXPrice / initialTokenXPrice + currentTokenYPrice / initialTokenYPrice) / 2
+  const currentValue = initialValue * priceChangeRatio
+  const priceChangePnL = currentValue - initialValue
+
+  const totalPnL = priceChangePnL + feesEarned
+  const totalReturn = initialValue > 0 ? totalPnL / initialValue : 0
+
+  // Calculate annualized return
+  const daysSinceCreation = (Date.now() - position.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+  const annualizedReturn = daysSinceCreation > 0 ? totalReturn * (365 / daysSinceCreation) : 0
+
+  return {
+    totalPnL,
+    feesEarned,
+    priceChangePnL,
+    totalReturn,
+    annualizedReturn,
+  }
+}
+
+export function calculateImpermanentLoss(
+  initialRatio: number,
+  currentRatio: number
+): {
+  impermanentLoss: number
+  hodlValue: number
+  lpValue: number
+} {
+  // Calculate impermanent loss for a 50/50 AMM position
+  // IL = (2 * sqrt(ratio)) / (1 + ratio) - 1
+
+  const ratio = currentRatio / initialRatio
+  const sqrtRatio = Math.sqrt(ratio)
+
+  // LP value relative to initial
+  const lpValue = (2 * sqrtRatio) / (1 + ratio)
+
+  // HODL value (just hold the tokens)
+  const hodlValue = (1 + ratio) / 2
+
+  // Impermanent loss (negative value means loss)
+  const impermanentLoss = Math.abs(lpValue - hodlValue) / hodlValue
+
+  return {
+    impermanentLoss,
+    hodlValue,
+    lpValue,
+  }
 }

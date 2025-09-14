@@ -37,8 +37,9 @@ vercel --prod --yes
 
 ### Core DLMM Integration (`src/lib/dlmm/`)
 - **`client.ts`**: Main DLMM client wrapper around @saros-finance/dlmm-sdk
-  - Currently uses mock implementations due to SDK integration issues
+  - ✅ **Full SDK integration** with LiquidityBookServices
   - Contains all position, bin, and liquidity management methods
+  - Real-time error handling and transaction building
   - Singleton pattern with `dlmmClient` export
 - **`operations.ts`**: Advanced DLMM operations (add/remove liquidity, rebalancing, limit orders)
 - **`strategies.ts`**: Strategy management system with evaluation and execution logic
@@ -46,9 +47,10 @@ vercel --prod --yes
 
 ### Data Flow Architecture
 1. **Wallet Integration**: Solana Wallet Adapter provides wallet state
-2. **DLMM Client**: Fetches position and bin data via SDK (or mock data)
-3. **React Hooks** (`src/hooks/`): Transform raw data into component-ready state
-4. **Components**: Display data with real-time updates and user interactions
+2. **DLMM Client**: Fetches position and bin data via @saros-finance/dlmm-sdk
+3. **React Hooks** (`src/hooks/`): Transform raw data with real-time polling
+4. **Components**: Display data with live updates and user interactions
+5. **Real-time Updates**: Automatic polling with configurable intervals
 
 ### Key Data Types (`src/lib/types.ts`)
 - **`DLMMPosition`**: Core position data with tokenX/tokenY, bins, fees, P&L
@@ -82,12 +84,14 @@ vercel --prod --yes
 - **`price-chart.tsx`**: Historical price and volume charts with multiple timeframes
 
 ### State Management Pattern
-- **Custom Hooks**: Use React hooks for data fetching and state management
-  - `useUserPositions()`: Position data and refresh methods
-  - `useWalletState()`: Wallet connection state and address
+- **Custom Hooks**: React hooks with real-time data fetching and polling
+  - `useUserPositions()`: Position data with 30s auto-refresh and last update tracking
+  - `usePoolData()`: Pool and bin data with 60s auto-refresh
+  - `useSwapQuote()`: Real-time price quotes with 5s updates and debouncing
   - `useWalletIntegration()`: Transaction sending and signing
 - **Zustand**: Lightweight state management for global app state
-- **Real-time Updates**: Polling intervals defined in `src/lib/constants.ts`
+- **Real-time Updates**: Configurable polling intervals with automatic cleanup
+- **Polling Control**: Enable/disable real-time updates per hook with `enableRealtime` parameter
 
 ### Environment Configuration
 
@@ -109,6 +113,13 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 
 ## Development Patterns
 
+### Testing Infrastructure
+- **Framework**: Jest with React Testing Library
+- **Coverage**: Comprehensive test suite with 80%+ coverage thresholds
+- **Test Types**: Unit tests, integration tests, hook testing, utility functions
+- **Commands**: `npm test`, `npm run test:watch`, `npm run test:coverage`
+- **Files**: Tests located in `/tests/` directory with matching source structure
+
 ### TypeScript Integration
 - All components and utilities use strict TypeScript
 - DLMM-specific types in `src/lib/types.ts`
@@ -121,9 +132,9 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - **Loading States**: Skeleton loaders and loading indicators throughout
 
 ### SDK Integration Status
-- **Current**: Mock implementations for stable deployment
-- **TODO**: Replace mock methods with actual @saros-finance/dlmm-sdk calls
-- **Key Files to Update**: `client.ts` has TODO comments marking integration points
+- **Status**: ✅ **COMPLETED** - Full @saros-finance/dlmm-sdk integration
+- **Implementation**: All methods now use real SDK calls with LiquidityBookServices
+- **Features**: Real-time data polling, transaction building, error handling, and caching
 
 ### Chart and Visualization
 - **Recharts**: All charts use Recharts library
@@ -144,10 +155,11 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - Lazy loading for chart components
 - Efficient re-rendering with React.memo and useMemo
 
-### Mock Data Strategy
-- Mock data generators in components for development/demo
-- Realistic data patterns matching expected DLMM structures  
-- Easy to replace with real API calls when SDK integration is complete
+### Data Management Strategy
+- Real-time data fetching from Saros DLMM SDK
+- Intelligent caching and polling with configurable intervals
+- Robust error handling with graceful fallbacks
+- Type-safe data transformation and validation
 
 ### Deployment Notes
 - Built for Vercel deployment with automatic optimization
