@@ -29,7 +29,9 @@ export function useInstallPrompt() {
     const unsubscribe = installManager.subscribe(setState)
     setState(installManager.getState())
 
-    return unsubscribe
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   const promptInstall = useCallback(async () => {
@@ -63,7 +65,9 @@ export function useOffline() {
     const unsubscribe = offlineManager.subscribe(setIsOnline)
     setIsOnline(offlineManager.getState())
 
-    return unsubscribe
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   return isOnline

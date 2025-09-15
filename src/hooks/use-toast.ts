@@ -221,11 +221,11 @@ function toast({
 toast.success = (
   title: React.ReactNode,
   description?: React.ReactNode,
-  options?: Omit<Toast, 'title' | 'description' | 'variant'>
+  options?: Omit<ToasterToast, 'title' | 'description' | 'variant'>
 ) =>
   toast({
-    title,
-    description,
+    title: title as any,
+    description: description as any,
     variant: 'success',
     ...options,
   })
@@ -233,11 +233,11 @@ toast.success = (
 toast.error = (
   title: React.ReactNode,
   description?: React.ReactNode,
-  options?: Omit<Toast, 'title' | 'description' | 'variant'>
+  options?: Omit<ToasterToast, 'title' | 'description' | 'variant'>
 ) =>
   toast({
-    title,
-    description,
+    title: title as any,
+    description: description as any,
     variant: 'destructive',
     ...options,
   })
@@ -245,11 +245,11 @@ toast.error = (
 toast.warning = (
   title: React.ReactNode,
   description?: React.ReactNode,
-  options?: Omit<Toast, 'title' | 'description' | 'variant'>
+  options?: Omit<ToasterToast, 'title' | 'description' | 'variant'>
 ) =>
   toast({
-    title,
-    description,
+    title: title as any,
+    description: description as any,
     variant: 'warning',
     ...options,
   })
@@ -257,11 +257,11 @@ toast.warning = (
 toast.info = (
   title: React.ReactNode,
   description?: React.ReactNode,
-  options?: Omit<Toast, 'title' | 'description' | 'variant'>
+  options?: Omit<ToasterToast, 'title' | 'description' | 'variant'>
 ) =>
   toast({
-    title,
-    description,
+    title: title as any,
+    description: description as any,
     variant: 'info',
     ...options,
   })
@@ -269,11 +269,11 @@ toast.info = (
 toast.loading = (
   title: React.ReactNode,
   description?: React.ReactNode,
-  options?: Omit<Toast, 'title' | 'description' | 'variant'>
+  options?: Omit<ToasterToast, 'title' | 'description' | 'variant'>
 ) =>
   toast({
-    title,
-    description,
+    title: title as any,
+    description: description as any,
     variant: 'loading',
     persistent: true,
     ...options,
@@ -306,7 +306,7 @@ toast.promise = <T>(
         variant: 'success',
         persistent: false,
         duration: 5000,
-      })
+      } as any)
     })
     .catch((error) => {
       const options = typeof errorOptions === 'function' ? errorOptions(error) : errorOptions
@@ -315,7 +315,7 @@ toast.promise = <T>(
         variant: 'destructive',
         persistent: false,
         duration: 5000,
-      })
+      } as any)
     })
 
   return loadingToast

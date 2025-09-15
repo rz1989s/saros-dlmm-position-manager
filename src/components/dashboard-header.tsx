@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Activity, BarChart3, Home, TrendingUp } from 'lucide-react'
+import { Activity, BarChart3, Home, TrendingUp, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function DashboardHeader() {
@@ -13,6 +13,7 @@ export function DashboardHeader() {
     { name: 'Positions', href: '/', icon: Home, active: pathname === '/' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, active: pathname === '/analytics' },
     { name: 'Strategies', href: '/strategies', icon: TrendingUp, active: pathname === '/strategies' },
+    { name: 'Showcase', href: '/showcase', icon: Trophy, active: pathname === '/showcase', highlight: true },
   ]
 
   return (
@@ -48,6 +49,8 @@ export function DashboardHeader() {
                 variant={item.active ? "default" : "ghost"}
                 className={`w-full sm:w-auto justify-center sm:justify-start text-sm sm:text-base px-3 sm:px-4 py-2 ${
                   item.active ? "bg-saros-primary text-white" : ""
+                } ${
+                  (item as any).highlight && !item.active ? "border border-yellow-500 text-yellow-600 bg-yellow-50 hover:bg-yellow-100" : ""
                 }`}
               >
                 <item.icon className="h-4 w-4 mr-2 flex-shrink-0" />

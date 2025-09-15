@@ -90,7 +90,7 @@ export function StaggerList({
             variants={itemVariant}
             transition={{
               duration: duration,
-              ease: 'easeOut'
+              ease: [0.25, 0.46, 0.45, 0.94]
             }}
           >
             {child}
@@ -139,11 +139,7 @@ export function AnimatedGrid({
     animate: {
       opacity: 1,
       scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: 'easeOut'
-      }
+      y: 0
     }
   }
 
@@ -161,6 +157,10 @@ export function AnimatedGrid({
           <motion.div
             key={child.key || index}
             variants={itemVariant}
+            transition={{
+              duration: 0.4,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }}
           >
             {child}
           </motion.div>
@@ -204,11 +204,7 @@ export function StaggerText({
     },
     animate: {
       opacity: 1,
-      y: 0,
-      transition: {
-        duration: duration,
-        ease: 'easeOut'
-      }
+      y: 0
     }
   }
 
@@ -224,6 +220,10 @@ export function StaggerText({
           key={index}
           variants={letterVariant}
           className="inline-block"
+          transition={{
+            duration: duration,
+            ease: [0.25, 0.46, 0.45, 0.94]
+          }}
         >
           {letter === ' ' ? '\u00A0' : letter}
         </motion.span>
@@ -362,11 +362,11 @@ export function RevealOnScroll({
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={{ threshold, rootMargin, once }}
+      viewport={{ amount: threshold, margin: rootMargin, once }}
       variants={variants}
       transition={{
         duration: 0.6,
-        ease: 'easeOut'
+        ease: [0.25, 0.46, 0.45, 0.94]
       }}
     >
       {children}

@@ -15,9 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { ProgressIndicator } from '@/components/accessibility/accessible-components'
+// Switch and Label components not available - implementing simple toggle with Button
 import { useInstallPrompt, useNotifications, useCacheManager, useStorageUsage } from '@/hooks/use-pwa'
 import { InstallButton, InstallStatus } from './install-prompt'
 import { UpdateButton } from './update-prompt'
@@ -119,17 +118,20 @@ export function PWASettings() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label htmlFor="notifications">Enable Notifications</Label>
+              <label htmlFor="notifications" className="font-medium">Enable Notifications</label>
               <p className="text-sm text-muted-foreground">
                 Permission: <span className="capitalize">{permission}</span>
               </p>
             </div>
-            <Switch
+            <Button
               id="notifications"
-              checked={notificationsEnabled}
-              onCheckedChange={handleNotificationToggle}
+              variant={notificationsEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleNotificationToggle(!notificationsEnabled)}
               disabled={permission === 'denied'}
-            />
+            >
+              {notificationsEnabled ? 'On' : 'Off'}
+            </Button>
           </div>
 
           {permission === 'denied' && (
@@ -159,7 +161,7 @@ export function PWASettings() {
               <span>Storage Used</span>
               <span>{usedFormatted} of {quotaFormatted}</span>
             </div>
-            <Progress value={percentage} className="h-2" />
+            <ProgressIndicator value={percentage} max={100} label="Storage Usage" showValue={false} className="h-2" />
             <p className="text-xs text-muted-foreground">
               {percentage.toFixed(1)}% of available storage used
             </p>

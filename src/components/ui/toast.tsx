@@ -190,7 +190,7 @@ export function EnhancedToast({
 
         <div className="flex items-center gap-2">
           {action && (
-            <ToastAction onClick={action.onClick}>
+            <ToastAction onClick={action.onClick} altText={action.label}>
               {action.label}
             </ToastAction>
           )}

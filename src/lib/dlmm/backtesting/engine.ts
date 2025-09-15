@@ -404,7 +404,7 @@ export class BacktestEngine {
         }
       }
     } catch (error) {
-      console.warn('Strategy evaluation error:', error.message)
+      console.warn('Strategy evaluation error:', error instanceof Error ? error.message : 'Unknown error')
     }
 
     return null

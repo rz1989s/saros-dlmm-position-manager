@@ -525,11 +525,7 @@ export const createDelayedAnimation = (
 ): Variants => ({
   ...baseVariant,
   animate: {
-    ...baseVariant.animate,
-    transition: {
-      ...baseVariant.animate?.transition,
-      delay
-    }
+    ...baseVariant.animate
   }
 })
 

@@ -42,20 +42,20 @@ export function LazyStrategyWrapper({ children }: { children: React.ReactNode })
   )
 }
 
-interface LazyComponentProps<T = {}> {
+interface LazyComponentProps<T extends Record<string, any> = {}> {
   component: LazyExoticComponent<ComponentType<T>>
   fallback?: React.ReactNode
   props?: T
 }
 
-export function LazyComponent<T = {}>({
+export function LazyComponent<T extends Record<string, any> = {}>({
   component: Component,
   fallback,
   props
 }: LazyComponentProps<T>) {
   return (
     <Suspense fallback={fallback || <Skeleton className="h-64 w-full" />}>
-      <Component {...(props as T)} />
+      <Component {...(props || {} as any)} />
     </Suspense>
   )
 }

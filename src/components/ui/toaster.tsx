@@ -80,13 +80,7 @@ export function Toaster({ position = 'top-right', className }: ToasterProps) {
       opacity: 1,
       scale: 1,
       x: 0,
-      y: 0,
-      transition: {
-        type: 'spring',
-        damping: 25,
-        stiffness: 300,
-        duration: 0.4
-      }
+      y: 0
     },
     exit: (position: string) => {
       const isTop = position.includes('top')
@@ -97,10 +91,7 @@ export function Toaster({ position = 'top-right', className }: ToasterProps) {
         opacity: 0,
         scale: 0.95,
         x: isLeft ? -300 : isRight ? 300 : 0,
-        y: isTop ? -100 : 100,
-        transition: {
-          duration: 0.2
-        }
+        y: isTop ? -100 : 100
       }
     }
   }
@@ -120,6 +111,12 @@ export function Toaster({ position = 'top-right', className }: ToasterProps) {
               animate="animate"
               exit="exit"
               layout
+              transition={{
+                type: 'spring',
+                damping: 25,
+                stiffness: 300,
+                duration: 0.4
+              }}
               className={`fixed z-[100] pointer-events-none ${getPositionClasses(toastPosition)} p-4 max-w-[420px] w-full ${className}`}
               style={{
                 // Ensure proper stacking for multiple toasts

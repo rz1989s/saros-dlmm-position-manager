@@ -142,13 +142,7 @@ export function ExpandableFAB({
     visible: (i: number) => ({
       scale: 1,
       opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        type: 'spring',
-        stiffness: 400,
-        damping: 25
-      }
+      y: 0
     })
   }
 
@@ -192,6 +186,12 @@ export function ExpandableFAB({
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
+                  transition={{
+                    delay: index * 0.1,
+                    type: 'spring',
+                    stiffness: 400,
+                    damping: 25
+                  }}
                 >
                   {/* Label */}
                   <motion.div
@@ -293,13 +293,7 @@ export function SpeedDialFAB({
         scale: 1,
         opacity: 1,
         x: position.x,
-        y: position.y,
-        transition: {
-          delay: index * 0.1,
-          type: 'spring',
-          stiffness: 400,
-          damping: 25
-        }
+        y: position.y
       }
     }
   }
@@ -317,6 +311,12 @@ export function SpeedDialFAB({
             initial="closed"
             animate={isOpen ? "open" : "closed"}
             exit="closed"
+            transition={{
+              delay: index * 0.1,
+              type: 'spring',
+              stiffness: 400,
+              damping: 25
+            }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => {

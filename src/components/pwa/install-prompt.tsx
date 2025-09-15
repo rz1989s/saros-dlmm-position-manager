@@ -307,9 +307,12 @@ export function InstallButton({
     return null
   }
 
+  // Map size to valid Button sizes
+  const buttonSize = size === 'md' ? 'default' : size
+
   return (
     <Button
-      size={size}
+      size={buttonSize}
       variant={variant}
       onClick={promptInstall}
       className={`gap-2 ${className}`}

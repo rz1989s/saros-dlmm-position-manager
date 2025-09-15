@@ -22,23 +22,34 @@ import {
 interface AccessibleMotionProps extends MotionProps {
   children: ReactNode
   reduceMotion?: boolean
+  className?: string
+  id?: string
+  role?: string
+  'aria-labelledby'?: string
 }
 
 export const AccessibleMotion = forwardRef<HTMLDivElement, AccessibleMotionProps>(
-  ({ children, reduceMotion, ...motionProps }, ref) => {
+  ({ children, reduceMotion, className, id, role, 'aria-labelledby': ariaLabelledBy, ...motionProps }, ref) => {
     const prefersReducedMotion = useReducedMotion()
     const shouldReduceMotion = reduceMotion ?? prefersReducedMotion
 
+    const commonProps = {
+      id,
+      role,
+      'aria-labelledby': ariaLabelledBy,
+      className
+    }
+
     if (shouldReduceMotion) {
       return (
-        <div ref={ref} className={motionProps.className as string}>
+        <div ref={ref} {...commonProps}>
           {children}
         </div>
       )
     }
 
     return (
-      <motion.div ref={ref} {...motionProps}>
+      <motion.div ref={ref} {...commonProps} {...motionProps}>
         {children}
       </motion.div>
     )
@@ -90,7 +101,10 @@ export function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const contentId = useRef(generateId('collapsible-content')).current
   const buttonId = useRef(generateId('collapsible-button')).current
-  const { isFocusVisible, onFocus, onBlur } = useFocusVisible()
+  const { isFocusVisible, onFocus: onNativeFocus, onBlur: onNativeBlur } = useFocusVisible()
+
+  const onFocus = (e: React.FocusEvent) => onNativeFocus(e.nativeEvent)
+  const onBlur = (e: React.FocusEvent) => onNativeBlur(e.nativeEvent)
 
   const HeadingTag = `h${titleLevel}` as keyof JSX.IntrinsicElements
 
@@ -102,7 +116,7 @@ export function CollapsibleSection({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    handleKeyboardNavigation(e, {
+    handleKeyboardNavigation(e.nativeEvent, {
       ENTER: handleToggle,
       SPACE: handleToggle
     })
@@ -250,7 +264,9 @@ export function ProgressIndicator({
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.5 }}
-        />
+        >
+          <span className="sr-only">{percentage}% complete</span>
+        </AccessibleMotion>
       </div>
 
       <ScreenReaderOnly announce>
@@ -374,7 +390,7 @@ export function AccessibleTable({
                 onClick={() => column.sortable && handleSort(column.key)}
                 onKeyDown={(e) => {
                   if (column.sortable) {
-                    handleKeyboardNavigation(e, {
+                    handleKeyboardNavigation(e.nativeEvent, {
                       ENTER: () => handleSort(column.key),
                       SPACE: () => handleSort(column.key)
                     })

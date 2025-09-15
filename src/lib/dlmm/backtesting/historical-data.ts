@@ -49,7 +49,7 @@ export class HistoricalDataService {
         return realData
       }
     } catch (error) {
-      console.log(`⚠️ API fetch failed for ${poolAddress.toString()}:`, error.message)
+      console.log(`⚠️ API fetch failed for ${poolAddress.toString()}:`, error instanceof Error ? error.message : 'Unknown error')
     }
 
     // Fallback to mock data
@@ -263,7 +263,7 @@ export class HistoricalDataService {
       '4h': 4 * 60 * 60 * 1000,
       '1d': 24 * 60 * 60 * 1000,
     }
-    return intervals[interval] || intervals['1h']
+    return intervals[interval as keyof typeof intervals] || intervals['1h']
   }
 
   /**
@@ -289,7 +289,7 @@ export class HistoricalDataService {
     let totalSize = 0
     const entries: Array<{ key: string; hits: number; size: number }> = []
 
-    for (const cache of this.cache.values()) {
+    for (const cache of Array.from(this.cache.values())) {
       totalHits += cache.hits
       totalSize += cache.size
       entries.push({

@@ -3,6 +3,9 @@ export { BacktestEngine, backtestEngine } from './engine'
 export { HistoricalDataService, historicalDataService } from './historical-data'
 export { BacktestMetricsCalculator, metricsCalculator } from './metrics'
 
+// Import types for internal use
+import type { BacktestConfig, BacktestMetrics, BacktestResult } from '@/lib/types'
+
 // Re-export types for convenience
 export type {
   BacktestConfig,

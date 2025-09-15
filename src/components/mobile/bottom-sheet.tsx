@@ -102,20 +102,10 @@ export function BottomSheet({
       y: '100%'
     },
     animate: {
-      y: `${(1 - snapPoints[currentSnap]) * 100}%`,
-      transition: {
-        type: 'spring',
-        damping: 30,
-        stiffness: 300,
-        mass: 0.8
-      }
+      y: `${(1 - snapPoints[currentSnap]) * 100}%`
     },
     exit: {
-      y: '100%',
-      transition: {
-        duration: 0.3,
-        ease: 'easeIn'
-      }
+      y: '100%'
     }
   }
 
@@ -143,6 +133,12 @@ export function BottomSheet({
             initial="initial"
             animate="animate"
             exit="exit"
+            transition={{
+              type: 'spring',
+              damping: 30,
+              stiffness: 300,
+              mass: 0.8
+            }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.1}

@@ -5,15 +5,25 @@ import { PublicKey } from '@solana/web3.js'
 import {
   BacktestConfig,
   BacktestResult,
+  BacktestMetrics,
   StrategyComparison,
   BacktestOptimization,
 } from '@/lib/types'
 import {
   backtestEngine,
   BacktestUtils,
-  type BacktestProgress,
 } from '@/lib/dlmm/backtesting'
 import { strategyManager } from '@/lib/dlmm/strategies'
+
+// Simple progress interface for backtesting
+interface BacktestProgress {
+  percentage?: number
+  progress?: number
+  phase?: string
+  currentStep: string
+  totalSteps?: number
+  currentStepIndex?: number
+}
 
 export interface BacktestHookState {
   // Current backtest state

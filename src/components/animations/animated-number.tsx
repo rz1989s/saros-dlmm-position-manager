@@ -33,15 +33,15 @@ export function AnimatedNumber({
     (prefix + latest.toFixed(decimals) + suffix).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   )
 
-  const getPriceChangeVariant = () => {
-    if (!showPriceChange || previousValue === undefined) return {}
+  const getPriceChangeVariant = (): string => {
+    if (!showPriceChange || previousValue === undefined) return 'initial'
 
     if (value > previousValue) {
-      return priceChange.positive
+      return 'positive'
     } else if (value < previousValue) {
-      return priceChange.negative
+      return 'negative'
     }
-    return {}
+    return 'initial'
   }
 
   useEffect(() => {
@@ -94,8 +94,7 @@ export function AnimatedCounter({
 }: CounterProps) {
   const [count, setCount] = useState(from)
   const springValue = useSpring(from, {
-    duration: duration * 1000,
-    onComplete: onComplete
+    duration: duration * 1000
   })
 
   const transformed = useTransform(springValue, (latest) => {
@@ -106,7 +105,12 @@ export function AnimatedCounter({
   useEffect(() => {
     springValue.set(to)
     setCount(to)
-  }, [to, springValue])
+
+    if (onComplete) {
+      const timer = setTimeout(onComplete, duration * 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [to, springValue, onComplete, duration])
 
   return (
     <motion.span
@@ -141,10 +145,13 @@ export function ProgressNumber({
   const [displayPercentage, setDisplayPercentage] = useState(0)
 
   const springValue = useSpring(0, {
-    duration: animated ? 800 : 0,
-    onUpdate: (latest) => {
-      setDisplayPercentage(latest)
-    }
+    duration: animated ? 800 : 0
+  })
+
+  const displayValue = useTransform(springValue, (latest) => {
+    const rounded = Math.round(latest)
+    setDisplayPercentage(rounded)
+    return rounded
   })
 
   useEffect(() => {
