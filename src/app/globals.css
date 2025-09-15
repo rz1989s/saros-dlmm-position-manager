@@ -58,6 +58,202 @@
   }
 }
 
+/* Accessibility utilities */
+@layer utilities {
+  /* Screen reader only text */
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .sr-only-focusable:focus {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: inherit !important;
+  }
+
+  /* Focus styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Skip links */
+  .skip-link {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    z-index: 1000;
+    transition: all 0.3s ease;
+  }
+
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    width: auto;
+    height: auto;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .high-contrast-border {
+      border: 2px solid;
+    }
+
+    .high-contrast-text {
+      font-weight: 600;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reduce {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Focus-visible polyfill support */
+  .js-focus-visible :focus:not(.focus-visible) {
+    outline: none;
+  }
+
+  /* Ensure interactive elements have minimum touch target size */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Color contrast helpers */
+  .contrast-aa {
+    /* Ensures WCAG AA compliance */
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+  }
+
+  .contrast-aaa {
+    /* Ensures WCAG AAA compliance */
+    color: #000000;
+    background: #ffffff;
+  }
+
+  /* Live region styles */
+  .live-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* Form accessibility */
+  .form-error {
+    color: hsl(var(--destructive));
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .form-error::before {
+    content: "⚠ ";
+    font-weight: bold;
+  }
+
+  /* Table accessibility */
+  .table-sortable th {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .table-sortable th:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Status indicators with semantic colors */
+  .status-success {
+    color: #059669;
+    background-color: #d1fae5;
+  }
+
+  .status-warning {
+    color: #d97706;
+    background-color: #fef3c7;
+  }
+
+  .status-error {
+    color: #dc2626;
+    background-color: #fee2e2;
+  }
+
+  .status-info {
+    color: #2563eb;
+    background-color: #dbeafe;
+  }
+
+  /* Loading and disabled states */
+  .loading {
+    cursor: progress;
+    pointer-events: none;
+  }
+
+  .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Custom scrollbar for better accessibility */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 4px;
+    border: 2px solid hsl(var(--muted));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--foreground));
+  }
+}
+
 /* Custom styles for DLMM components */
 .bin-active {
   @apply bg-gradient-to-r from-saros-primary to-saros-secondary;

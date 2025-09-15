@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import { DashboardHeader } from '@/components/dashboard-header'
-import { PnLTracker } from '@/components/analytics/pnl-tracker'
-import { PortfolioOverview } from '@/components/analytics/portfolio-overview'
-import { BinChart } from '@/components/charts/bin-chart'
-import { PriceChart } from '@/components/charts/price-chart'
+import { LazyAnalyticsWrapper, LazyChartWrapper } from '@/components/ui/lazy-loading'
+import {
+  LazyPnLTracker,
+  LazyPortfolioOverview,
+  LazyBinChart,
+  LazyPriceChart
+} from '@/lib/lazy-components'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -103,12 +106,16 @@ export default function AnalyticsPage() {
 
         {/* P&L Tracking Tab */}
         <TabsContent value="pnl" className="space-y-6">
-          <PnLTracker />
+          <LazyAnalyticsWrapper>
+            <LazyPnLTracker />
+          </LazyAnalyticsWrapper>
         </TabsContent>
 
         {/* Portfolio Overview Tab */}
         <TabsContent value="portfolio" className="space-y-6">
-          <PortfolioOverview />
+          <LazyAnalyticsWrapper>
+            <LazyPortfolioOverview />
+          </LazyAnalyticsWrapper>
         </TabsContent>
 
         {/* Pool Analysis Tab */}
@@ -325,22 +332,26 @@ export default function AnalyticsPage() {
           {/* Main Charts */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {/* Bin Distribution Chart */}
-            <BinChart
-              bins={mockBins}
-              activeBinId={0}
-              userBins={userBins}
-              height={400}
-              onBinClick={(binId) => console.log('Clicked bin:', binId)}
-            />
+            <LazyChartWrapper>
+              <LazyBinChart
+                bins={mockBins}
+                activeBinId={0}
+                userBins={userBins}
+                height={400}
+                onBinClick={(binId) => console.log('Clicked bin:', binId)}
+              />
+            </LazyChartWrapper>
 
             {/* Price & Volume Chart */}
-            <PriceChart
-              data={mockPriceData}
-              currentPrice={152.45}
-              priceChange24h={0.0325}
-              height={400}
-              onTimeframeChange={(timeframe) => console.log('Changed timeframe:', timeframe)}
-            />
+            <LazyChartWrapper>
+              <LazyPriceChart
+                data={mockPriceData}
+                currentPrice={152.45}
+                priceChange24h={0.0325}
+                height={400}
+                onTimeframeChange={(timeframe) => console.log('Changed timeframe:', timeframe)}
+              />
+            </LazyChartWrapper>
           </div>
         </TabsContent>
       </Tabs>

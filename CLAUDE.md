@@ -125,11 +125,13 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - DLMM-specific types in `src/lib/types.ts`
 - Solana Web3.js types used extensively for PublicKey handling
 
-### Component Patterns
-- **Responsive Design**: Mobile-first with Tailwind CSS breakpoints  
-- **shadcn/ui**: Consistent component library for UI elements
-- **Error Boundaries**: Graceful error handling with fallback states
-- **Loading States**: Skeleton loaders and loading indicators throughout
+### Component Patterns (Phase 4 Enhanced)
+- **Mobile-First Design**: Progressive web app with touch gestures and haptic feedback
+- **Advanced Animations**: Framer Motion with spring physics and reduced motion support
+- **Accessibility**: WCAG 2.1 AA compliance with screen reader and keyboard navigation
+- **Error Boundaries**: Critical, page, and component-level error handling
+- **Toast Notifications**: Rich notification system with multiple variants and positions
+- **PWA Components**: Install prompts, offline indicators, and update notifications
 
 ### SDK Integration Status
 - **Status**: ✅ **COMPLETED** - Full @saros-finance/dlmm-sdk integration
@@ -149,11 +151,12 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - Graceful handling of connection/disconnection states
 - Transaction signing with priority fees for faster processing
 
-### Performance Optimizations
-- Static generation for public pages
-- Optimized bundle size (<500KB gzipped)
-- Lazy loading for chart components
-- Efficient re-rendering with React.memo and useMemo
+### Performance Optimizations (Phase 4 Complete)
+- **Code Splitting**: Lazy loading for all major routes and components
+- **React Performance**: React.memo, useMemo, useCallback throughout codebase
+- **Skeleton Loading**: Progressive loading states for all UI components
+- **Bundle Optimization**: Optimized bundle size with tree shaking
+- **PWA Features**: Service worker caching and offline support
 
 ### Data Management Strategy
 - Real-time data fetching from Saros DLMM SDK

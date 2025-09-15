@@ -1,12 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PositionCard } from '@/components/position-card'
 import { WalletStatus } from '@/components/wallet-status'
 import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
+import { PositionCardSkeleton } from '@/components/ui/loading-states'
+import { StaggerList } from '@/components/animations/stagger-list'
+import { motion } from 'framer-motion'
+import { fadeInUp } from '@/lib/animations'
 import { 
   RefreshCw, 
   Plus, 
@@ -28,7 +32,7 @@ interface PositionsListProps {
   onClosePosition?: (position: DLMMPosition) => void
 }
 
-export function PositionsList({
+const PositionsList = memo(function PositionsList({
   onCreatePosition,
   onManagePosition,
   onRebalancePosition,
@@ -66,30 +70,63 @@ export function PositionsList({
     }
   }, [positions])
 
-  const filteredPositions = positions.filter(position => {
-    // Filter by status
-    if (filter === 'active' && !position.isActive) return false
-    if (filter === 'inactive' && position.isActive) return false
-    
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      const poolName = `${position.tokenX.symbol}/${position.tokenY.symbol}`.toLowerCase()
-      const address = position.poolAddress.toString().toLowerCase()
-      
-      if (!poolName.includes(query) && !address.includes(query)) {
-        return false
-      }
-    }
-    
-    return true
-  })
+  const filteredPositions = useMemo(() => {
+    return positions.filter(position => {
+      // Filter by status
+      if (filter === 'active' && !position.isActive) return false
+      if (filter === 'inactive' && position.isActive) return false
 
-  const activePositions = positions.filter(p => p.isActive).length
-  const totalValue = Array.from(analytics.values())
-    .reduce((sum, a) => sum + a.totalValue, 0)
-  const totalPnL = Array.from(analytics.values())
-    .reduce((sum, a) => sum + a.pnl.amount, 0)
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const poolName = `${position.tokenX.symbol}/${position.tokenY.symbol}`.toLowerCase()
+        const address = position.poolAddress.toString().toLowerCase()
+
+        if (!poolName.includes(query) && !address.includes(query)) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [positions, filter, searchQuery])
+
+  const activePositions = useMemo(() =>
+    positions.filter(p => p.isActive).length,
+    [positions]
+  )
+
+  const totalValue = useMemo(() =>
+    Array.from(analytics.values()).reduce((sum, a) => sum + a.totalValue, 0),
+    [analytics]
+  )
+
+  const totalPnL = useMemo(() =>
+    Array.from(analytics.values()).reduce((sum, a) => sum + a.pnl.amount, 0),
+    [analytics]
+  )
+
+  const handleCreatePosition = useCallback(() => {
+    setShowAddLiquidity(true)
+    onCreatePosition?.()
+  }, [onCreatePosition])
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery('')
+    setFilter('all')
+  }, [])
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
+
+  const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilter(e.target.value as 'all' | 'active' | 'inactive')
+  }, [])
+
+  const handleModalClose = useCallback(() => {
+    setShowAddLiquidity(false)
+  }, [])
 
   if (!isConnected) {
     return (
@@ -170,10 +207,7 @@ export function PositionsList({
               
               <Button
                 size="sm"
-                onClick={() => {
-                  setShowAddLiquidity(true)
-                  onCreatePosition?.()
-                }}
+                onClick={handleCreatePosition}
               >
                 <Plus className="h-4 w-4 mr-1" />
                 New Position
@@ -192,7 +226,7 @@ export function PositionsList({
                   type="text"
                   placeholder="Search positions..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full pl-9 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 />
               </div>
@@ -202,7 +236,7 @@ export function PositionsList({
               <Filter className="h-4 w-4 text-muted-foreground" />
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as any)}
+                onChange={handleFilterChange}
                 className="border border-input rounded-md px-3 py-2 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="all">All Positions</option>
@@ -214,9 +248,10 @@ export function PositionsList({
 
           {/* Loading State */}
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <span className="ml-2 text-muted-foreground">Loading positions...</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <PositionCardSkeleton key={i} />
+              ))}
             </div>
           )}
 
@@ -228,10 +263,7 @@ export function PositionsList({
               <p className="text-muted-foreground text-center mb-6 max-w-md">
                 You don't have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
               </p>
-              <Button onClick={() => {
-                setShowAddLiquidity(true)
-                onCreatePosition?.()
-              }}>
+              <Button onClick={handleCreatePosition}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create First Position
               </Button>
@@ -248,10 +280,7 @@ export function PositionsList({
               </p>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setSearchQuery('')
-                  setFilter('all')
-                }}
+                onClick={handleClearFilters}
               >
                 Clear Filters
               </Button>
@@ -260,7 +289,11 @@ export function PositionsList({
 
           {/* Positions Grid */}
           {!loading && filteredPositions.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StaggerList
+              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              staggerDelay={0.1}
+              variant="slideUp"
+            >
               {filteredPositions.map((position) => {
                 const positionAnalytics = analytics.get(position.id)
                 if (!positionAnalytics) return null
@@ -276,7 +309,7 @@ export function PositionsList({
                   />
                 )
               })}
-            </div>
+            </StaggerList>
           )}
 
           {/* Pagination could be added here if needed */}
@@ -286,8 +319,10 @@ export function PositionsList({
       {/* Add Liquidity Modal */}
       <AddLiquidityModal
         isOpen={showAddLiquidity}
-        onClose={() => setShowAddLiquidity(false)}
+        onClose={handleModalClose}
       />
     </div>
   )
-}
+})
+
+export { PositionsList }

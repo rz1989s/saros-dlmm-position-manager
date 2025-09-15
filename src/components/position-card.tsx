@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,8 @@ import {
   formatDuration
 } from '@/lib/utils/format'
 import { calculatePositionAnalytics, calculatePositionValue } from '@/lib/dlmm/utils'
+import { cardHover, buttonTap, fadeInUp } from '@/lib/animations'
+import { AnimatedNumber } from '@/components/animations/animated-number'
 
 interface PositionCardProps {
   position: DLMMPosition
@@ -35,23 +38,66 @@ interface PositionCardProps {
   onClose?: (position: DLMMPosition) => void
 }
 
-export function PositionCard({ 
-  position, 
-  analytics, 
-  onManage, 
-  onRebalance, 
-  onClose 
+const PositionCard = memo(function PositionCard({
+  position,
+  analytics,
+  onManage,
+  onRebalance,
+  onClose
 }: PositionCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
-  const poolName = `${position.tokenX.symbol}/${position.tokenY.symbol}`
-  const isProfit = analytics.pnl.amount > 0
-  const hasHighIL = analytics.impermanentLoss.percentage > 0.05 // 5% IL threshold
+  const poolName = useMemo(() =>
+    `${position.tokenX.symbol}/${position.tokenY.symbol}`,
+    [position.tokenX.symbol, position.tokenY.symbol]
+  )
 
-  const explorerUrl = `https://explorer.solana.com/address/${position.poolAddress.toString()}?cluster=devnet`
+  const isProfit = useMemo(() =>
+    analytics.pnl.amount > 0,
+    [analytics.pnl.amount]
+  )
+
+  const hasHighIL = useMemo(() =>
+    analytics.impermanentLoss.percentage > 0.05,
+    [analytics.impermanentLoss.percentage]
+  )
+
+  const explorerUrl = useMemo(() =>
+    `https://explorer.solana.com/address/${position.poolAddress.toString()}?cluster=devnet`,
+    [position.poolAddress]
+  )
+
+  const handleDetailsToggle = useCallback(() => {
+    setShowDetails(prev => !prev)
+  }, [])
+
+  const handleExplorerClick = useCallback(() => {
+    window.open(explorerUrl, '_blank')
+  }, [explorerUrl])
+
+  const handleManage = useCallback(() => {
+    onManage?.(position)
+  }, [onManage, position])
+
+  const handleRebalance = useCallback(() => {
+    onRebalance?.(position)
+  }, [onRebalance, position])
+
+  const handleClose = useCallback(() => {
+    onClose?.(position)
+  }, [onClose, position])
 
   return (
-    <Card className="position-card hover:shadow-lg transition-all duration-200">
+    <motion.div
+      className="position-card"
+      variants={cardHover}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      whileTap="tap"
+      layout
+    >
+      <Card className="h-full border-0 shadow-md">
       <CardHeader className="pb-3 sm:pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -77,7 +123,7 @@ export function PositionCard({
               <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                 <span className="truncate max-w-[120px] sm:max-w-none">{formatAddress(position.poolAddress.toString())}</span>
                 <button
-                  onClick={() => window.open(explorerUrl, '_blank')}
+                  onClick={handleExplorerClick}
                   className="hover:text-foreground transition-colors flex-shrink-0"
                 >
                   <ExternalLink className="h-3 w-3" />
@@ -106,9 +152,15 @@ export function PositionCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1">
             <p className="text-xs sm:text-sm text-muted-foreground">Total Value</p>
-            <p className="text-lg sm:text-xl font-bold">
-              {formatCurrency(analytics.totalValue)}
-            </p>
+            <div className="text-lg sm:text-xl font-bold">
+              <AnimatedNumber
+                value={analytics.totalValue}
+                prefix="$"
+                decimals={2}
+                className="text-lg sm:text-xl font-bold"
+                animateOnChange={true}
+              />
+            </div>
           </div>
           
           <div className="space-y-1">
@@ -121,9 +173,23 @@ export function PositionCard({
               ) : (
                 <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
               )}
-              <span className="truncate">{formatCurrency(Math.abs(analytics.pnl.amount))}</span>
+              <AnimatedNumber
+                value={Math.abs(analytics.pnl.amount)}
+                prefix="$"
+                decimals={2}
+                className="truncate"
+                animateOnChange={true}
+                showPriceChange={true}
+              />
               <span className="text-xs sm:text-sm whitespace-nowrap">
-                ({formatPercentage(Math.abs(analytics.pnl.percentage))})
+                (
+                <AnimatedNumber
+                  value={Math.abs(analytics.pnl.percentage) * 100}
+                  suffix="%"
+                  decimals={1}
+                  animateOnChange={true}
+                />
+                )
               </span>
             </div>
           </div>
@@ -175,7 +241,7 @@ export function PositionCard({
         {/* Position Details Toggle */}
         <div className="space-y-3">
           <button
-            onClick={() => setShowDetails(!showDetails)}
+            onClick={handleDetailsToggle}
             className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1"
           >
             {showDetails ? 'Hide Details' : 'Show Details'}
@@ -250,36 +316,56 @@ export function PositionCard({
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
-          <Button 
-            variant="default" 
-            size="sm" 
+          <motion.div
             className="flex-1"
-            onClick={() => onManage?.(position)}
+            whileTap="tap"
+            variants={buttonTap}
           >
-            <Settings className="h-4 w-4 mr-1" />
-            Manage
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full"
+              onClick={handleManage}
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              Manage
+            </Button>
+          </motion.div>
+
+          <motion.div
             className="flex-1"
-            onClick={() => onRebalance?.(position)}
+            whileTap="tap"
+            variants={buttonTap}
           >
-            <Zap className="h-4 w-4 mr-1" />
-            Rebalance
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => onClose?.(position)}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleRebalance}
+            >
+              <Zap className="h-4 w-4 mr-1" />
+              Rebalance
+            </Button>
+          </motion.div>
+
+          <motion.div
+            whileTap="tap"
+            variants={buttonTap}
           >
-            Close
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              Close
+            </Button>
+          </motion.div>
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   )
-}
+})
+
+export { PositionCard }
