@@ -545,7 +545,8 @@ const {
 export const NETWORKS = {
   MAINNET: {
     name: 'mainnet-beta',
-    rpc: 'https://api.mainnet-beta.solana.com',
+    rpc: 'https://mainnet.helius-rpc.com/?api-key=YOUR_API_KEY',
+    fallback: 'https://solana-rpc.publicnode.com',
     sarosApi: 'https://api.saros.finance'
   },
   DEVNET: {

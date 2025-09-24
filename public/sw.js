@@ -15,7 +15,8 @@ const STATIC_ASSETS = [
 
 const API_ROUTES = [
   '/api/',
-  'https://api.mainnet-beta.solana.com',
+  'https://mainnet.helius-rpc.com',
+  'https://solana-rpc.publicnode.com',
   'https://api.devnet.solana.com',
   'https://api.saros.finance'
 ]

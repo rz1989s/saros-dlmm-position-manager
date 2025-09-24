@@ -151,9 +151,11 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 ## Important Considerations
 
 ### Wallet Integration
-- Supports multiple Solana wallets (Phantom, Solflare, Ledger)  
+- Supports multiple Solana wallets (Phantom, Solflare, Ledger)
 - Graceful handling of connection/disconnection states
 - Transaction signing with priority fees for faster processing
+- **Testing**: Uses Phantom Wallet for development testing and validation
+- **Persistence**: Wallet connections persist across page refreshes and hard refreshes
 
 ### Performance Optimizations (Phase 4 Complete)
 - **Code Splitting**: Lazy loading for all major routes and components
