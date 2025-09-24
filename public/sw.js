@@ -9,7 +9,6 @@ const STATIC_ASSETS = [
   '/strategies',
   '/manifest.json',
   '/_next/static/css/',
-  '/_next/static/js/',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ]
@@ -219,13 +218,13 @@ async function handleOfflineFallback(request) {
 
 // Helper functions
 function isStaticAsset(url) {
-  return url.pathname.includes('/_next/static/') ||
-         url.pathname.includes('/icons/') ||
+  // Exclude JavaScript files from cache-first strategy to prevent module caching issues
+  // Only cache true static assets like images and CSS
+  return url.pathname.includes('/icons/') ||
          url.pathname.endsWith('.png') ||
          url.pathname.endsWith('.jpg') ||
          url.pathname.endsWith('.ico') ||
-         url.pathname.endsWith('.css') ||
-         url.pathname.endsWith('.js')
+         url.pathname.endsWith('.css')
 }
 
 function isApiCall(url) {

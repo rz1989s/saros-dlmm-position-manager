@@ -1,10 +1,29 @@
 // Configuration constants for DLMM Position Manager
 
-export const SOLANA_NETWORK = process.env.NODE_ENV === 'production' ? 'mainnet-beta' : 'devnet';
+// Force mainnet-beta always - devnet has no real DLMM pools
+export const SOLANA_NETWORK = 'mainnet-beta';
 
+// Multiple RPC endpoints for fallback and load balancing
 export const RPC_ENDPOINTS = {
-  mainnet: process.env.NEXT_PUBLIC_RPC_MAINNET || 'https://api.mainnet-beta.solana.com',
-  devnet: process.env.NEXT_PUBLIC_RPC_DEVNET || 'https://api.devnet.solana.com',
+  mainnet: process.env.NEXT_PUBLIC_RPC_MAINNET || 'https://solana-rpc.publicnode.com',
+  fallbacks: [
+    'https://api.mainnet-beta.solana.com',
+    'https://solana-api.syndica.io/access-token/your-token-here',
+    'https://rpc.ankr.com/solana',
+    'https://solana.blockdaemon.com',
+    'https://solana-mainnet.rpc.extrnode.com'
+  ]
+};
+
+// RPC Configuration for rate limiting and retries
+export const RPC_CONFIG = {
+  maxRetries: 5,
+  retryDelayMs: 1000,
+  timeoutMs: 30000,
+  rateLimit: {
+    requestsPerSecond: 10,
+    burstLimit: 20
+  }
 };
 
 export const REFRESH_INTERVALS = {

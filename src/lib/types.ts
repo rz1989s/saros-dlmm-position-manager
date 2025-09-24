@@ -338,3 +338,72 @@ export interface BacktestCache {
   size: number
   hits: number
 }
+
+// ============================================================================
+// POOL ANALYTICS TYPES - Real Saros DLMM API Integration
+// ============================================================================
+
+export interface PoolMetrics {
+  tvl: string
+  volume24h: string
+  fees24h: string
+  apr: number
+  activeBins: number
+  priceChange24h: number
+  volumeChange24h: number
+  aprChange24h: number
+  totalBins: number
+  lastUpdated: Date
+}
+
+export interface FeeDistribution {
+  binRange: string
+  percentage: number
+  feesCollected: string
+  binIds: number[]
+}
+
+export interface LiquidityConcentration {
+  concentrationRatio: number
+  highActivityBins: number
+  mediumActivityBins: number
+  lowActivityBins: number
+  optimalRange: boolean
+  binEfficiency: {
+    highActivity: number // ±2 bins efficiency
+    mediumActivity: number // ±5 bins efficiency
+    lowActivity: number // ±10 bins efficiency
+  }
+}
+
+export interface PoolHistoricalPerformance {
+  apr7d: number
+  apr30d: number
+  aprChange7d: number
+  aprChange30d: number
+  poolAge: number // days since creation
+  poolAgeCategory: 'new' | 'growing' | 'mature'
+  volume7d: string
+  volume30d: string
+  fees7d: string
+  fees30d: string
+}
+
+export interface PoolAnalyticsData {
+  metrics: PoolMetrics | null
+  feeDistribution: FeeDistribution[]
+  liquidityConcentration: LiquidityConcentration | null
+  historicalPerformance: PoolHistoricalPerformance | null
+  poolInfo: PoolInfo
+}
+
+export interface PoolListItem {
+  address: PublicKey
+  name: string // e.g., "SOL/USDC"
+  tokenX: string // symbol
+  tokenY: string // symbol
+  tvl: string
+  volume24h: string
+  apr: number
+  isActive: boolean
+}

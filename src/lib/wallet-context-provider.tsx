@@ -24,16 +24,12 @@ interface WalletContextProviderProps {
 }
 
 export function WalletContextProvider({ children }: WalletContextProviderProps) {
-  const network = SOLANA_NETWORK === 'mainnet-beta' 
-    ? WalletAdapterNetwork.Mainnet 
-    : WalletAdapterNetwork.Devnet
+  // Always use mainnet - devnet has no real DLMM pools
+  const network = WalletAdapterNetwork.Mainnet
 
   const endpoint = useMemo(() => {
-    if (SOLANA_NETWORK === 'mainnet-beta') {
-      return RPC_ENDPOINTS.mainnet
-    }
-    return RPC_ENDPOINTS.devnet || clusterApiUrl(network)
-  }, [network])
+    return RPC_ENDPOINTS.mainnet
+  }, [])
 
   const wallets = useMemo(
     () => [

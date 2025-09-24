@@ -10,6 +10,7 @@ import { SkipLinks } from '@/components/accessibility/accessible-components'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://saros-dlmm-position-manager.vercel.app'),
   title: 'Saros DLMM Position Manager',
   description: 'A comprehensive DLMM position management and analytics dashboard for Solana DeFi',
   keywords: ['Solana', 'DeFi', 'DLMM', 'Liquidity', 'Saros', 'Analytics', 'PWA'],

@@ -1,4 +1,27 @@
+'use client'
+
 import { lazy } from 'react'
+import React from 'react'
+
+// Fallback components for critical chart failures
+const ChartFallback = ({ type }: { type: string }) => (
+  <div className="w-full h-96 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-gray-50">
+    <div className="text-gray-500 text-center">
+      <div className="text-xl mb-2">📊</div>
+      <h3 className="font-medium mb-1">{type} Chart Unavailable</h3>
+      <p className="text-sm">Loading failed. Please refresh the page.</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+      >
+        Refresh Page
+      </button>
+    </div>
+  </div>
+)
+
+const BinChartFallback = () => <ChartFallback type="Bin Distribution" />
+const PriceChartFallback = () => <ChartFallback type="Price & Volume" />
 
 // Analytics Components
 export const LazyPnLTracker = lazy(() =>
@@ -13,17 +36,21 @@ export const LazyPortfolioOverview = lazy(() =>
   }))
 )
 
-// Chart Components
+// Chart Components with retry logic
 export const LazyBinChart = lazy(() =>
-  import('@/components/charts/bin-chart').then(module => ({
-    default: module.BinChart
-  }))
+  dynamicImportWithRetry(() =>
+    import('@/components/charts/bin-chart').then(module => ({
+      default: module.BinChart
+    }))
+  )
 )
 
 export const LazyPriceChart = lazy(() =>
-  import('@/components/charts/price-chart').then(module => ({
-    default: module.PriceChart
-  }))
+  dynamicImportWithRetry(() =>
+    import('@/components/charts/price-chart').then(module => ({
+      default: module.PriceChart
+    }))
+  )
 )
 
 // Strategy Components
@@ -167,19 +194,75 @@ export const preloadRoute = (route: string) => {
   }
 }
 
-// Dynamic import with retry logic
+// Enhanced dynamic import with exponential backoff retry logic
 export const dynamicImportWithRetry = (
   importFunction: () => Promise<any>,
-  retries: number = 3
+  retries: number = 5,
+  backoffMs: number = 1000
 ): Promise<any> => {
+  console.log(`🔄 Attempting dynamic import, retries left: ${retries}`)
+
   return importFunction().catch(error => {
+    console.error(`❌ Dynamic import failed:`, error.message)
+
     if (retries > 0) {
+      const delay = backoffMs * (6 - retries) // Exponential backoff: 1s, 2s, 3s, 4s, 5s
+      console.log(`⏳ Retrying in ${delay}ms...`)
+
       return new Promise(resolve => {
         setTimeout(() => {
-          resolve(dynamicImportWithRetry(importFunction, retries - 1))
-        }, 1000)
+          resolve(dynamicImportWithRetry(importFunction, retries - 1, backoffMs))
+        }, delay)
       })
     }
+
+    console.error(`💥 Dynamic import failed after all retries:`, error)
     throw error
   })
 }
+
+// Error boundary for chart components
+class ChartErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ComponentType },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: any) {
+    console.error('ChartErrorBoundary caught error:', error)
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('Chart component error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback
+      return <FallbackComponent />
+    }
+
+    return this.props.children
+  }
+}
+
+// Safe chart wrappers with error boundaries and suspense
+export const SafeBinChart = (props: any) => (
+  <ChartErrorBoundary fallback={BinChartFallback}>
+    <React.Suspense fallback={<div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+      <LazyBinChart {...props} />
+    </React.Suspense>
+  </ChartErrorBoundary>
+)
+
+export const SafePriceChart = (props: any) => (
+  <ChartErrorBoundary fallback={PriceChartFallback}>
+    <React.Suspense fallback={<div className="w-full h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+      <LazyPriceChart {...props} />
+    </React.Suspense>
+  </ChartErrorBoundary>
+)
