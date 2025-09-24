@@ -33,6 +33,10 @@ vercel login
 vercel --prod --yes
 ```
 
+### Live Demo
+**Production URL**: https://saros-demo.rectorspace.com/
+**Status**: ✅ Live and fully functional
+
 ## Architecture Overview
 
 ### Core DLMM Integration (`src/lib/dlmm/`)
@@ -165,6 +169,8 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - Type-safe data transformation and validation
 
 ### Deployment Notes
+- **Live Production**: https://saros-demo.rectorspace.com/ ✅ Fully operational
 - Built for Vercel deployment with automatic optimization
 - All environment variables must be NEXT_PUBLIC_ prefixed for client access
 - Production build includes static page generation for improved performance
+- Custom domain configured with SSL/TLS encryption

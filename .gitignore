@@ -51,3 +51,6 @@ Thumbs.db
 # Miscellaneous
 *.log
 .cache/
+
+# Playwright MCP
+.playwright-mcp/
