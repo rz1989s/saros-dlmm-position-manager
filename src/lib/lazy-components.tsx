@@ -3,6 +3,33 @@
 import { lazy } from 'react'
 import React from 'react'
 
+// Enhanced dynamic import with exponential backoff retry logic
+export const dynamicImportWithRetry = (
+  importFunction: () => Promise<any>,
+  retries: number = 5,
+  backoffMs: number = 1000
+): Promise<any> => {
+  console.log(`🔄 Attempting dynamic import, retries left: ${retries}`)
+
+  return importFunction().catch(error => {
+    console.error(`❌ Dynamic import failed:`, error.message)
+
+    if (retries > 0) {
+      const delay = backoffMs * (6 - retries) // Exponential backoff: 1s, 2s, 3s, 4s, 5s
+      console.log(`⏳ Retrying in ${delay}ms...`)
+
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve(dynamicImportWithRetry(importFunction, retries - 1, backoffMs))
+        }, delay)
+      })
+    }
+
+    console.error(`💥 Dynamic import failed after all retries:`, error)
+    throw error
+  })
+}
+
 // Fallback components for critical chart failures
 const ChartFallback = ({ type }: { type: string }) => (
   <div className="w-full h-96 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-gray-50">
@@ -73,11 +100,7 @@ export const LazyLimitOrderModal = lazy(() =>
 )
 
 // Position Components
-export const LazyPositionsList = lazy(() =>
-  import('@/components/positions-list').then(module => ({
-    default: module.PositionsList
-  }))
-)
+export const LazyPositionsList = lazy(() => import('@/components/positions-list'))
 
 export const LazyPositionCard = lazy(() =>
   import('@/components/position-card').then(module => ({
@@ -192,33 +215,6 @@ export const preloadRoute = (route: string) => {
     default:
       break
   }
-}
-
-// Enhanced dynamic import with exponential backoff retry logic
-export const dynamicImportWithRetry = (
-  importFunction: () => Promise<any>,
-  retries: number = 5,
-  backoffMs: number = 1000
-): Promise<any> => {
-  console.log(`🔄 Attempting dynamic import, retries left: ${retries}`)
-
-  return importFunction().catch(error => {
-    console.error(`❌ Dynamic import failed:`, error.message)
-
-    if (retries > 0) {
-      const delay = backoffMs * (6 - retries) // Exponential backoff: 1s, 2s, 3s, 4s, 5s
-      console.log(`⏳ Retrying in ${delay}ms...`)
-
-      return new Promise(resolve => {
-        setTimeout(() => {
-          resolve(dynamicImportWithRetry(importFunction, retries - 1, backoffMs))
-        }, delay)
-      })
-    }
-
-    console.error(`💥 Dynamic import failed after all retries:`, error)
-    throw error
-  })
 }
 
 // Error boundary for chart components

@@ -325,4 +325,4 @@ const PositionsList = memo(function PositionsList({
   )
 })
 
-export { PositionsList }
+export default PositionsList
