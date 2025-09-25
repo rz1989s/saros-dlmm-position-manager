@@ -154,7 +154,7 @@ export function usePredictiveCache() {
       setStats(newStats)
     }, 5000)
 
-    console.log('🧠 Predictive cache system started')
+    // logger.debug('🧠 Predictive cache system started')
   }, [connected, cacheManager])
 
   const stopPredictiveSystem = useCallback(() => {

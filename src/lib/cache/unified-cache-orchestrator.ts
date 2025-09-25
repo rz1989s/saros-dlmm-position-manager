@@ -105,7 +105,7 @@ export class UnifiedCacheOrchestrator {
 
     console.log('🎯 Unified Cache Orchestrator initialized')
     console.log('📊 Cache layers:', this.config.layers.map(l => l.name).join(', '))
-    console.log('🧠 Predictive caching:', this.config.enablePredictive ? 'enabled' : 'disabled')
+    // logger.debug('🧠 Predictive caching:', this.config.enablePredictive ? 'enabled' : 'disabled')
   }
 
   private initializeLayers(): void {
@@ -283,7 +283,7 @@ export class UnifiedCacheOrchestrator {
       try {
         const data = await fetcher()
         await this.set(layer, key, data)
-        console.log(`🔮 Preloaded cache: ${layer}:${key}`)
+        // logger.debug(`🔮 Preloaded cache: ${layer}:${key}`)
       } catch (error) {
         console.warn(`Failed to preload ${layer}:${key}:`, error)
       }

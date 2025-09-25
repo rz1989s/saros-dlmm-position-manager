@@ -54,7 +54,7 @@ export class HistoricalDataService {
 
     // Fallback to mock data
     if (this.config.fallbackToMock) {
-      console.log(`🎭 Using mock historical data for ${poolAddress.toString()}`)
+      // logger.debug(`🎭 Using mock historical data for ${poolAddress.toString()}`)
       const mockData = await this.generateMockData(poolAddress, startDate, endDate, interval)
       this.cacheData(cacheKey, mockData)
       return mockData
@@ -80,7 +80,7 @@ export class HistoricalDataService {
     const volatility = 0.02 + Math.random() * 0.08 // 2-10% daily volatility
     const trendBias = (Math.random() - 0.5) * 0.001 // Slight trend bias
 
-    console.log(`🎭 Generating ${totalPoints} mock data points with ${(volatility * 100).toFixed(1)}% volatility`)
+    // logger.debug(`🎭 Generating ${totalPoints} mock data points with ${(volatility * 100).toFixed(1)}% volatility`)
 
     // Generate price data with realistic patterns
     const priceData: HistoricalPricePoint[] = []

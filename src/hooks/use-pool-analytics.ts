@@ -102,10 +102,10 @@ export function usePoolAnalytics(
   // Initial fetch with loading state
   useEffect(() => {
     console.log('🔥🔥🔥 USEEFFECT START - useEffect triggered at:', new Date().toISOString())
-    console.log('🔍 USEEFFECT DEBUG - poolAddress raw:', poolAddress)
-    console.log('🔍 USEEFFECT DEBUG - poolAddress type:', typeof poolAddress)
-    console.log('🔍 USEEFFECT DEBUG - poolAddress string:', poolAddress ? (typeof poolAddress === 'string' ? poolAddress : poolAddress.toString()) : 'UNDEFINED')
-    console.log('🔍 USEEFFECT DEBUG - hasInitialized:', hasInitialized)
+    // logger.debug('🔍 USEEFFECT DEBUG - poolAddress raw:', poolAddress)
+    // logger.debug('🔍 USEEFFECT DEBUG - poolAddress type:', typeof poolAddress)
+    // logger.debug('🔍 USEEFFECT DEBUG - poolAddress string:', poolAddress ? (typeof poolAddress === 'string' ? poolAddress : poolAddress.toString()) : 'UNDEFINED')
+    // logger.debug('🔍 USEEFFECT DEBUG - hasInitialized:', hasInitialized)
 
     if (!poolAddress) {
       console.log('❌ USEEFFECT EXIT - No poolAddress provided')
@@ -235,7 +235,7 @@ export function usePoolList(): UsePoolListResult {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  console.log('🔍 usePoolList hook initialized, pools.length:', pools.length)
+  // logger.debug('🔍 usePoolList hook initialized, pools.length:', pools.length)
 
   const handleError = useCallback((error: any, context: string) => {
     console.error(`❌ ${context}:`, error)

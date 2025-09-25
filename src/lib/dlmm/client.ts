@@ -87,7 +87,7 @@ export class DLMMClient {
    */
   async getAllLbPairs(): Promise<Pair[]> {
     try {
-      console.log('🔍 Fetching all pools with enhanced SDK integration...')
+      // logger.debug('🔍 Fetching all pools with enhanced SDK integration...')
 
       const poolAddresses = await connectionManager.makeRpcCall(async () => {
         return await this.liquidityBookServices.fetchPoolAddresses()
@@ -788,7 +788,7 @@ export class DLMMClient {
 
   private getMockPairData(poolAddress: PublicKey): any {
     const poolId = poolAddress.toString()
-    console.log('🎭 getMockPairData: Generating mock pair data for pool:', poolId)
+    // logger.debug('🎭 getMockPairData: Generating mock pair data for pool:', poolId)
 
     // Different mock data for different pools
     if (poolId === '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2') {
@@ -894,7 +894,7 @@ export class DLMMClient {
   async getPoolMetrics(poolAddress: PublicKey, useRealData: boolean = false): Promise<PoolMetrics> {
     try {
       const poolId = poolAddress.toString()
-      console.log('🔍 getPoolMetrics: Called with mode:', useRealData ? 'REAL DATA' : 'MOCK DATA')
+      // logger.debug('🔍 getPoolMetrics: Called with mode:', useRealData ? 'REAL DATA' : 'MOCK DATA')
 
       if (useRealData) {
         console.log('🌐 getPoolMetrics: Attempting to fetch real pool metrics from SDK...')
@@ -915,13 +915,13 @@ export class DLMMClient {
           }
         } catch (error) {
           console.error('❌ getPoolMetrics: Real data fetch failed:', error)
-          console.log('🎭 getPoolMetrics: Falling back to mock data due to error')
+          // logger.debug('🎭 getPoolMetrics: Falling back to mock data due to error')
           // Fall through to mock data generation
         }
       }
 
       // Mock data generation (fallback or explicit mock mode)
-      console.log('🎭 getPoolMetrics: Generating mock data for pool:', poolId)
+      // logger.debug('🎭 getPoolMetrics: Generating mock data for pool:', poolId)
 
       // Different data for SOL/USDC vs RAY/SOL
       if (poolId === '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2') {
@@ -995,7 +995,7 @@ export class DLMMClient {
         }
       }
 
-      console.log('🎭 getPoolFeeDistribution: Using mock data generation')
+      // logger.debug('🎭 getPoolFeeDistribution: Using mock data generation')
       // Get pool-specific mock data directly instead of relying on getLbPair
       const mockData = this.getMockPairData(poolAddress)
       const activeBinId = mockData.activeBin?.binId || 0
@@ -1053,7 +1053,7 @@ export class DLMMClient {
         }
       }
 
-      console.log('🎭 getPoolLiquidityConcentration: Using mock data generation')
+      // logger.debug('🎭 getPoolLiquidityConcentration: Using mock data generation')
       // Use direct mock data instead of relying on getLbPair
       const mockData = this.getMockPairData(poolAddress)
 
@@ -1109,7 +1109,7 @@ export class DLMMClient {
         }
       }
 
-      console.log('🎭 getPoolHistoricalPerformance: Using mock data generation')
+      // logger.debug('🎭 getPoolHistoricalPerformance: Using mock data generation')
       // Use direct mock data instead of relying on getLbPair
       const mockData = this.getMockPairData(poolAddress)
 
@@ -1150,7 +1150,7 @@ export class DLMMClient {
       console.log('📊 getPoolAnalytics: Data mode:', useRealData ? 'REAL DATA' : 'MOCK DATA')
 
       if (!useRealData) {
-        console.log('🎭 getPoolAnalytics: Using mock data mode - generating mock analytics')
+        // logger.debug('🎭 getPoolAnalytics: Using mock data mode - generating mock analytics')
         // Return mock data immediately when in mock mode
         const [metrics, feeDistribution, liquidityConcentration, historicalPerformance] = await Promise.all([
           this.getPoolMetrics(poolAddress, false),
@@ -1235,7 +1235,7 @@ export class DLMMClient {
       for (const pool of pools.slice(0, 5)) { // Limit to first 5 pools for debugging
         try {
           const poolAddr = pool.address || pool
-          console.log('🔍 Processing pool:', poolAddr.toString())
+          // logger.debug('🔍 Processing pool:', poolAddr.toString())
 
           // Use mock pair data for development
           const pair = this.getMockPairData(poolAddr)

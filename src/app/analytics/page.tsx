@@ -146,7 +146,7 @@ function AnalyticsPageComponent() {
 
   // Generate mock chart data
   const generateMockChartData = useCallback(() => {
-    console.log('🎭 generateMockChartData: Generating mock chart data')
+    // logger.debug('🎭 generateMockChartData: Generating mock chart data')
 
     const mockBins: BinInfo[] = Array.from({ length: 40 }, (_, i) => ({
       binId: i - 20,

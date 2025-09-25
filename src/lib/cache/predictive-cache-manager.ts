@@ -87,7 +87,7 @@ export class PredictiveCacheManager {
   }
 
   constructor() {
-    console.log('🧠 PredictiveCacheManager: Initializing AI-driven cache preloading')
+    // logger.debug('🧠 PredictiveCacheManager: Initializing AI-driven cache preloading')
 
     // Initialize with default predictive rules
     this.initializeDefaultRules()
@@ -114,7 +114,7 @@ export class PredictiveCacheManager {
       userPatterns.splice(0, userPatterns.length - 100)
     }
 
-    console.log('🧠 PredictiveCacheManager: Recorded behavior pattern for user', userId)
+    // logger.debug('🧠 PredictiveCacheManager: Recorded behavior pattern for user', userId)
 
     // Trigger prediction based on new behavior
     this.predictAndPreload(pattern)
@@ -124,7 +124,7 @@ export class PredictiveCacheManager {
    * Main prediction engine - analyzes patterns and triggers preloads
    */
   private async predictAndPreload(currentPattern: UserBehaviorPattern): Promise<void> {
-    console.log('🔮 PredictiveCacheManager: Analyzing patterns and predicting needs...')
+    // logger.debug('🔮 PredictiveCacheManager: Analyzing patterns and predicting needs...')
 
     const userPatterns = this.behaviorPatterns.get(currentPattern.userId) || []
     const predictions = this.generatePredictions(currentPattern, userPatterns)

@@ -31,7 +31,7 @@ export function useTokenPrice(
     setError(null)
 
     try {
-      console.log('🔮 Oracle: Fetching price for', symbol)
+      // logger.debug('🔮 Oracle: Fetching price for', symbol)
 
       const price = await oraclePriceFeeds.getTokenPrice(symbol)
 
@@ -114,7 +114,7 @@ export function useMultipleTokenPrices(
     setError(null)
 
     try {
-      console.log('🔮 Oracle: Fetching prices for multiple tokens:', symbols)
+      // logger.debug('🔮 Oracle: Fetching prices for multiple tokens:', symbols)
 
       const prices = await oraclePriceFeeds.getMultipleTokenPrices(symbols)
 

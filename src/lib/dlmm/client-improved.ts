@@ -86,7 +86,7 @@ export class ImprovedDLMMClient {
    */
   async getAllPools(): Promise<Pair[]> {
     try {
-      console.log('🔍 Fetching all pools with enhanced SDK integration...')
+      // logger.debug('🔍 Fetching all pools with enhanced SDK integration...')
 
       const poolAddresses = await connectionManager.makeRpcCall(async () => {
         return await this.liquidityBookServices.fetchPoolAddresses()

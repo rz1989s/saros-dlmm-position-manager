@@ -65,7 +65,7 @@ export class OraclePriceFeeds {
 
   constructor(connection: Connection) {
     this.connection = connection
-    console.log('🔮 OraclePriceFeeds: Initialized with multi-provider support')
+    // logger.debug('🔮 OraclePriceFeeds: Initialized with multi-provider support')
   }
 
   /**
