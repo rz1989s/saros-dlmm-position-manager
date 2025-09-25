@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
+import { useDataSource } from '@/contexts/data-source-context'
 import { REFRESH_INTERVALS } from '@/lib/constants'
 import type {
   PoolAnalyticsData,
@@ -28,9 +29,12 @@ export function usePoolAnalytics(
   poolAddress?: PublicKey | string,
   enableRealtime: boolean = true
 ): UsePoolAnalyticsResult {
+  const { isRealDataMode } = useDataSource()
+
   console.log('🪝 usePoolAnalytics HOOK CALLED with:', {
     poolAddress: poolAddress?.toString(),
-    enableRealtime
+    enableRealtime,
+    dataMode: isRealDataMode ? 'REAL' : 'MOCK'
   })
 
   const [analyticsData, setAnalyticsData] = useState<PoolAnalyticsData | null>(null)
@@ -58,15 +62,16 @@ export function usePoolAnalytics(
       const publicKey = typeof poolAddress === 'string' ? new PublicKey(poolAddress) : poolAddress
 
       console.log('🔄 Fetching pool analytics for:', publicKey.toString())
+      console.log('📊 Analytics data mode:', isRealDataMode ? 'REAL DATA' : 'MOCK DATA')
       console.log('🚨 CACHE BUSTER: fetchAnalytics called at', new Date().toISOString())
 
-      const data = await dlmmClient.getPoolAnalytics(publicKey)
+      const data = await dlmmClient.getPoolAnalytics(publicKey, isRealDataMode)
 
       console.log('✅ Pool analytics fetched successfully:', {
-        tvl: data.metrics.tvl,
-        volume24h: data.metrics.volume24h,
-        apr: data.metrics.apr,
-        activeBins: data.metrics.activeBins
+        tvl: data.metrics?.tvl || 'N/A',
+        volume24h: data.metrics?.volume24h || 'N/A',
+        apr: data.metrics?.apr || 'N/A',
+        activeBins: data.metrics?.activeBins || 'N/A'
       })
 
       setAnalyticsData(data)
@@ -75,7 +80,7 @@ export function usePoolAnalytics(
       handleError(error, 'Failed to fetch pool analytics')
       setAnalyticsData(null)
     }
-  }, [poolAddress, handleError])
+  }, [poolAddress, handleError, isRealDataMode])
 
   const refreshAnalytics = useCallback(async () => {
     if (!poolAddress) return
@@ -123,15 +128,15 @@ export function usePoolAnalytics(
 
         console.log('🔄 usePoolAnalytics: Fetching analytics for:', publicKey.toString())
 
-        console.log('📞 usePoolAnalytics: About to call dlmmClient.getPoolAnalytics...')
-        const data = await dlmmClient.getPoolAnalytics(publicKey)
+        console.log('📞 usePoolAnalytics: About to call dlmmClient.getPoolAnalytics with mode:', isRealDataMode ? 'REAL' : 'MOCK')
+        const data = await dlmmClient.getPoolAnalytics(publicKey, isRealDataMode)
         console.log('🎯 usePoolAnalytics: getPoolAnalytics returned:', data)
 
         console.log('✅ usePoolAnalytics: Analytics fetched successfully:', {
-          tvl: data.metrics.tvl,
-          volume24h: data.metrics.volume24h,
-          apr: data.metrics.apr,
-          activeBins: data.metrics.activeBins
+          tvl: data.metrics?.tvl || 'N/A',
+          volume24h: data.metrics?.volume24h || 'N/A',
+          apr: data.metrics?.apr || 'N/A',
+          activeBins: data.metrics?.activeBins || 'N/A'
         })
 
         setAnalyticsData(data)
@@ -146,7 +151,7 @@ export function usePoolAnalytics(
     }
 
     initAnalytics()
-  }, [typeof poolAddress === 'string' ? poolAddress : poolAddress?.toString(), hasInitialized]) // FIXED: Proper string dependency tracking
+  }, [typeof poolAddress === 'string' ? poolAddress : poolAddress?.toString(), hasInitialized, isRealDataMode]) // FIXED: Include data mode in dependencies
 
   // Set up real-time polling
   useEffect(() => {

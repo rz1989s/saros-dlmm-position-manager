@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { WalletContextProvider } from '@/lib/wallet-context-provider'
+import { DataSourceProvider } from '@/contexts/data-source-context'
 import { PWAProvider } from '@/components/pwa/pwa-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { CriticalErrorBoundary } from '@/components/error-boundary'
@@ -87,23 +88,25 @@ export default function RootLayout({
 
         <CriticalErrorBoundary>
           <WalletContextProvider>
-            <PWAProvider
-              enableInstallPrompt={true}
-              enableUpdatePrompt={true}
-              enableOfflineIndicator={true}
-              installPromptDelay={5000}
-            >
-              <div className="min-h-screen bg-background">
-                <div className="relative flex min-h-screen flex-col">
-                  <div className="flex-1">
-                    <main id="main-content" className="focus:outline-none" tabIndex={-1}>
-                      {children}
-                    </main>
+            <DataSourceProvider>
+              <PWAProvider
+                enableInstallPrompt={true}
+                enableUpdatePrompt={true}
+                enableOfflineIndicator={true}
+                installPromptDelay={5000}
+              >
+                <div className="min-h-screen bg-background">
+                  <div className="relative flex min-h-screen flex-col">
+                    <div className="flex-1">
+                      <main id="main-content" className="focus:outline-none" tabIndex={-1}>
+                        {children}
+                      </main>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Toaster position="top-right" />
-            </PWAProvider>
+                <Toaster position="top-right" />
+              </PWAProvider>
+            </DataSourceProvider>
           </WalletContextProvider>
         </CriticalErrorBoundary>
       </body>

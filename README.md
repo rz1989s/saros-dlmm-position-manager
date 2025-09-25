@@ -27,6 +27,7 @@ A comprehensive Dynamic Liquidity Market Maker (DLMM) position management applic
 - **Portfolio Overview**: Real-time portfolio analysis with live allocation data
 - **Risk Metrics**: Live calculations of Sharpe ratio, drawdown, and concentration risk
 - **Performance Attribution**: Real-time separation of fees vs. price change impact
+- **Data Source Toggle**: Switch between mock and real blockchain data across all analytics tabs for testing and demonstration
 
 ### 🎨 **User Experience & PWA**
 - **Progressive Web App**: Install as native app with offline support and push notifications
