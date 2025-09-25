@@ -1,6 +1,13 @@
 // Jest setup file
 import '@testing-library/jest-dom'
 
+// Add TextEncoder/TextDecoder for Node.js environment
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util')
+  global.TextEncoder = TextEncoder
+  global.TextDecoder = TextDecoder
+}
+
 // Mock Solana Web3.js modules
 jest.mock('@solana/web3.js', () => ({
   Connection: jest.fn(() => ({

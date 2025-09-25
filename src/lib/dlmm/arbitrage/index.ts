@@ -325,16 +325,7 @@ export class ArbitrageManager {
   }
 }
 
-// Export main interfaces from all modules
-export type {
-  ArbitrageOpportunity,
-  ArbitragePool,
-  DetailedProfitabilityAnalysis,
-  ExecutionPlan,
-  ExecutionResults
-} from './detection-engine'
-
-export type { ExecutionPreferences } from './execution-planner'
+// Additional convenience exports - avoid duplicates by using different names if needed
 
 // Singleton instance for global access
 let arbitrageManagerInstance: ArbitrageManager | null = null

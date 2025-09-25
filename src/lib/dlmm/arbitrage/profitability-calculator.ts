@@ -350,8 +350,8 @@ export class ArbitrageProfitabilityCalculator {
 
   private calculateCVaR(profits: number[], probabilities: number[], confidence: number): number {
     // Calculate Conditional Value at Risk (expected loss beyond VaR)
-    const var = this.calculateVaR(profits, probabilities, confidence)
-    const worseLosses = profits.filter(p => p <= -var)
+    const valueAtRisk = this.calculateVaR(profits, probabilities, confidence)
+    const worseLosses = profits.filter(p => p <= -valueAtRisk)
 
     if (worseLosses.length === 0) return 0
 

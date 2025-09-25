@@ -236,7 +236,10 @@ export class PredictiveCacheManager {
 
     for (const pattern of similarTimePatterns) {
       for (const action of pattern.recentActions) {
-        const key = `${action.type}_${action.poolAddress?.toBase58() || action.positionId || 'unknown'}`
+        const poolAddressStr = action.poolAddress ?
+          (typeof action.poolAddress.toBase58 === 'function' ? action.poolAddress.toBase58() : action.poolAddress.toString())
+          : null
+        const key = `${action.type}_${poolAddressStr || action.positionId || 'unknown'}`
         timeBasedActions.set(key, (timeBasedActions.get(key) || 0) + 1)
       }
     }
@@ -286,7 +289,9 @@ export class PredictiveCacheManager {
 
             predictions.push({
               dataType: this.actionToDataType(nextActionType),
-              identifier: nextAction.poolAddress?.toBase58() || nextAction.positionId || 'unknown',
+              identifier: nextAction.poolAddress ?
+                (typeof nextAction.poolAddress.toBase58 === 'function' ? nextAction.poolAddress.toBase58() : nextAction.poolAddress.toString())
+                : nextAction.positionId || 'unknown',
               confidence: this.modelWeights.recentActions,
               priority: 9,
               reasoning: `Action sequence ${currentActions.join(' → ')} typically followed by ${nextActionType}`
@@ -309,11 +314,15 @@ export class PredictiveCacheManager {
     const predictions = []
 
     // Analyze pool co-occurrence patterns
-    const currentPools = current.viewedPools.map(p => p.toBase58())
+    const currentPools = current.viewedPools.map(p =>
+      typeof p.toBase58 === 'function' ? p.toBase58() : p.toString()
+    )
     const poolCooccurrence = new Map<string, number>()
 
     for (const pattern of historical) {
-      const patternPools = pattern.viewedPools.map(p => p.toBase58())
+      const patternPools = pattern.viewedPools.map(p =>
+        typeof p.toBase58 === 'function' ? p.toBase58() : p.toString()
+      )
 
       // If any current pools match pattern pools, record co-occurring pools
       const hasOverlap = currentPools.some(pool => patternPools.includes(pool))

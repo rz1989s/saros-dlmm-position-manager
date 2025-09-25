@@ -404,7 +404,7 @@ export class PortfolioAggregationManager {
     let overallScore = 50 // Base score
 
     // Token diversification component (40% weight)
-    const tokenDiv = Math.min((tokenCounts.size / 10) * 40, 40)
+    let tokenDiv = Math.min((tokenCounts.size / 10) * 40, 40)
     if (dominantToken.percentage < 30) tokenDiv += 10
     else if (dominantToken.percentage > 50) tokenDiv -= 15
 

@@ -392,7 +392,7 @@ export function useSwapQuote(
       console.log('\ud83d\udd04 useSwapQuote: Getting quote with enhanced SDK')
 
       // First try the enhanced simulateSwap method
-      const swapQuote = await client.simulateSwapLegacy(
+      const swapQuote = await client.simulateSwap(
         poolAddress,
         amountIn,
         tokenIn,

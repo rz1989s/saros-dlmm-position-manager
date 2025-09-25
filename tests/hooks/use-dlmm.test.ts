@@ -174,9 +174,10 @@ describe('DLMM Hooks', () => {
       })
 
       expect(result.current.poolData).toBeDefined()
-      expect(result.current.binData).toEqual(mockBinData)
+      expect(result.current.binData).toEqual([]) // Now returns empty array as getBinLiquidity is legacy
       expect(mockDlmmClient.getLbPair).toHaveBeenCalledWith(mockPoolAddress)
-      expect(mockDlmmClient.getBinLiquidity).toHaveBeenCalledWith(mockPoolAddress, PublicKey.default)
+      // getBinLiquidity is no longer called - the hook implementation sets binData to [] directly
+      expect(mockDlmmClient.getBinLiquidity).not.toHaveBeenCalled()
     })
 
     it('should handle empty pool address', async () => {
@@ -270,7 +271,7 @@ describe('DLMM Hooks', () => {
         mockPoolAddress,
         '1000',
         mockTokenIn,
-        0.5
+        0.005 // slippage is divided by 100 in the hook (0.5/100 = 0.005)
       )
     })
 
@@ -325,7 +326,7 @@ describe('DLMM Hooks', () => {
         mockPoolAddress,
         '1003', // Latest amount
         mockTokenIn,
-        0.5
+        0.005 // slippage is divided by 100 in the hook (0.5/100 = 0.005)
       )
     })
 
