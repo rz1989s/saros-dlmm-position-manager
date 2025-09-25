@@ -74,5 +74,11 @@
     "analytics"
   ],
   "author": "RECTOR",
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "@keystonehq/sdk": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  }
 }
