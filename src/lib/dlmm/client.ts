@@ -23,6 +23,7 @@ import {
 } from '@saros-finance/dlmm-sdk'
 import { SOLANA_NETWORK, RPC_ENDPOINTS } from '@/lib/constants'
 import { connectionManager } from '@/lib/connection-manager'
+import { logger } from '@/lib/logger'
 import type {
   PoolMetrics,
   FeeDistribution,
@@ -58,11 +59,11 @@ export class DLMMClient {
       mode: MODE.MAINNET
     })
 
-    console.log('🚀 DLMMClient Initialized:')
+    logger.init('🚀 DLMMClient Initialized:')
     console.log('  Network:', this.network)
     console.log('  SDK Version: v1.4.0 (LiquidityBookServices)')
     console.log('  Cache Duration:', this.cacheDuration / 1000, 'seconds')
-    console.log('  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling')
+    logger.init('  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling')
   }
 
   getConnection(): Connection {
@@ -97,7 +98,7 @@ export class DLMMClient {
         return await this.getFallbackPools()
       }
 
-      console.log('✅ Found', poolAddresses.length, 'pool addresses from SDK')
+      logger.info('✅ Found', poolAddresses.length, 'pool addresses from SDK')
 
       // Load detailed pair information for each pool
       const pairs: Pair[] = []
@@ -112,7 +113,7 @@ export class DLMMClient {
         }
       }
 
-      console.log('✅ Loaded detailed data for', pairs.length, 'pools')
+      logger.info('✅ Loaded detailed data for', pairs.length, 'pools')
       return pairs
 
     } catch (error) {
@@ -131,7 +132,7 @@ export class DLMMClient {
       // Check cache first
       const cached = this.pairCache.get(poolId)
       if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
-        console.log('✅ Pair loaded from cache:', poolId)
+        logger.info('✅ Pair loaded from cache:', poolId)
         return cached.pair
       }
 
@@ -146,7 +147,7 @@ export class DLMMClient {
         return null
       }
 
-      console.log('✅ Pair loaded successfully:', poolId)
+      logger.info('✅ Pair loaded successfully:', poolId)
       console.log('  Token X:', pair.tokenMintX)
       console.log('  Token Y:', pair.tokenMintY)
       console.log('  Active Bin ID:', pair.activeId)
@@ -204,7 +205,7 @@ export class DLMMClient {
       // Check cache first
       const cached = this.positionCache.get(cacheKey)
       if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
-        console.log('✅ Positions loaded from cache for user:', userId)
+        logger.info('✅ Positions loaded from cache for user:', userId)
         return cached.positions
       }
 
@@ -229,7 +230,7 @@ export class DLMMClient {
         positions = []
       }
 
-      console.log('✅ Loaded', positions.length, 'positions for user:', userId)
+      logger.info('✅ Loaded', positions.length, 'positions for user:', userId)
 
       // Transform SDK positions to our internal format
       const transformedPositions = positions.map(pos => ({
@@ -1563,8 +1564,8 @@ export class DLMMClient {
 }
 
 // Export singleton instance with enhanced features
-console.log('🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready')
-console.log('  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management')
+logger.init('🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready')
+logger.init('  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management')
 console.log('  Instance Created:', new Date().toISOString())
 
 // Primary export - enhanced client
