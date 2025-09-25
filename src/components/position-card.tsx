@@ -29,6 +29,7 @@ import {
 import { calculatePositionAnalytics, calculatePositionValue } from '@/lib/dlmm/utils'
 import { cardHover, buttonTap, fadeInUp } from '@/lib/animations'
 import { AnimatedNumber } from '@/components/animations/animated-number'
+import { PriceDisplay } from '@/components/oracle/price-display'
 
 interface PositionCardProps {
   position: DLMMPosition
@@ -264,19 +265,28 @@ const PositionCard = memo(function PositionCard({
                 </div>
               </div>
 
-              {/* Token Balances */}
+              {/* Token Balances with Oracle Prices */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{position.tokenX.symbol} Balance:</span>
-                  <span className="font-medium">
-                    {formatTokenAmount('1000000', position.tokenX.decimals)} {/* Mock data */}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{position.tokenY.symbol} Balance:</span>
-                  <span className="font-medium">
-                    {formatTokenAmount('2000000', position.tokenY.decimals)} {/* Mock data */}
-                  </span>
+                <h4 className="text-sm font-medium">Token Prices</h4>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{position.tokenX.symbol} Price:</span>
+                    <PriceDisplay
+                      symbol={position.tokenX.symbol}
+                      enableRealtime={true}
+                      showSource={false}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{position.tokenY.symbol} Price:</span>
+                    <PriceDisplay
+                      symbol={position.tokenY.symbol}
+                      enableRealtime={true}
+                      showSource={false}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 

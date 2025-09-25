@@ -1,6 +1,10 @@
 'use client'
 
-// Cache buster: HOOK_RELOAD_${Date.now()}
+// Enhanced Pool Analytics Hook using improved SDK client
+// ✅ Proper SDK type integration with caching
+// ✅ Real-time polling with configurable intervals
+// ✅ Enhanced error handling and fallbacks
+// ✅ Data source context integration (mock/real data)
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { PublicKey } from '@solana/web3.js'
@@ -62,10 +66,12 @@ export function usePoolAnalytics(
       const publicKey = typeof poolAddress === 'string' ? new PublicKey(poolAddress) : poolAddress
 
       console.log('🔄 Fetching pool analytics for:', publicKey.toString())
-      console.log('📊 Analytics data mode:', isRealDataMode ? 'REAL DATA' : 'MOCK DATA')
-      console.log('🚨 CACHE BUSTER: fetchAnalytics called at', new Date().toISOString())
+      console.log('🚀 Enhanced SDK: Analytics data mode:', isRealDataMode ? 'REAL DATA' : 'MOCK DATA')
+      console.log('💡 Enhanced SDK: Using intelligent caching (30s duration)')
+      console.log('⏰ Enhanced SDK: fetchAnalytics called at', new Date().toISOString())
 
       const data = await dlmmClient.getPoolAnalytics(publicKey, isRealDataMode)
+      console.log('📊 Enhanced SDK: Current cache stats:', dlmmClient.getCacheStats())
 
       console.log('✅ Pool analytics fetched successfully:', {
         tvl: data.metrics?.tvl || 'N/A',
