@@ -4,7 +4,6 @@
 // 🔄 React hooks for cross-pool position migration and management
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { PublicKey } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import {
   positionMigrationManager,
@@ -76,6 +75,9 @@ export function useMigrationOpportunities(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, positions.length, loading, analyzeOpportunities])
 
   // Cleanup

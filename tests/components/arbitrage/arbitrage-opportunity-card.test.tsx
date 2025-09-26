@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { ArbitrageOpportunityCard } from '@/components/arbitrage/arbitrage-opportunity-card'
@@ -52,11 +52,19 @@ describe('ArbitrageOpportunityCard', () => {
     pools: [
       {
         poolAddress: new PublicKey('11111111111111111111111111111111'),
-        tokenX: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-        tokenY: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+        tokenX: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+        tokenY: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+        activeBin: {
+          binId: 12345,
+          price: 150,
+          liquidityX: '1000000',
+          liquidityY: '150000000'
+        },
         liquidity: 150000,
+        volume24h: 500000,
         fees: 0.0025,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
     ],
     profitability: {
@@ -66,21 +74,27 @@ describe('ArbitrageOpportunityCard', () => {
       netProfit: 25.43,
       profitMargin: 0.025,
       breakevenAmount: 1000,
-      maxProfitableAmount: 10000
+      maxProfitableAmount: 10000,
+      returnOnInvestment: 0.025
     },
     path: {
-      inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-      outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+      inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+      outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
       route: [
         {
-          poolId: 'pool1',
-          tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-          tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+          poolAddress: new PublicKey('11111111111111111111111111111111'),
+          amountIn: 1000,
+          amountOut: 150000,
+          binRange: { min: 0, max: 10 },
+          tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+          tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
           priceImpact: 0.001
         }
       ],
       totalDistance: 1,
-      complexity: 'simple'
+      complexity: 'simple',
+      estimatedGas: 50000,
+      priceImpact: 0.002
     },
     risk: {
       overallRisk: 'low',
@@ -91,15 +105,29 @@ describe('ArbitrageOpportunityCard', () => {
       competitionRisk: 0.04,
       riskFactors: ['Low liquidity in secondary pool']
     },
+    executionPlan: [
+      {
+        stepNumber: 1,
+        action: 'swap',
+        pool: new PublicKey('11111111111111111111111111111111'),
+        tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+        tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+        amount: 1000,
+        expectedOutput: 150000,
+        maxSlippage: 0.001,
+        timeoutMs: 30000,
+        dependencies: []
+      }
+    ],
     confidence: 0.85,
     mev: {
+      strategy: 'private_mempool' as const,
       jitterMs: 8500,
-      protectionEnabled: true,
-      frontrunProtection: true,
-      bundleProtection: false
+      maxFrontrunProtection: 0.1,
+      privateMempoolUsed: true,
+      bundlingRequired: false
     },
-    detectedAt: new Date('2023-12-01T10:00:00Z'),
-    expiresAt: new Date('2023-12-01T10:01:00Z'),
+    timestamp: new Date('2023-12-01T10:00:00Z').getTime(),
     ...overrides
   })
 
@@ -305,10 +333,11 @@ describe('ArbitrageOpportunityCard', () => {
     it('shows estimated execution time with MEV protection', () => {
       const opportunity = createMockOpportunity({
         mev: {
+          strategy: 'flashbots' as const,
           jitterMs: 12500,
-          protectionEnabled: true,
-          frontrunProtection: true,
-          bundleProtection: true
+          maxFrontrunProtection: 0.2,
+          privateMempoolUsed: false,
+          bundlingRequired: true
         }
       })
 
@@ -328,24 +357,32 @@ describe('ArbitrageOpportunityCard', () => {
     it('displays route information for multi-hop opportunities', () => {
       const multiHopOpportunity = createMockOpportunity({
         path: {
-          inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-          outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+          inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+          outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
           route: [
             {
-              poolId: 'pool1',
-              tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-              tokenOut: { symbol: 'USDT', name: 'Tether', decimals: 6 },
+              poolAddress: new PublicKey('11111111111111111111111111111111'),
+          amountIn: 1000,
+          amountOut: 150000,
+          binRange: { min: 0, max: 10 },
+              tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+              tokenOut: { symbol: 'USDT', name: 'Tether', decimals: 6, address: new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'), price: 1 },
               priceImpact: 0.001
             },
             {
-              poolId: 'pool2',
-              tokenIn: { symbol: 'USDT', name: 'Tether', decimals: 6 },
-              tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+              poolAddress: new PublicKey('22222222222222222222222222222222'),
+          amountIn: 150000,
+          amountOut: 149850,
+          binRange: { min: 0, max: 10 },
+              tokenIn: { symbol: 'USDT', name: 'Tether', decimals: 6, address: new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'), price: 1 },
+              tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
               priceImpact: 0.0005
             }
           ],
           totalDistance: 2,
-          complexity: 'moderate'
+          complexity: 'moderate',
+          estimatedGas: 85000,
+          priceImpact: 0.0015
         }
       })
 

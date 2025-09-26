@@ -1,32 +1,20 @@
 import {
   ArbitrageProfitabilityCalculator,
-  DetailedProfitabilityAnalysis,
   ProfitabilityScenario,
-  RiskAdjustedProfitability,
-  CostBreakdown,
-  MarketImpactAnalysis,
-  ProfitabilityRecommendation,
-  SensitivityAnalysis,
   TransactionCost,
   SlippageImpact,
+  PriceImpactTier,
+  MarketImpactAnalysis,
   LiquidityAnalysis,
-  CompetitionAnalysis,
-  TemporalDecayAnalysis,
-  PriceImpactTier
-} from '../../../../src/lib/dlmm/arbitrage/profitability-calculator'
+  ProfitabilityRecommendation
+} from '@/lib/dlmm/arbitrage/profitability-calculator'
 import {
   ArbitrageOpportunity,
   ArbitragePool,
-  ArbitragePath,
-  RouteStep,
-  ProfitabilityMetrics,
-  RiskAssessment,
-  ExecutionStep,
-  MEVProtection
-} from '../../../../src/lib/dlmm/arbitrage/detection-engine'
+  RouteStep
+} from '@/lib/dlmm/arbitrage/detection-engine'
 import { PublicKey } from '@solana/web3.js'
-import { BinData } from '@saros-finance/dlmm-sdk'
-import { TokenInfo } from '../../../../src/lib/types'
+import { TokenInfo, BinInfo } from '@/lib/types'
 
 // Mock external dependencies
 jest.mock('@solana/web3.js', () => ({
@@ -47,7 +35,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
     calculator = new ArbitrageProfitabilityCalculator()
 
     mockTokenX = {
-      address: 'So11111111111111111111111111111111111111112',
+      address: new PublicKey('So11111111111111111111111111111111111111112'),
       symbol: 'SOL',
       name: 'Solana',
       decimals: 9,
@@ -57,7 +45,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
     }
 
     mockTokenY = {
-      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
       symbol: 'USDC',
       name: 'USD Coin',
       decimals: 6,
@@ -72,11 +60,12 @@ describe('ArbitrageProfitabilityCalculator', () => {
       poolAddress: mockPoolAddress,
       tokenX: mockTokenX,
       tokenY: mockTokenY,
-      activeBin: {} as BinData,
+      activeBin: {} as BinInfo,
       liquidity: 100000,
       volume24h: 50000,
       fees: 0.003,
-      slippage: 0.001
+      slippage: 0.001,
+      lastUpdated: new Date()
     }
 
     const mockRoute: RouteStep[] = [
@@ -109,7 +98,9 @@ describe('ArbitrageProfitabilityCalculator', () => {
         outputToken: mockTokenX,
         route: mockRoute,
         totalDistance: 2,
-        complexity: 'simple'
+        complexity: 'simple',
+        estimatedGas: 50000,
+        priceImpact: 0.001
       },
       profitability: {
         grossProfit: 20,
@@ -281,7 +272,6 @@ describe('ArbitrageProfitabilityCalculator', () => {
       const expectedGasCostPerStep = 200000 * 0.000005 // COMPUTE_UNITS_PER_SWAP * GAS_PRICE_SOL
       const expectedTotalGasCost = expectedGasCostPerStep * 2 // 2 steps
       const expectedPriorityFees = expectedTotalGasCost * 0.5
-      const expectedMevCost = inputAmount * 0.01
 
       expect(metrics.gasCosts).toBe(expectedTotalGasCost + expectedPriorityFees)
       expect(metrics.priorityFees).toBe(expectedPriorityFees)
@@ -373,6 +363,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
         const addLiquidityStep = {
           action: 'add_liquidity',
           poolAddress: mockPoolAddress,
+          tokenIn: mockTokenX,
+          tokenOut: mockTokenY,
           amountIn: 1000,
           amountOut: 1010,
           priceImpact: 0.001,
@@ -390,6 +382,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
         const removeLiquidityStep = {
           action: 'remove_liquidity',
           poolAddress: mockPoolAddress,
+          tokenIn: mockTokenX,
+          tokenOut: mockTokenY,
           amountIn: 1000,
           amountOut: 1010,
           priceImpact: 0.001,
@@ -407,6 +401,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
         const unknownStep = {
           action: 'unknown_action',
           poolAddress: mockPoolAddress,
+          tokenIn: mockTokenX,
+          tokenOut: mockTokenY,
           amountIn: 1000,
           amountOut: 1010,
           priceImpact: 0.001,
@@ -423,6 +419,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
       it('should handle undefined action', () => {
         const undefinedActionStep = {
           poolAddress: mockPoolAddress,
+          tokenIn: mockTokenX,
+          tokenOut: mockTokenY,
           amountIn: 1000,
           amountOut: 1010,
           priceImpact: 0.001,
@@ -485,8 +483,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
           tokenOut: mockTokenY,
           amountIn: 1000,
           amountOut: 1010,
+          priceImpact: 0, // testing undefined case with 0
           binRange: { min: -10, max: 10 }
-          // priceImpact undefined
         }
 
         const calculateSlippageImpact = (calculator as any).calculateSlippageImpact.bind(calculator)
@@ -592,7 +590,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
       const generateProfitabilityScenarios = (calculator as any).generateProfitabilityScenarios.bind(calculator)
       const scenarios = await generateProfitabilityScenarios(mockOpportunity, 1000)
 
-      scenarios.forEach(scenario => {
+      scenarios.forEach((scenario: any) => {
         expect(scenario.name).toBeDefined()
         expect(scenario.description).toBeDefined()
         expect(typeof scenario.probability).toBe('number')
@@ -610,7 +608,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
       const generateProfitabilityScenarios = (calculator as any).generateProfitabilityScenarios.bind(calculator)
       const scenarios = await generateProfitabilityScenarios(mockOpportunity, 1000)
 
-      const totalProbability = scenarios.reduce((sum, scenario) => sum + scenario.probability, 0)
+      const totalProbability = scenarios.reduce((sum: any, scenario: any) => sum + scenario.probability, 0)
       expect(totalProbability).toBe(1.0)
     })
 
@@ -725,7 +723,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
     })
 
     it('should handle all positive profits', async () => {
-      const allPositiveScenarios = mockScenarios.map(s => ({
+      const allPositiveScenarios = mockScenarios.map((s: any) => ({
         ...s,
         expectedProfit: Math.abs(s.expectedProfit) + 1
       }))
@@ -1057,10 +1055,10 @@ describe('ArbitrageProfitabilityCalculator', () => {
       const performSensitivityAnalysis = (calculator as any).performSensitivityAnalysis.bind(calculator)
       const analysis = await performSensitivityAnalysis(mockOpportunity, 1000)
 
-      const volatilityBaseline = analysis.priceVolatility.find(v => v.factor === 1.0)
-      const gasPriceBaseline = analysis.gasPrice.find(g => g.factor === 1.0)
-      const slippageBaseline = analysis.slippage.find(s => s.factor === 1.0)
-      const competitionBaseline = analysis.competition.find(c => c.factor === 1.0)
+      const volatilityBaseline = analysis.priceVolatility.find((v: any) => v.factor === 1.0)
+      const gasPriceBaseline = analysis.gasPrice.find((g: any) => g.factor === 1.0)
+      const slippageBaseline = analysis.slippage.find((s: any) => s.factor === 1.0)
+      const competitionBaseline = analysis.competition.find((c: any) => c.factor === 1.0)
 
       expect(volatilityBaseline?.impactOnProfit).toBe(0)
       expect(gasPriceBaseline?.impactOnProfit).toBe(0)
@@ -1090,8 +1088,8 @@ describe('ArbitrageProfitabilityCalculator', () => {
       expect(analysis).toBeDefined()
 
       // Check that impacts make sense (higher factors generally have more negative impact for costs)
-      const maxGasFactor = Math.max(...analysis.gasPrice.map(g => g.factor))
-      const maxGasImpact = analysis.gasPrice.find(g => g.factor === maxGasFactor)?.impactOnProfit
+      const maxGasFactor = Math.max(...analysis.gasPrice.map((g: any) => g.factor))
+      const maxGasImpact = analysis.gasPrice.find((g: any) => g.factor === maxGasFactor)?.impactOnProfit
       expect(maxGasImpact).toBeLessThan(0) // Higher gas prices should reduce profit
     })
   })
@@ -1101,7 +1099,7 @@ describe('ArbitrageProfitabilityCalculator', () => {
       const estimateGasRequired = (calculator as any).estimateGasRequired.bind(calculator)
       const gasRequired = estimateGasRequired(mockOpportunity)
 
-      const expectedTotal = mockOpportunity.executionPlan.reduce((total, step) => {
+      const expectedTotal = mockOpportunity.executionPlan.reduce((total) => {
         return total + 200000 // COMPUTE_UNITS_PER_SWAP for all swap actions
       }, 0)
 

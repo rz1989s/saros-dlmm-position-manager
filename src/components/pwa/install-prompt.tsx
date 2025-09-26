@@ -36,6 +36,9 @@ export function InstallPrompt({
 
       return () => clearTimeout(timer)
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [canPrompt, isDismissed, isInstalled, showDelay])
 
   const handleInstall = async () => {
@@ -331,24 +334,25 @@ export function InstallStatus() {
     return null
   }
 
+  const getStatusIcon = () => {
+    switch (platform) {
+      case 'android':
+      case 'ios':
+        return <Smartphone className="h-3 w-3" />
+      case 'windows':
+      case 'macos':
+      case 'linux':
+        return <Monitor className="h-3 w-3" />
+      default:
+        return <Tablet className="h-3 w-3" />
+    }
+  }
+
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      {getPlatformIcon(platform)}
+      {getStatusIcon()}
       <span>Running as installed app</span>
     </div>
   )
 }
 
-function getPlatformIcon(platform: string | null) {
-  switch (platform) {
-    case 'android':
-    case 'ios':
-      return <Smartphone className="h-3 w-3" />
-    case 'windows':
-    case 'macos':
-    case 'linux':
-      return <Monitor className="h-3 w-3" />
-    default:
-      return <Tablet className="h-3 w-3" />
-  }
-}

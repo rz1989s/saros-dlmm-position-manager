@@ -46,9 +46,9 @@ export {
 // Main Arbitrage Manager Class
 import { Connection, PublicKey } from '@solana/web3.js'
 import { Wallet } from '@solana/wallet-adapter-react'
-import { CrossPoolArbitrageEngine } from './detection-engine'
+import { CrossPoolArbitrageEngine, type ArbitrageOpportunity, type RiskAssessment } from './detection-engine'
 import { ArbitrageProfitabilityCalculator } from './profitability-calculator'
-import { ArbitrageExecutionPlanner } from './execution-planner'
+import { ArbitrageExecutionPlanner, type ExecutionPreferences, type ExecutionResults } from './execution-planner'
 import { TokenInfo } from '@/lib/types'
 
 export interface ArbitrageManagerConfig {

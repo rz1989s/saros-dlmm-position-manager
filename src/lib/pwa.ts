@@ -209,11 +209,12 @@ export class NotificationManager {
     }
 
     try {
+      const applicationServerKey = this.urlBase64ToUint8Array(
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
+      )
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-        )
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer
       })
 
       console.log('[PWA] Push subscription created')
@@ -240,7 +241,6 @@ export class NotificationManager {
       await this.registration.showNotification(title, {
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-96x96.png',
-        vibrate: [200, 100, 200],
         ...options
       })
     } catch (error) {
@@ -255,7 +255,7 @@ export class NotificationManager {
       .replace(/_/g, '/')
 
     const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
+    const outputArray = new Uint8Array(new ArrayBuffer(rawData.length))
 
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i)
@@ -313,7 +313,7 @@ export async function requestBackgroundSync(tag: string): Promise<void> {
 
   try {
     const registration = await navigator.serviceWorker.ready
-    await registration.sync.register(tag)
+    await (registration as any).sync.register(tag)
     console.log(`[PWA] Background sync registered: ${tag}`)
   } catch (error) {
     console.error('[PWA] Background sync registration failed:', error)

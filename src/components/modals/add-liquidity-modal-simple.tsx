@@ -30,11 +30,11 @@ interface AddLiquidityModalProps {
 export function AddLiquidityModal({
   isOpen,
   onClose,
-  poolAddress,
+  poolAddress: _poolAddress,
   tokenX = { symbol: 'SOL', decimals: 9, balance: 10.5, price: 152.45 },
   tokenY = { symbol: 'USDC', decimals: 6, balance: 1500.0, price: 1.0 },
-  activeBinId = 0,
-  currentPrice = 152.45
+  activeBinId: _activeBinId = 0,
+  currentPrice: _currentPrice = 152.45
 }: AddLiquidityModalProps) {
   const [tokenXAmount, setTokenXAmount] = useState('')
   const [tokenYAmount, setTokenYAmount] = useState('')

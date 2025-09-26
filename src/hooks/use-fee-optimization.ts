@@ -3,16 +3,14 @@
 // Fee Optimization Hooks
 // 💰 React hooks for dynamic fee tier management and optimization
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { PublicKey } from '@solana/web3.js'
-import { useWallet } from '@solana/wallet-adapter-react'
 import {
   feeTierManager,
   type FeeTier,
   type FeeAnalysis,
   type FeeOptimizationSettings
 } from '@/lib/dlmm/fee-tiers'
-import { REFRESH_INTERVALS } from '@/lib/constants'
 
 /**
  * Hook for fee optimization analysis
@@ -23,7 +21,6 @@ export function useFeeOptimization(
   tokenPair?: string,
   settings?: FeeOptimizationSettings
 ) {
-  const { publicKey } = useWallet()
   const [analysis, setAnalysis] = useState<FeeAnalysis | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

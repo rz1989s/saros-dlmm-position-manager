@@ -1,15 +1,10 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { BinData } from '@saros-finance/dlmm-sdk'
 import {
   CrossPoolArbitrageEngine,
   ArbitrageOpportunity,
   ArbitragePool,
-  ArbitragePath,
-  RouteStep,
-  ProfitabilityMetrics,
   RiskAssessment,
-  ExecutionStep,
-  MEVProtection
+  ExecutionStep
 } from '../../../../src/lib/dlmm/arbitrage/detection-engine'
 import { TokenInfo } from '../../../../src/lib/types'
 
@@ -22,9 +17,7 @@ jest.mock('@solana/web3.js', () => ({
   }))
 }))
 
-jest.mock('@saros-finance/dlmm-sdk', () => ({
-  BinData: {}
-}))
+// SDK mock removed - not needed for arbitrage tests
 
 // Mock console methods to test logging
 const mockConsoleLog = jest.fn()
@@ -54,7 +47,7 @@ describe('CrossPoolArbitrageEngine', () => {
     } as any
 
     mockTokenX = {
-      address: 'So11111111111111111111111111111111111111112', // SOL
+      address: new PublicKey('So11111111111111111111111111111111111111112'), // SOL
       symbol: 'SOL',
       name: 'Solana',
       decimals: 9,
@@ -64,7 +57,7 @@ describe('CrossPoolArbitrageEngine', () => {
     }
 
     mockTokenY = {
-      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+      address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC
       symbol: 'USDC',
       name: 'USD Coin',
       decimals: 6,
@@ -161,11 +154,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -197,11 +196,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenY, // Swapped
         tokenY: mockTokenX,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 1,
+          liquidityX: '100000000',
+          liquidityY: '1000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -219,11 +224,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -249,17 +260,54 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }],
-        path: {} as ArbitragePath,
-        profitability: {} as ProfitabilityMetrics,
-        risk: {} as RiskAssessment,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
+        profitability: {
+          grossProfit: 15,
+          netProfit: 12,
+          profitMargin: 0.012,
+          returnOnInvestment: 0.012,
+          breakevenAmount: 500,
+          maxProfitableAmount: 10000,
+          gasCosts: 2.5,
+          priorityFees: 0.5
+        },
+        risk: {
+          liquidityRisk: 0.1,
+          slippageRisk: 0.1,
+          mevRisk: 0.1,
+          temporalRisk: 0.1,
+          competitionRisk: 0.1,
+          overallRisk: 'low',
+          riskFactors: []
+        },
         executionPlan: [] as ExecutionStep[],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -297,7 +345,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'test-opp-1',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 15,
           netProfit: 12,
@@ -318,7 +374,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -335,7 +397,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'low-profit',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 8,
           netProfit: 5, // Below MIN_PROFIT_USD (10)
@@ -356,7 +426,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -372,7 +448,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'high-risk',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 25,
           netProfit: 20,
@@ -393,7 +477,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -409,7 +499,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'stale-opp',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 15,
           netProfit: 12,
@@ -430,7 +528,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now() - 35000, // 35 seconds ago
         confidence: 0.8
       }
@@ -449,7 +553,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'low-profit-opp',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 15,
           netProfit: 12,
@@ -470,7 +582,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -506,7 +624,9 @@ describe('CrossPoolArbitrageEngine', () => {
           outputToken: mockTokenX,
           route: [],
           totalDistance: 2,
-          complexity: 'simple'
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
         },
         profitability: {
           grossProfit: 15,
@@ -528,7 +648,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -568,7 +694,7 @@ describe('CrossPoolArbitrageEngine', () => {
 
     it('should return null if no opportunities for token', async () => {
       const differentToken: TokenInfo = {
-        address: 'DifferentTokenAddress',
+        address: new PublicKey('DifferentTokenAddress'),
         symbol: 'DIFF',
         name: 'Different Token',
         decimals: 9,
@@ -609,7 +735,8 @@ describe('CrossPoolArbitrageEngine', () => {
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         })
       })
     })
@@ -621,21 +748,33 @@ describe('CrossPoolArbitrageEngine', () => {
             poolAddress: mockPoolAddress1,
             tokenX: mockTokenX,
             tokenY: mockTokenY,
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 100000,
             volume24h: 50000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           },
           {
             poolAddress: mockPoolAddress2,
             tokenX: mockTokenX,
             tokenY: mockTokenY,
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 120000,
             volume24h: 60000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           }
         ]
 
@@ -652,21 +791,33 @@ describe('CrossPoolArbitrageEngine', () => {
             poolAddress: mockPoolAddress1,
             tokenX: mockTokenX,
             tokenY: mockTokenY,
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 100000,
             volume24h: 50000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           },
           {
             poolAddress: mockPoolAddress2,
             tokenX: mockTokenY, // Flipped
             tokenY: mockTokenX,
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 120000,
             volume24h: 60000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           }
         ]
 
@@ -678,7 +829,7 @@ describe('CrossPoolArbitrageEngine', () => {
 
       it('should not detect opportunities for different token pairs', () => {
         const differentTokenZ: TokenInfo = {
-          address: 'TokenZAddress',
+          address: new PublicKey('TokenZAddress'),
           symbol: 'TOKZ',
           name: 'Token Z',
           decimals: 9,
@@ -692,21 +843,33 @@ describe('CrossPoolArbitrageEngine', () => {
             poolAddress: mockPoolAddress1,
             tokenX: mockTokenX,
             tokenY: mockTokenY,
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 100000,
             volume24h: 50000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           },
           {
             poolAddress: mockPoolAddress2,
             tokenX: mockTokenX,
             tokenY: differentTokenZ, // Different pair
-            activeBin: {} as BinData,
+            activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
             liquidity: 120000,
             volume24h: 60000,
             fees: 0.003,
-            slippage: 0.001
+            slippage: 0.001,
+          lastUpdated: new Date()
           }
         ]
 
@@ -745,22 +908,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const hasSameTokenPair = (engine as any).hasSameTokenPair.bind(engine)
@@ -774,22 +949,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenY, // Flipped
           tokenY: mockTokenX,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const hasSameTokenPair = (engine as any).hasSameTokenPair.bind(engine)
@@ -800,7 +987,7 @@ describe('CrossPoolArbitrageEngine', () => {
 
       it('should return false for different token pairs', () => {
         const differentTokenZ: TokenInfo = {
-          address: 'TokenZAddress',
+          address: new PublicKey('TokenZAddress'),
           symbol: 'TOKZ',
           name: 'Token Z',
           decimals: 9,
@@ -813,22 +1000,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenX,
           tokenY: differentTokenZ,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const hasSameTokenPair = (engine as any).hasSameTokenPair.bind(engine)
@@ -897,7 +1096,15 @@ describe('CrossPoolArbitrageEngine', () => {
           id: 'test',
           type: 'direct',
           pools: [],
-          path: {} as ArbitragePath,
+          path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
           profitability: {
             grossProfit: 20,
             netProfit: 15,
@@ -918,7 +1125,13 @@ describe('CrossPoolArbitrageEngine', () => {
             riskFactors: []
           },
           executionPlan: [],
-          mev: {} as MEVProtection,
+          mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
           timestamp: Date.now(),
           confidence: 0.9
         }
@@ -937,7 +1150,15 @@ describe('CrossPoolArbitrageEngine', () => {
           id: 'test',
           type: 'direct',
           pools: [],
-          path: {} as ArbitragePath,
+          path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
           profitability: {
             grossProfit: 20,
             netProfit: 15,
@@ -958,7 +1179,13 @@ describe('CrossPoolArbitrageEngine', () => {
             riskFactors: []
           },
           executionPlan: [],
-          mev: {} as MEVProtection,
+          mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
           timestamp: Date.now(),
           confidence: 0.5
         }
@@ -979,22 +1206,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const calculateDirectArbitrageOpportunity = (engine as any).calculateDirectArbitrageOpportunity.bind(engine)
@@ -1025,22 +1264,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const calculateDirectArbitrageOpportunity = (engine as any).calculateDirectArbitrageOpportunity.bind(engine)
@@ -1050,7 +1301,7 @@ describe('CrossPoolArbitrageEngine', () => {
 
         // Test with negative profit
         Math.random = jest.fn(() => -0.5) // This should create negative profit
-        const negativeOpportunity = calculateDirectArbitrageOpportunity(poolA, poolB)
+        calculateDirectArbitrageOpportunity(poolA, poolB)
 
         Math.random = originalRandom
       })
@@ -1060,22 +1311,34 @@ describe('CrossPoolArbitrageEngine', () => {
           poolAddress: mockPoolAddress1,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 100000,
           volume24h: 50000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const poolB: ArbitragePool = {
           poolAddress: mockPoolAddress2,
           tokenX: mockTokenX,
           tokenY: mockTokenY,
-          activeBin: {} as BinData,
+          activeBin: {
+            binId: 0,
+            price: 100,
+            liquidityX: '1000000',
+            liquidityY: '100000000'
+          },
           liquidity: 120000,
           volume24h: 60000,
           fees: 0.003,
-          slippage: 0.001
+          slippage: 0.001,
+          lastUpdated: new Date()
         }
 
         const calculateDirectArbitrageOpportunity = (engine as any).calculateDirectArbitrageOpportunity.bind(engine)
@@ -1106,11 +1369,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -1133,11 +1402,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -1165,11 +1440,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       const fetchPoolDataSpy = jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -1192,11 +1473,17 @@ describe('CrossPoolArbitrageEngine', () => {
         poolAddress: mockPoolAddress1,
         tokenX: mockTokenX,
         tokenY: mockTokenY,
-        activeBin: {} as BinData,
+        activeBin: {
+          binId: 0,
+          price: 100,
+          liquidityX: '1000000',
+          liquidityY: '100000000'
+        },
         liquidity: 100000,
         volume24h: 50000,
         fees: 0.003,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
 
       jest.spyOn(engine as any, 'fetchPoolData').mockResolvedValue(mockPool)
@@ -1234,7 +1521,15 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'opp-1',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
         profitability: {
           grossProfit: 15,
           netProfit: 12,
@@ -1255,7 +1550,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -1335,8 +1636,25 @@ describe('CrossPoolArbitrageEngine', () => {
         id: 'opp-1',
         type: 'direct',
         pools: [],
-        path: {} as ArbitragePath,
-        profitability: {} as ProfitabilityMetrics,
+        path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
+        profitability: {
+          grossProfit: 15,
+          netProfit: 12,
+          profitMargin: 0.012,
+          returnOnInvestment: 0.012,
+          breakevenAmount: 500,
+          maxProfitableAmount: 10000,
+          gasCosts: 2.5,
+          priorityFees: 0.5
+        },
         risk: {
           liquidityRisk: 0.1,
           slippageRisk: 0.1,
@@ -1347,7 +1665,13 @@ describe('CrossPoolArbitrageEngine', () => {
           riskFactors: []
         },
         executionPlan: [],
-        mev: {} as MEVProtection,
+        mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
         timestamp: Date.now(),
         confidence: 0.8
       }
@@ -1392,7 +1716,15 @@ describe('CrossPoolArbitrageEngine', () => {
           id: `opp-${i}`,
           type: 'direct',
           pools: [],
-          path: {} as ArbitragePath,
+          path: {
+          inputToken: mockTokenX,
+          outputToken: mockTokenX,
+          route: [],
+          totalDistance: 2,
+          complexity: 'simple',
+          estimatedGas: 200000,
+          priceImpact: 0.001
+        },
           profitability: {
             grossProfit: 15,
             netProfit: 12,
@@ -1413,7 +1745,13 @@ describe('CrossPoolArbitrageEngine', () => {
             riskFactors: []
           },
           executionPlan: [],
-          mev: {} as MEVProtection,
+          mev: {
+          strategy: 'private_mempool',
+          jitterMs: 1500,
+          maxFrontrunProtection: 0.01,
+          privateMempoolUsed: true,
+          bundlingRequired: true
+        },
           timestamp: Date.now(),
           confidence: 0.8
         }

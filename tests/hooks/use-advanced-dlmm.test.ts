@@ -7,6 +7,7 @@ import {
   useUserBehaviorTracking,
   useAdvancedDLMM
 } from '../../src/hooks/use-advanced-dlmm'
+import type { BacktestConfig, ArbitrageOpportunity } from '../../src/lib/types'
 
 // Mock the wallet adapter
 const mockUseWallet = {
@@ -71,7 +72,7 @@ jest.mock('../../src/lib/dlmm/arbitrage', () => ({
 }))
 
 // Get the mocked functions for type checking
-import { ArbitrageManager, createArbitrageManager } from '../../src/lib/dlmm/arbitrage'
+import { createArbitrageManager } from '../../src/lib/dlmm/arbitrage'
 const mockArbitrageManager = {
   startArbitrageSystem: jest.fn(),
   stopArbitrageSystem: jest.fn(),
@@ -129,13 +130,43 @@ describe('Advanced DLMM Hooks', () => {
   })
 
   describe('useAdvancedBacktesting', () => {
-    const mockConfig = {
+    const mockConfig: BacktestConfig = {
+      id: 'test-backtest-123',
       name: 'Test Backtest',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-01-31'),
-      strategy: 'aggressive',
-      initialCapital: 10000,
-      parameters: {},
+      description: 'Test backtest configuration',
+      strategy: {
+        id: 'aggressive-strategy',
+        name: 'Aggressive',
+        parameters: {}
+      },
+      market: {
+        poolAddress: new PublicKey('11111111111111111111111111111111'),
+        tokenXSymbol: 'SOL',
+        tokenYSymbol: 'USDC'
+      },
+      timeframe: {
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2024-01-31'),
+        interval: '1h'
+      },
+      capital: {
+        initialAmount: 10000,
+        currency: 'USD'
+      },
+      costs: {
+        gasPrice: 0.001,
+        slippage: 0.005,
+        transactionFee: 0.0025
+      },
+      rebalancing: {
+        frequency: 'daily',
+        minThreshold: 0.05
+      },
+      riskManagement: {
+        maxDrawdown: 0.2,
+        stopLoss: 0.15,
+        takeProfit: 0.5
+      }
     }
 
     it('should initialize with correct default state', () => {
@@ -154,17 +185,32 @@ describe('Advanced DLMM Hooks', () => {
         results: { totalReturn: 15.5 },
       }
 
-      mockBacktestEngine.runBacktest.mockResolvedValue('backtest-123')
+      const fullBacktestResult = {
+        config: mockConfig,
+        status: 'completed' as const,
+        progress: 100,
+        metrics: {} as any,
+        timeSeriesData: [],
+        actions: [],
+        summary: {
+          bestPeriod: { start: new Date(), end: new Date(), return: 15.5 },
+          worstPeriod: { start: new Date(), end: new Date(), return: -2.3 },
+          keyInsights: [],
+          recommendations: []
+        }
+      }
+
+      mockBacktestEngine.runBacktest.mockResolvedValue(fullBacktestResult)
       mockBacktestEngine.getBacktestResult.mockReturnValue(backtestResult)
 
       const { result } = renderHook(() => useAdvancedBacktesting())
 
-      let backtestId: string | undefined
+      let actualResult: any
       await act(async () => {
-        backtestId = await result.current.runBacktest(mockConfig)
+        actualResult = await result.current.runBacktest(mockConfig)
       })
 
-      expect(backtestId).toBe('backtest-123')
+      expect(actualResult.config.id).toBe('backtest-123')
       expect(mockBacktestEngine.runBacktest).toHaveBeenCalledWith(mockConfig)
       expect(result.current.loading).toBe(false)
     })
@@ -201,10 +247,10 @@ describe('Advanced DLMM Hooks', () => {
       const { result } = renderHook(() => useAdvancedBacktesting())
 
       act(() => {
-        result.current.cancelBacktest('test-backtest')
+        result.current.cancelBacktest()
       })
 
-      expect(mockBacktestEngine.cancelBacktest).toHaveBeenCalledWith('test-backtest')
+      expect(mockBacktestEngine.cancelBacktest).toHaveBeenCalledWith()
     })
 
     it('should get backtest history', () => {
@@ -237,7 +283,9 @@ describe('Advanced DLMM Hooks', () => {
   describe('usePredictiveCache', () => {
     const mockUserBehavior = {
       id: 'behavior-123',
-      action: 'navigate',
+      userId: 'test-user',
+      sessionId: 'test-session',
+      action: 'navigate' as const,
       target: '/dashboard',
       timestamp: new Date(),
       context: {
@@ -369,11 +417,83 @@ describe('Advanced DLMM Hooks', () => {
   })
 
   describe('useArbitrageDetection', () => {
-    const mockOpportunity = {
+    const mockOpportunity: ArbitrageOpportunity = {
       id: 'opp-123',
-      tokenPair: 'USDC/SOL',
-      profitPotential: 50,
-      riskScore: 0.3,
+      type: 'direct',
+      pools: [
+        {
+          poolAddress: new PublicKey('11111111111111111111111111111111'),
+          tokenX: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+          tokenY: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+          activeBin: { binId: 12345, price: 150, liquidityX: '1000000', liquidityY: '150000000' },
+          liquidity: 150000,
+          volume24h: 500000,
+          fees: 0.0025,
+          slippage: 0.001,
+          lastUpdated: new Date()
+        }
+      ],
+      path: {
+        inputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+        outputToken: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+        route: [
+          {
+            poolAddress: new PublicKey('11111111111111111111111111111111'),
+            amountIn: 1000,
+            amountOut: 150000,
+            binRange: { min: 0, max: 10 },
+            tokenIn: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+            tokenOut: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+            priceImpact: 0.001
+          }
+        ],
+        totalDistance: 1,
+        complexity: 'simple',
+        estimatedGas: 50000,
+        priceImpact: 0.002
+      },
+      profitability: {
+        grossProfit: 50,
+        gasCosts: 0.05,
+        priorityFees: 0.02,
+        netProfit: 49.93,
+        profitMargin: 0.05,
+        breakevenAmount: 1000,
+        maxProfitableAmount: 10000,
+        returnOnInvestment: 0.05
+      },
+      risk: {
+        overallRisk: 'low',
+        liquidityRisk: 0.3,
+        slippageRisk: 0.05,
+        mevRisk: 0.02,
+        temporalRisk: 0.03,
+        competitionRisk: 0.04,
+        riskFactors: ['Low liquidity risk']
+      },
+      executionPlan: [
+        {
+          stepNumber: 1,
+          action: 'swap',
+          pool: new PublicKey('11111111111111111111111111111111'),
+          tokenIn: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+          tokenOut: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+          amount: 1000,
+          expectedOutput: 150000,
+          maxSlippage: 0.001,
+          timeoutMs: 30000,
+          dependencies: []
+        }
+      ],
+      mev: {
+        strategy: 'private_mempool',
+        jitterMs: 8500,
+        maxFrontrunProtection: 0.1,
+        privateMempoolUsed: true,
+        bundlingRequired: false
+      },
+      timestamp: Date.now(),
+      confidence: 0.85
     }
 
     it('should initialize with correct default state', () => {
@@ -442,7 +562,13 @@ describe('Advanced DLMM Hooks', () => {
     })
 
     it('should get best opportunity', async () => {
-      const mockToken = { address: 'USDC', symbol: 'USDC', decimals: 6 }
+      const mockToken = {
+        address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1
+      }
       const mockBestOpp = { id: 'best', profit: 100 }
       mockArbitrageManager.getBestOpportunityForToken.mockResolvedValue(mockBestOpp)
 
@@ -458,8 +584,20 @@ describe('Advanced DLMM Hooks', () => {
 
     it('should add pool to monitoring', async () => {
       const poolAddress = new PublicKey('33333333333333333333333333333333')
-      const tokenX = { address: 'USDC', symbol: 'USDC', decimals: 6 }
-      const tokenY = { address: 'SOL', symbol: 'SOL', decimals: 9 }
+      const tokenX = {
+        address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1
+      }
+      const tokenY = {
+        address: new PublicKey('So11111111111111111111111111111111111111112'),
+        symbol: 'SOL',
+        name: 'Solana',
+        decimals: 9,
+        price: 150
+      }
 
       const { result } = renderHook(() => useArbitrageDetection())
 
@@ -551,13 +689,16 @@ describe('Advanced DLMM Hooks', () => {
   describe('useUserBehaviorTracking', () => {
     beforeEach(() => {
       // Mock usePredictiveCache hook
-      jest.doMock('../../src/hooks/use-advanced-dlmm', () => ({
-        ...jest.requireActual('../../src/hooks/use-advanced-dlmm'),
-        usePredictiveCache: () => ({
-          recordUserBehavior: jest.fn(),
-          isActive: true,
-        }),
-      }))
+      jest.doMock('../../src/hooks/use-advanced-dlmm', () => {
+        const actual = jest.requireActual('../../src/hooks/use-advanced-dlmm') || {}
+        return {
+          ...actual,
+          usePredictiveCache: () => ({
+            recordUserBehavior: jest.fn(),
+            isActive: true,
+          }),
+        }
+      })
     })
 
     it('should track page view', () => {

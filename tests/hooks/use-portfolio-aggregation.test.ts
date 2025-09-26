@@ -8,7 +8,7 @@ import {
   usePortfolioInsights,
   usePortfolioCache,
   useComprehensivePortfolioManagement
-} from '../../src/hooks/use-portfolio-aggregation'
+} from '@/hooks/use-portfolio-aggregation'
 
 // Mock the wallet adapter
 const mockUseWallet = {
@@ -21,7 +21,7 @@ jest.mock('@solana/wallet-adapter-react', () => ({
 }))
 
 // Mock the portfolio aggregation manager
-jest.mock('../../src/lib/dlmm/portfolio-aggregation', () => ({
+jest.mock('@/lib/dlmm/portfolio-aggregation', () => ({
   portfolioAggregationManager: {
     aggregatePositionsByPair: jest.fn(),
     generatePortfolioSummary: jest.fn(),
@@ -33,15 +33,15 @@ jest.mock('../../src/lib/dlmm/portfolio-aggregation', () => ({
 }))
 
 // Get the mocked manager for type checking
-import { portfolioAggregationManager } from '../../src/lib/dlmm/portfolio-aggregation'
+import { portfolioAggregationManager } from '@/lib/dlmm/portfolio-aggregation'
 const mockPortfolioAggregationManager = portfolioAggregationManager as jest.Mocked<typeof portfolioAggregationManager>
 
 // Mock constants
-jest.mock('../../src/lib/constants', () => ({
+jest.mock('@/lib/constants', () => ({
   REFRESH_INTERVALS: {
-    prices: 1000,
-    analytics: 2000,
-    positions: 3000,
+    positions: 30000, // 30 seconds
+    prices: 5000,     // 5 seconds
+    analytics: 60000, // 1 minute
   },
 }))
 
@@ -50,33 +50,89 @@ describe('Portfolio Aggregation Hooks', () => {
     {
       id: '1',
       poolAddress: new PublicKey('22222222222222222222222222222222'),
-      tokenX: { address: 'USDC', symbol: 'USDC', decimals: 6 },
-      tokenY: { address: 'SOL', symbol: 'SOL', decimals: 9 },
+      userAddress: new PublicKey('11111111111111111111111111111112'),
+      tokenX: {
+        address: new PublicKey('USDC00000000000000000000000000000'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0
+      },
+      tokenY: {
+        address: new PublicKey('SOL0000000000000000000000000000000'),
+        symbol: 'SOL',
+        name: 'Solana',
+        decimals: 9,
+        price: 100.0
+      },
+      activeBin: 100,
       liquidityAmount: '1000',
+      feesEarned: {
+        tokenX: '10',
+        tokenY: '20'
+      },
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+      isActive: true
     },
     {
       id: '2',
       poolAddress: new PublicKey('33333333333333333333333333333333'),
-      tokenX: { address: 'USDC', symbol: 'USDC', decimals: 6 },
-      tokenY: { address: 'SOL', symbol: 'SOL', decimals: 9 },
+      userAddress: new PublicKey('11111111111111111111111111111112'),
+      tokenX: {
+        address: new PublicKey('USDC00000000000000000000000000000'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0
+      },
+      tokenY: {
+        address: new PublicKey('SOL0000000000000000000000000000000'),
+        symbol: 'SOL',
+        name: 'Solana',
+        decimals: 9,
+        price: 100.0
+      },
+      activeBin: 110,
       liquidityAmount: '2000',
+      feesEarned: {
+        tokenX: '20',
+        tokenY: '40'
+      },
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+      isActive: true
     },
   ]
 
   const mockAnalytics = [
     {
-      positionId: '1',
-      currentValue: 1000,
-      totalFees: 50,
+      totalValue: 1000,
+      pnl: {
+        amount: 100,
+        percentage: 10.0,
+      },
+      feesEarned: 50,
+      impermanentLoss: {
+        amount: -20,
+        percentage: -2.0,
+      },
       apr: 12.5,
-      riskScore: 25,
+      duration: 30,
     },
     {
-      positionId: '2',
-      currentValue: 2000,
-      totalFees: 100,
+      totalValue: 2000,
+      pnl: {
+        amount: 300,
+        percentage: 15.0,
+      },
+      feesEarned: 100,
+      impermanentLoss: {
+        amount: -50,
+        percentage: -2.5,
+      },
       apr: 15.0,
-      riskScore: 30,
+      duration: 45,
     },
   ]
 
@@ -90,11 +146,8 @@ describe('Portfolio Aggregation Hooks', () => {
 
     // Setup default mock returns
     mockPortfolioAggregationManager.getCacheStats.mockReturnValue({
-      hitRate: 92.5,
-      missRate: 7.5,
-      totalRequests: 180,
-      cacheSize: 80,
-      lastClear: new Date(),
+      count: 80,
+      keys: ['portfolio-key-1', 'portfolio-key-2', 'portfolio-key-3']
     })
   })
 
@@ -106,20 +159,43 @@ describe('Portfolio Aggregation Hooks', () => {
   describe('usePortfolioAggregation', () => {
     const mockPortfolioPositions = [
       {
-        tokenPair: 'USDC/SOL',
+        id: 'portfolio-1',
         positions: mockPositions,
+        tokenPair: 'USDC/SOL',
+        tokenX: {
+          address: new PublicKey('USDC00000000000000000000000000000'),
+          symbol: 'USDC',
+          name: 'USD Coin',
+          decimals: 6,
+          price: 1.0
+        },
+        tokenY: {
+          address: new PublicKey('SOL0000000000000000000000000000000'),
+          symbol: 'SOL',
+          name: 'Solana',
+          decimals: 9,
+          price: 100.0
+        },
         aggregatedMetrics: {
-          totalValue: 3000,
           totalLiquidity: '3000',
+          totalValue: 3000,
+          weightedApr: 13.75,
+          totalFeesEarned: 150,
+          averageActiveBin: 105,
           positionCount: 2,
-          avgApr: 13.75,
-          totalFees: 150,
         },
+        diversificationScore: 75.0,
         riskMetrics: {
+          concentrationRisk: 15.0,
+          correlationRisk: 10.0,
+          liquidityRisk: 15.0,
           overallRiskScore: 27.5,
-          volatilityScore: 20,
-          liquidityRisk: 15,
         },
+        optimization: {
+          canConsolidate: true,
+          consolidationBenefit: 25.0,
+          recommendedActions: ['Consider consolidating positions']
+        }
       },
     ]
 
@@ -161,7 +237,7 @@ describe('Portfolio Aggregation Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => usePortfolioAggregation(mockPositions, false))
 
@@ -251,25 +327,39 @@ describe('Portfolio Aggregation Hooks', () => {
 
   describe('usePortfolioSummary', () => {
     const mockPortfolioSummary = {
-      totalValue: 3000,
       totalPositions: 2,
+      totalValue: 3000,
+      totalLiquidity: '3000',
       diversifiedPairs: 1,
-      performanceMetrics: {
-        avgApr: 13.75,
-        totalFees: 150,
-        bestPerformingPair: 'USDC/SOL',
-        worstPerformingPair: null,
-      },
-      riskAnalysis: {
-        overallRiskScore: 27.5,
-        riskDistribution: {
-          low: 0,
-          medium: 2,
-          high: 0,
-        },
-      },
       topPerformingPairs: ['USDC/SOL'],
-      recommendations: ['Consider diversifying into additional token pairs'],
+      underPerformingPairs: [],
+      riskDistribution: {
+        low: 0,
+        medium: 2,
+        high: 0,
+      },
+      assetAllocation: [
+        {
+          symbol: 'USDC',
+          percentage: 50,
+          value: 1500,
+          positions: 1
+        },
+        {
+          symbol: 'SOL',
+          percentage: 50,
+          value: 1500,
+          positions: 1
+        }
+      ],
+      performanceMetrics: {
+        totalPnl: 150,
+        totalPnlPercentage: 5.0,
+        bestPosition: mockPositions[0],
+        worstPosition: null,
+        avgApr: 13.75,
+        totalFeesEarned: 150,
+      },
     }
 
     it('should initialize with correct default state', () => {
@@ -310,7 +400,7 @@ describe('Portfolio Aggregation Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => usePortfolioSummary(mockPositions, mockAnalytics))
 
@@ -371,13 +461,19 @@ describe('Portfolio Aggregation Hooks', () => {
     const mockOpportunities = [
       {
         id: 'consolidation-1',
-        type: 'same_pair_different_pools',
+        targetPair: 'USDC/SOL',
         positions: [mockPositions[0], mockPositions[1]],
-        targetPool: new PublicKey('44444444444444444444444444444444'),
+        currentPools: [mockPositions[0].poolAddress, mockPositions[1].poolAddress],
+        recommendedPool: new PublicKey('44444444444444444444444444444444'),
+        benefits: {
+          reducedGasCosts: 15.0,
+          improvedLiquidity: 10.0,
+          betterApr: 2.5,
+          simplifiedManagement: true
+        },
+        consolidationCost: 5.0,
         projectedSavings: 25.0,
-        migrationCost: 5.0,
         priority: 'high' as const,
-        reasoning: 'Multiple positions in same token pair can be consolidated',
       },
     ]
 
@@ -420,7 +516,7 @@ describe('Portfolio Aggregation Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => useConsolidationOpportunities(mockPositions))
 
@@ -484,25 +580,28 @@ describe('Portfolio Aggregation Hooks', () => {
       overallScore: 75.5,
       tokenDiversification: {
         uniqueTokens: 3,
-        mostCommonToken: 'USDC',
-        tokenDistribution: {
-          'USDC': 0.6,
-          'SOL': 0.3,
-          'BTC': 0.1,
-        },
+        dominantToken: 'USDC',
+        dominantPercentage: 60.0,
+        recommendations: [
+          'Consider reducing USDC concentration',
+          'Add more diverse tokens'
+        ]
       },
       pairDiversification: {
         uniquePairs: 2,
-        mostCommonPair: 'USDC/SOL',
-        pairDistribution: {
-          'USDC/SOL': 0.7,
-          'USDC/BTC': 0.3,
-        },
+        topPairs: [
+          { pair: 'USDC/SOL', percentage: 70.0 },
+          { pair: 'USDC/BTC', percentage: 30.0 }
+        ],
+        concentrationWarnings: [
+          'High concentration in USDC/SOL pair'
+        ]
       },
-      recommendations: [
-        'Consider adding positions in different token pairs',
-        'Reduce concentration in USDC/SOL pair',
-      ],
+      poolDiversification: {
+        uniquePools: 2,
+        averagePoolSize: '50000',
+        liquidityDistribution: 'concentrated' as const
+      }
     }
 
     it('should initialize with correct default state', () => {
@@ -556,7 +655,7 @@ describe('Portfolio Aggregation Hooks', () => {
     })
 
     it('should update analysis when positions change', () => {
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ positions }) => useDiversificationAnalysis(positions),
         { initialProps: { positions: [mockPositions[0]] } }
       )
@@ -574,48 +673,183 @@ describe('Portfolio Aggregation Hooks', () => {
   describe('usePortfolioInsights', () => {
     const mockPortfolioPositions = [
       {
+        id: 'portfolio-insights-1',
+        positions: [mockPositions[0]],
         tokenPair: 'USDC/SOL',
+        tokenX: {
+          address: new PublicKey('USDC00000000000000000000000000000'),
+          symbol: 'USDC',
+          name: 'USD Coin',
+          decimals: 6,
+          price: 1.0,
+        },
+        tokenY: {
+          address: new PublicKey('SOL0000000000000000000000000000000'),
+          symbol: 'SOL',
+          name: 'Solana',
+          decimals: 9,
+          price: 100.0,
+        },
         aggregatedMetrics: {
+          totalLiquidity: '2000',
           totalValue: 2000,
+          weightedApr: 12.5,
+          totalFeesEarned: 100,
+          averageActiveBin: 1000,
           positionCount: 2,
         },
+        diversificationScore: 75,
         riskMetrics: {
+          concentrationRisk: 60,
+          correlationRisk: 40,
+          liquidityRisk: 30,
           overallRiskScore: 75, // High risk
+        },
+        optimization: {
+          canConsolidate: true,
+          consolidationBenefit: 50,
+          recommendedActions: ['Consider consolidation'],
         },
       },
       {
+        id: 'portfolio-insights-2',
+        positions: [mockPositions[1]],
         tokenPair: 'USDC/BTC',
+        tokenX: {
+          address: new PublicKey('USDC00000000000000000000000000000'),
+          symbol: 'USDC',
+          name: 'USD Coin',
+          decimals: 6,
+          price: 1.0,
+        },
+        tokenY: {
+          address: new PublicKey('BTC0000000000000000000000000000000'),
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          decimals: 8,
+          price: 50000.0,
+        },
         aggregatedMetrics: {
+          totalLiquidity: '1000',
           totalValue: 1000,
+          weightedApr: 15.0,
+          totalFeesEarned: 50,
+          averageActiveBin: 2000,
           positionCount: 1,
         },
+        diversificationScore: 85,
         riskMetrics: {
+          concentrationRisk: 20,
+          correlationRisk: 15,
+          liquidityRisk: 10,
           overallRiskScore: 25, // Low risk
+        },
+        optimization: {
+          canConsolidate: false,
+          consolidationBenefit: 0,
+          recommendedActions: ['Maintain current position'],
         },
       },
     ]
 
     const mockSummary = {
+      totalPositions: 2,
       totalValue: 3000,
-      performanceMetrics: {
-        avgApr: 15.0,
-      },
+      totalLiquidity: '3000',
+      diversifiedPairs: 2,
       topPerformingPairs: ['USDC/SOL'],
+      underPerformingPairs: ['USDC/BTC'],
+      riskDistribution: {
+        low: 1,
+        medium: 0,
+        high: 1,
+      },
+      assetAllocation: [
+        {
+          symbol: 'USDC',
+          percentage: 40.0,
+          value: 1200,
+          positions: 2,
+        },
+        {
+          symbol: 'SOL',
+          percentage: 35.0,
+          value: 1050,
+          positions: 1,
+        },
+        {
+          symbol: 'BTC',
+          percentage: 25.0,
+          value: 750,
+          positions: 1,
+        },
+      ],
+      performanceMetrics: {
+        totalPnl: 400,
+        totalPnlPercentage: 15.0,
+        bestPosition: mockPositions[0],
+        worstPosition: mockPositions[1],
+        avgApr: 15.0,
+        totalFeesEarned: 150,
+      },
     }
 
     const mockOpportunities = [
       {
-        priority: 'high',
+        id: 'consolidation-1',
+        targetPair: 'USDC/SOL',
+        positions: [mockPositions[0]],
+        currentPools: [new PublicKey('22222222222222222222222222222222')],
+        recommendedPool: new PublicKey('11111111111111111111111111111111'),
+        benefits: {
+          reducedGasCosts: 15,
+          improvedLiquidity: 20,
+          betterApr: 2.5,
+          simplifiedManagement: true,
+        },
+        consolidationCost: 10,
         projectedSavings: 50,
+        priority: 'high' as const,
       },
       {
-        priority: 'medium',
+        id: 'consolidation-2',
+        targetPair: 'USDC/BTC',
+        positions: [mockPositions[1]],
+        currentPools: [new PublicKey('33333333333333333333333333333333')],
+        recommendedPool: new PublicKey('44444444444444444444444444444444'),
+        benefits: {
+          reducedGasCosts: 8,
+          improvedLiquidity: 12,
+          betterApr: 1.8,
+          simplifiedManagement: true,
+        },
+        consolidationCost: 5,
         projectedSavings: 25,
+        priority: 'medium' as const,
       },
     ]
 
     const mockDiversificationAnalysis = {
       overallScore: 85.5,
+      tokenDiversification: {
+        uniqueTokens: 3,
+        dominantToken: 'USDC',
+        dominantPercentage: 40.0,
+        recommendations: ['Consider adding more diverse tokens'],
+      },
+      pairDiversification: {
+        uniquePairs: 2,
+        topPairs: [
+          { pair: 'USDC/SOL', percentage: 65.0 },
+          { pair: 'USDC/BTC', percentage: 35.0 },
+        ],
+        concentrationWarnings: ['Consider spreading across more pairs'],
+      },
+      poolDiversification: {
+        uniquePools: 2,
+        averagePoolSize: '1750000',
+        liquidityDistribution: 'balanced' as const,
+      },
     }
 
     it('should calculate insights correctly', () => {
@@ -660,7 +894,25 @@ describe('Portfolio Aggregation Hooks', () => {
     })
 
     it('should generate recommended actions correctly', () => {
-      const lowDiversificationAnalysis = { overallScore: 30 }
+      const lowDiversificationAnalysis = {
+        overallScore: 30,
+        tokenDiversification: {
+          uniqueTokens: 1,
+          dominantToken: 'USDC',
+          dominantPercentage: 80.0,
+          recommendations: ['Add more token diversity']
+        },
+        pairDiversification: {
+          uniquePairs: 1,
+          topPairs: [{ pair: 'USDC/SOL', percentage: 100.0 }],
+          concentrationWarnings: ['High concentration']
+        },
+        poolDiversification: {
+          uniquePools: 1,
+          averagePoolSize: '30000',
+          liquidityDistribution: 'concentrated' as const
+        }
+      }
       const { result } = renderHook(() =>
         usePortfolioInsights(
           mockPortfolioPositions,
@@ -685,7 +937,25 @@ describe('Portfolio Aggregation Hooks', () => {
 
       testCases.forEach(({ score, expected }) => {
         const { result } = renderHook(() =>
-          usePortfolioInsights([], null, [], { overallScore: score })
+          usePortfolioInsights([], null, [], {
+            overallScore: score,
+            tokenDiversification: {
+              uniqueTokens: 1,
+              dominantToken: 'USDC',
+              dominantPercentage: 60.0,
+              recommendations: []
+            },
+            pairDiversification: {
+              uniquePairs: 1,
+              topPairs: [{ pair: 'USDC/SOL', percentage: 100.0 }],
+              concentrationWarnings: []
+            },
+            poolDiversification: {
+              uniquePools: 1,
+              averagePoolSize: '50000',
+              liquidityDistribution: 'balanced' as const
+            }
+          })
         )
 
         expect(result.current.diversificationLevel).toBe(expected)
@@ -716,11 +986,8 @@ describe('Portfolio Aggregation Hooks', () => {
 
   describe('usePortfolioCache', () => {
     const mockCacheStats = {
-      hitRate: 92.5,
-      missRate: 7.5,
-      totalRequests: 180,
-      cacheSize: 80,
-      lastClear: new Date(),
+      count: 80,
+      keys: ['portfolio-key-1', 'portfolio-key-2', 'portfolio-key-3']
     }
 
     it('should initialize with cache stats', () => {
@@ -778,34 +1045,119 @@ describe('Portfolio Aggregation Hooks', () => {
   describe('useComprehensivePortfolioManagement', () => {
     const mockPortfolioPositions = [
       {
+        id: 'portfolio-1',
+        positions: mockPositions,
         tokenPair: 'USDC/SOL',
+        tokenX: {
+          address: new PublicKey('USDC00000000000000000000000000000'),
+          symbol: 'USDC',
+          name: 'USD Coin',
+          decimals: 6,
+          price: 1.0
+        },
+        tokenY: {
+          address: new PublicKey('SOL0000000000000000000000000000000'),
+          symbol: 'SOL',
+          name: 'Solana',
+          decimals: 9,
+          price: 100.0
+        },
         aggregatedMetrics: {
+          totalLiquidity: '3000',
           totalValue: 3000,
+          weightedApr: 15.0,
+          totalFeesEarned: 100,
+          averageActiveBin: 105,
           positionCount: 2,
         },
+        diversificationScore: 75.0,
         riskMetrics: {
+          concentrationRisk: 15.0,
+          correlationRisk: 10.0,
+          liquidityRisk: 15.0,
           overallRiskScore: 30,
         },
+        optimization: {
+          canConsolidate: true,
+          consolidationBenefit: 25.0,
+          recommendedActions: ['Consider consolidating positions']
+        }
       },
     ]
 
     const mockSummary = {
+      totalPositions: 2,
       totalValue: 3000,
-      performanceMetrics: {
-        avgApr: 15.0,
-      },
+      totalLiquidity: '3000',
+      diversifiedPairs: 1,
       topPerformingPairs: ['USDC/SOL'],
+      underPerformingPairs: [],
+      riskDistribution: {
+        low: 1,
+        medium: 1,
+        high: 0,
+      },
+      assetAllocation: [
+        {
+          symbol: 'USDC',
+          percentage: 50,
+          value: 1500,
+          positions: 1
+        },
+        {
+          symbol: 'SOL',
+          percentage: 50,
+          value: 1500,
+          positions: 1
+        }
+      ],
+      performanceMetrics: {
+        totalPnl: 100,
+        totalPnlPercentage: 3.33,
+        bestPosition: mockPositions[0],
+        worstPosition: null,
+        avgApr: 15.0,
+        totalFeesEarned: 100,
+      },
     }
 
     const mockOpportunities = [
       {
-        priority: 'high',
+        id: 'consolidation-1',
+        targetPair: 'USDC/SOL',
+        positions: [mockPositions[0]],
+        currentPools: [mockPositions[0].poolAddress],
+        recommendedPool: new PublicKey('44444444444444444444444444444444'),
+        benefits: {
+          reducedGasCosts: 20.0,
+          improvedLiquidity: 15.0,
+          betterApr: 1.5,
+          simplifiedManagement: true
+        },
+        consolidationCost: 10.0,
         projectedSavings: 50,
+        priority: 'high' as const,
       },
     ]
 
     const mockDiversificationAnalysis = {
       overallScore: 75.5,
+      tokenDiversification: {
+        uniqueTokens: 2,
+        dominantToken: 'USDC',
+        dominantPercentage: 50.0,
+        recommendations: ['Good token diversity']
+      },
+      pairDiversification: {
+        uniquePairs: 1,
+        topPairs: [{ pair: 'USDC/SOL', percentage: 100.0 }],
+        concentrationWarnings: []
+      },
+      poolDiversification: {
+        uniquePools: 1,
+        averagePoolSize: '50000',
+        liquidityDistribution: 'concentrated' as const
+      }
     }
 
     beforeEach(() => {
@@ -887,7 +1239,29 @@ describe('Portfolio Aggregation Hooks', () => {
     })
 
     it('should indicate no data when summary is null', async () => {
-      mockPortfolioAggregationManager.generatePortfolioSummary.mockResolvedValue(null)
+      const mockEmptySummary = {
+        totalPositions: 0,
+        totalValue: 0,
+        totalLiquidity: '0',
+        diversifiedPairs: 0,
+        topPerformingPairs: [],
+        underPerformingPairs: [],
+        riskDistribution: {
+          low: 0,
+          medium: 0,
+          high: 0,
+        },
+        assetAllocation: [],
+        performanceMetrics: {
+          totalPnl: 0,
+          totalPnlPercentage: 0,
+          bestPosition: null,
+          worstPosition: null,
+          avgApr: 0,
+          totalFeesEarned: 0,
+        },
+      }
+      mockPortfolioAggregationManager.generatePortfolioSummary.mockResolvedValue(mockEmptySummary)
 
       const { result } = renderHook(() =>
         useComprehensivePortfolioManagement(mockPositions, mockAnalytics, false)
@@ -910,7 +1284,25 @@ describe('Portfolio Aggregation Hooks', () => {
 
       // Test with low diversification score (< 50)
       mockPortfolioAggregationManager.identifyConsolidationOpportunities.mockResolvedValue([])
-      mockPortfolioAggregationManager.analyzeDiversification.mockReturnValue({ overallScore: 30 })
+      mockPortfolioAggregationManager.analyzeDiversification.mockReturnValue({
+        overallScore: 30,
+        tokenDiversification: {
+          uniqueTokens: 1,
+          dominantToken: 'USDC',
+          dominantPercentage: 90.0,
+          recommendations: ['Add more tokens']
+        },
+        pairDiversification: {
+          uniquePairs: 1,
+          topPairs: [{ pair: 'USDC/SOL', percentage: 100.0 }],
+          concentrationWarnings: ['High concentration']
+        },
+        poolDiversification: {
+          uniquePools: 1,
+          averagePoolSize: '20000',
+          liquidityDistribution: 'concentrated' as const
+        }
+      })
 
       const { result: result2 } = renderHook(() =>
         useComprehensivePortfolioManagement(mockPositions, mockAnalytics, false)
@@ -921,7 +1313,29 @@ describe('Portfolio Aggregation Hooks', () => {
       })
 
       // Test with no opportunities and good diversification
-      mockPortfolioAggregationManager.analyzeDiversification.mockReturnValue({ overallScore: 80 })
+      mockPortfolioAggregationManager.analyzeDiversification.mockReturnValue({
+        overallScore: 80,
+        tokenDiversification: {
+          uniqueTokens: 3,
+          dominantToken: 'USDC',
+          dominantPercentage: 40.0,
+          recommendations: ['Excellent diversification']
+        },
+        pairDiversification: {
+          uniquePairs: 3,
+          topPairs: [
+            { pair: 'USDC/SOL', percentage: 40.0 },
+            { pair: 'USDC/BTC', percentage: 30.0 },
+            { pair: 'SOL/ETH', percentage: 30.0 }
+          ],
+          concentrationWarnings: []
+        },
+        poolDiversification: {
+          uniquePools: 3,
+          averagePoolSize: '100000',
+          liquidityDistribution: 'distributed' as const
+        }
+      })
 
       const { result: result3 } = renderHook(() =>
         useComprehensivePortfolioManagement(mockPositions, mockAnalytics, false)

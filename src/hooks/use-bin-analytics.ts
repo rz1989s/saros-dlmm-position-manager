@@ -8,7 +8,6 @@ import { PublicKey } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { advancedBinOperations, type AdvancedBinAnalysis, type BinLiquidityMetrics } from '@/lib/dlmm/bin-operations'
 import { REFRESH_INTERVALS } from '@/lib/constants'
-import type { BinInfo } from '@/lib/types'
 
 /**
  * Enhanced hook for comprehensive bin analysis
@@ -78,6 +77,9 @@ export function useAdvancedBinAnalysis(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, poolAddress, loading, fetchAnalysis])
 
   // Cleanup
@@ -166,6 +168,9 @@ export function useBinLiquidityMetrics(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, poolAddress, loading, fetchMetrics])
 
   // Cleanup
@@ -192,7 +197,7 @@ export function useBinLiquidityMetrics(
 export function useBinArrayInfo(
   poolAddress?: PublicKey | string,
   binArrayIndex?: number,
-  enableRealtime: boolean = false
+  _enableRealtime: boolean = false
 ) {
   const { publicKey } = useWallet()
   const [binArrayInfo, setBinArrayInfo] = useState<any>(null)
@@ -252,7 +257,7 @@ export function useBinArrayInfo(
 export function useBinReserves(
   positionAddress?: PublicKey | string,
   poolAddress?: PublicKey | string,
-  enableRealtime: boolean = false
+  _enableRealtime: boolean = false
 ) {
   const { publicKey } = useWallet()
   const [reserves, setReserves] = useState<any[]>([])

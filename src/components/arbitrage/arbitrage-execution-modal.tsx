@@ -19,12 +19,9 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
-  Clock,
   DollarSign,
   Target,
-  Activity,
-  Loader2,
-  TrendingUp
+  Loader2
 } from 'lucide-react'
 import { ArbitrageOpportunity } from '@/lib/dlmm/arbitrage'
 import { formatCurrency, formatPercentage } from '@/lib/utils/format'

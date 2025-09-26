@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   ArrowUpDown,
-  TrendingUp,
-  TrendingDown,
   Eye,
   EyeOff,
   Play,
@@ -16,16 +14,14 @@ import {
   Shield,
   AlertTriangle,
   CheckCircle,
-  Clock,
   DollarSign,
   Activity,
   Target,
-  Zap,
   BarChart3,
   Settings
 } from 'lucide-react'
 import { useWalletState } from '@/hooks/use-wallet-integration'
-import { ArbitrageOpportunity, ArbitrageManager, createArbitrageManager } from '@/lib/dlmm/arbitrage'
+import { ArbitrageOpportunity, ArbitrageManager } from '@/lib/dlmm/arbitrage'
 import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 import { ArbitrageOpportunityCard } from './arbitrage-opportunity-card'
 import { ArbitrageSettingsModal } from './arbitrage-settings-modal'
@@ -35,7 +31,7 @@ export function ArbitrageDashboard() {
   const { isConnected, address } = useWalletState()
 
   // Dashboard state
-  const [arbitrageManager, setArbitrageManager] = useState<ArbitrageManager | null>(null)
+  const [arbitrageManager] = useState<ArbitrageManager | null>(null)
   const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([])
   const [systemStats, setSystemStats] = useState<any>({})
   const [isMonitoring, setIsMonitoring] = useState(false)
@@ -72,6 +68,7 @@ export function ArbitrageDashboard() {
 
       return () => clearInterval(interval)
     }
+    return undefined
   }, [arbitrageManager, isMonitoring])
 
   const startMonitoring = async () => {
@@ -357,11 +354,11 @@ export function ArbitrageDashboard() {
         <CardContent>
           {opportunities.length > 0 ? (
             <div className="space-y-4">
-              {opportunities.map((opportunity, index) => (
+              {opportunities.map((opportunity) => (
                 <ArbitrageOpportunityCard
                   key={opportunity.id}
                   opportunity={opportunity}
-                  onExecute={(amount) => {
+                  onExecute={() => {
                     setSelectedOpportunity(opportunity)
                     setShowExecution(true)
                   }}

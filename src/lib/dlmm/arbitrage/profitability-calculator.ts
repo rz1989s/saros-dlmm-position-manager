@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js'
-import { ArbitrageOpportunity, ArbitragePool, RouteStep, ProfitabilityMetrics } from './detection-engine'
-import { TokenInfo } from '@/lib/types'
+import { ArbitrageOpportunity, ArbitragePool, ProfitabilityMetrics } from './detection-engine'
+import { RouteStep } from '@/lib/types'
 
 export interface DetailedProfitabilityAnalysis {
   baseAnalysis: ProfitabilityMetrics
@@ -128,7 +128,7 @@ export class ArbitrageProfitabilityCalculator {
   async calculateDetailedProfitability(
     opportunity: ArbitrageOpportunity,
     inputAmount: number,
-    marketConditions: MarketConditions = {}
+    _marketConditions: MarketConditions = {}
   ): Promise<DetailedProfitabilityAnalysis> {
 
     const baseAnalysis = await this.calculateBaseProfitability(opportunity, inputAmount)
@@ -303,7 +303,7 @@ export class ArbitrageProfitabilityCalculator {
   }
 
   private async calculateRiskAdjustedMetrics(
-    opportunity: ArbitrageOpportunity,
+    _opportunity: ArbitrageOpportunity,
     scenarios: ProfitabilityScenario[]
   ): Promise<RiskAdjustedProfitability> {
 
@@ -358,7 +358,7 @@ export class ArbitrageProfitabilityCalculator {
     return Math.abs(worseLosses.reduce((sum, loss) => sum + loss, 0) / worseLosses.length)
   }
 
-  private calculateExpectedShortfall(profits: number[], probabilities: number[]): number {
+  private calculateExpectedShortfall(profits: number[], _probabilities: number[]): number {
     const negativeProfits = profits.filter(p => p < 0)
     if (negativeProfits.length === 0) return 0
 
@@ -527,7 +527,7 @@ export class ArbitrageProfitabilityCalculator {
   }
 
   private async generateRecommendations(
-    opportunity: ArbitrageOpportunity,
+    _opportunity: ArbitrageOpportunity,
     profitability: ProfitabilityMetrics,
     marketImpact: MarketImpactAnalysis
   ): Promise<ProfitabilityRecommendation[]> {

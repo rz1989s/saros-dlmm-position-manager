@@ -1,9 +1,7 @@
-import { PublicKey } from '@solana/web3.js'
 import { PredictiveCacheManager } from './predictive-cache-manager'
 import type {
   CacheEntry,
   UserBehaviorPattern,
-  CachePrediction,
   PredictiveCacheStats
 } from '@/lib/types'
 
@@ -70,7 +68,7 @@ export class UnifiedCacheOrchestrator {
   private layerConfigs: Map<string, CacheLayer> = new Map()
   private predictiveManager: PredictiveCacheManager
   private metrics: Map<string, CacheMetrics> = new Map()
-  private cleanupInterval?: NodeJS.Timer
+  private cleanupInterval?: NodeJS.Timeout
   private config: CacheConfiguration
   private startTime: number = Date.now()
 
@@ -265,19 +263,12 @@ export class UnifiedCacheOrchestrator {
     layer: string,
     key: string,
     fetcher: () => Promise<T>,
-    priority: number = 1
+    _priority: number = 1
   ): Promise<void> {
     if (this.config.enablePredictive) {
       // Add to predictive preload queue
-      const prediction: CachePrediction = {
-        dataType: this.mapLayerToDataType(layer),
-        identifier: key,
-        confidence: 0.8,
-        priority,
-        reasoning: 'Manual preload request',
-        predictedAccessTime: new Date(Date.now() + 10000), // 10 seconds
-        expirationTime: new Date(Date.now() + this.layerConfigs.get(layer)?.ttl || 60000)
-      }
+      // Prediction created for future implementation
+      // const _prediction: CachePrediction = { ... }
 
       // Execute preload in background
       try {
@@ -347,7 +338,6 @@ export class UnifiedCacheOrchestrator {
         break
 
       case 'ttl': // Time To Live
-        const now = Date.now()
         toEvict = entries
           .filter(([, entry]) => this.isExpired(entry))
           .map(([key]) => key)
@@ -435,15 +425,6 @@ export class UnifiedCacheOrchestrator {
     }
   }
 
-  private mapLayerToDataType(layer: string): CachePrediction['dataType'] {
-    switch (layer) {
-      case 'positions': return 'position'
-      case 'pools': return 'pool'
-      case 'oracle': return 'price'
-      case 'portfolio': return 'portfolio'
-      default: return 'analytics'
-    }
-  }
 
   private recordHit(layer: string): void {
     const current = this.hitCounts.get(layer) || 0
@@ -486,7 +467,7 @@ export class UnifiedCacheOrchestrator {
       .reduce((sum, metrics) => sum + metrics.hitRate, 0) / this.metrics.size
 
     const utilization = totalSize / totalCapacity
-    const uptime = Date.now() - this.startTime
+    // const _uptime = Date.now() - this.startTime // Unused for now
 
     let status: CacheHealth['status'] = 'healthy'
     const issues: string[] = []

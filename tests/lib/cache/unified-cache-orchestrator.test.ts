@@ -2,14 +2,10 @@ import {
   UnifiedCacheOrchestrator,
   createCacheOrchestrator,
   getCacheOrchestrator,
-  type CacheConfiguration,
-  type CacheLayer,
-  type CacheMetrics,
-  type CacheHealth
+  type CacheConfiguration
 } from '@/lib/cache/unified-cache-orchestrator'
 import { PredictiveCacheManager } from '@/lib/cache/predictive-cache-manager'
-import type { CacheEntry, UserBehaviorPattern } from '@/lib/types'
-import { PublicKey } from '@solana/web3.js'
+import type { UserBehaviorPattern } from '@/lib/types'
 
 // Mock PredictiveCacheManager
 jest.mock('@/lib/cache/predictive-cache-manager')
@@ -628,7 +624,8 @@ describe('UnifiedCacheOrchestrator', () => {
           walletConnected: true,
           positionCount: 3,
           lastRefresh: new Date()
-        }
+        },
+        metadata: {}
       }
 
       orchestrator.recordUserBehavior(pattern)
@@ -647,6 +644,7 @@ describe('UnifiedCacheOrchestrator', () => {
         timestamp: new Date(),
         action: 'view',
         target: 'pool:ABC123',
+        metadata: {},
         context: {
           route: '/positions',
           timeOnPage: 5000,
@@ -704,7 +702,7 @@ describe('UnifiedCacheOrchestrator', () => {
       await orchestrator.set('oracle', 'concurrent-key', { data: 'concurrent' })
 
       // Simulate concurrent reads
-      const promises = Array.from({ length: 10 }, (_, i) =>
+      const promises = Array.from({ length: 10 }, () =>
         orchestrator.get('oracle', 'concurrent-key')
       )
 
@@ -922,7 +920,7 @@ describe('UnifiedCacheOrchestrator', () => {
         { layer: 'unknown', expectedType: 'analytics' }
       ]
 
-      for (const { layer, expectedType } of testCases) {
+      for (const { layer } of testCases) {
         await orchestrator.preloadData(layer, 'test-key', async () => ({ test: 'data' }))
       }
 

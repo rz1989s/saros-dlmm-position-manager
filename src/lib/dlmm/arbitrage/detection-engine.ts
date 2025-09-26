@@ -1,5 +1,4 @@
 import { Connection, PublicKey } from '@solana/web3.js'
-import { BinData } from '@saros-finance/dlmm-sdk'
 import { TokenInfo } from '@/lib/types'
 
 export interface ArbitrageOpportunity {
@@ -19,11 +18,17 @@ export interface ArbitragePool {
   poolAddress: PublicKey
   tokenX: TokenInfo
   tokenY: TokenInfo
-  activeBin: BinData
+  activeBin: {
+    binId: number
+    price: number
+    liquidityX: string
+    liquidityY: string
+  }
   liquidity: number
   volume24h: number
   fees: number
   slippage: number
+  lastUpdated: Date
 }
 
 export interface ArbitragePath {
@@ -32,6 +37,8 @@ export interface ArbitragePath {
   route: RouteStep[]
   totalDistance: number
   complexity: 'simple' | 'moderate' | 'complex'
+  estimatedGas: number
+  priceImpact: number
 }
 
 export interface RouteStep {
@@ -95,18 +102,16 @@ interface ArbitragePattern {
 }
 
 export class CrossPoolArbitrageEngine {
-  private connection: Connection
   private trackedPools: Map<string, ArbitragePool> = new Map()
   private opportunities: Map<string, ArbitrageOpportunity> = new Map()
   private patterns: ArbitragePattern[]
   private isMonitoring = false
-  private monitoringInterval?: NodeJS.Timer
+  private monitoringInterval?: NodeJS.Timeout
   private readonly UPDATE_INTERVAL_MS = 5000
   private readonly MIN_PROFIT_USD = 10
   private readonly MAX_RISK_SCORE = 0.7
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     this.patterns = this.initializeArbitragePatterns()
   }
 
@@ -241,11 +246,17 @@ export class CrossPoolArbitrageEngine {
       poolAddress,
       tokenX,
       tokenY,
-      activeBin: {} as BinData, // Would fetch actual bin data
+      activeBin: {
+        binId: 0,
+        price: 0,
+        liquidityX: '0',
+        liquidityY: '0'
+      }, // Would fetch actual bin data
       liquidity: 100000, // Would fetch actual liquidity
       volume24h: 50000, // Would fetch actual volume
       fees: 0.003, // 0.3% fee tier
-      slippage: 0.001 // Current slippage estimate
+      slippage: 0.001, // Current slippage estimate
+      lastUpdated: new Date()
     }
   }
 
@@ -376,7 +387,9 @@ export class CrossPoolArbitrageEngine {
           }
         ],
         totalDistance: 2,
-        complexity: 'simple'
+        complexity: 'simple',
+        estimatedGas: 200000,
+        priceImpact: 0.002
       },
       profitability: {
         grossProfit,
@@ -435,12 +448,12 @@ export class CrossPoolArbitrageEngine {
     }
   }
 
-  private calculateTriangularArbitrageOpportunity(path: ArbitragePool[]): ArbitrageOpportunity | null {
+  private calculateTriangularArbitrageOpportunity(_path: ArbitragePool[]): ArbitrageOpportunity | null {
     // Implementation would calculate triangular arbitrage profitability
     return null // Placeholder
   }
 
-  private calculateMultiHopArbitrageOpportunity(path: ArbitragePool[]): ArbitrageOpportunity | null {
+  private calculateMultiHopArbitrageOpportunity(_path: ArbitragePool[]): ArbitrageOpportunity | null {
     // Implementation would calculate multi-hop arbitrage profitability
     return null // Placeholder
   }
@@ -452,12 +465,12 @@ export class CrossPoolArbitrageEngine {
     )
   }
 
-  private findTriangularPath(poolAB: ArbitragePool, poolBC: ArbitragePool, poolCA: ArbitragePool): ArbitragePool[] | null {
+  private findTriangularPath(_poolAB: ArbitragePool, _poolBC: ArbitragePool, _poolCA: ArbitragePool): ArbitragePool[] | null {
     // Implementation would verify triangular path validity
     return null // Placeholder
   }
 
-  private findMultiHopPaths(pools: ArbitragePool[], maxHops: number): ArbitragePool[][] {
+  private findMultiHopPaths(_pools: ArbitragePool[], _maxHops: number): ArbitragePool[][] {
     // Implementation would find valid multi-hop paths
     return [] // Placeholder
   }

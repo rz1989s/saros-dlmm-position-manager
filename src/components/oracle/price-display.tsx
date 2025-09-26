@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTokenPrice, useMultipleTokenPrices } from '@/hooks/use-oracle-prices'
 import { formatCurrency, formatPercentage } from '@/lib/utils'
-import type { PriceData } from '@/lib/types'
 
 interface PriceDisplayProps {
   symbol: string
@@ -29,7 +28,7 @@ export function PriceDisplay({
   showConfidence = false,
   className
 }: PriceDisplayProps) {
-  const { priceData, loading, error, lastUpdate } = useTokenPrice(symbol, enableRealtime)
+  const { priceData, loading, error } = useTokenPrice(symbol, enableRealtime)
 
   if (loading && !priceData) {
     return <Skeleton className={`h-6 w-20 ${className}`} />
@@ -99,7 +98,7 @@ export function MultiPriceDisplay({
   layout = 'horizontal',
   className
 }: MultiPriceDisplayProps) {
-  const { priceData, loading, error, lastUpdate } = useMultipleTokenPrices(symbols, enableRealtime)
+  const { priceData, loading } = useMultipleTokenPrices(symbols, enableRealtime)
 
   if (loading && Object.keys(priceData).length === 0) {
     return (

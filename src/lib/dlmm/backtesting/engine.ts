@@ -11,7 +11,7 @@ import {
 } from '@/lib/types'
 import { historicalDataService } from './historical-data'
 import { metricsCalculator } from './metrics'
-import { strategyManager, StrategyConfig } from '../strategies'
+import { strategyManager } from '../strategies'
 
 export interface BacktestProgress {
   phase: 'initializing' | 'fetching_data' | 'simulating' | 'calculating_metrics' | 'completed' | 'error'
@@ -357,7 +357,7 @@ export class BacktestEngine {
     config: BacktestConfig,
     position: PositionSnapshot,
     pricePoint: HistoricalPricePoint,
-    historicalData: HistoricalData
+    _historicalData: HistoricalData
   ): Promise<StrategyAction | null> {
     // Convert position to DLMMPosition format for strategy evaluation
     const mockDLMMPosition = {
@@ -417,7 +417,7 @@ export class BacktestEngine {
     position: PositionSnapshot,
     action: StrategyAction,
     pricePoint: HistoricalPricePoint,
-    config: BacktestConfig
+    _config: BacktestConfig
   ): PositionSnapshot {
     // Apply costs and update position
     const totalCosts = action.costs.gas + action.costs.slippage + action.costs.fees
@@ -492,7 +492,7 @@ export class BacktestEngine {
     return position.totalValue > 0 ? annualFees / position.totalValue : 0
   }
 
-  private calculateUtilization(position: PositionSnapshot, pricePoint: HistoricalPricePoint): number {
+  private calculateUtilization(_position: PositionSnapshot, _pricePoint: HistoricalPricePoint): number {
     // Simplified utilization based on how close we are to current price
     return Math.max(0.1, 1 - Math.abs(Math.random() - 0.5)) // Mock calculation
   }

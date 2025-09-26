@@ -45,7 +45,6 @@ export interface FeeOptimizationSettings {
  * Provides intelligent fee tier optimization and management
  */
 export class FeeTierManager {
-  private connection: Connection
   private feeCache = new Map<string, { analysis: FeeAnalysis; timestamp: number }>()
   private readonly cacheDuration = 300000 // 5 minutes for fee analysis
 
@@ -118,8 +117,7 @@ export class FeeTierManager {
     }
   ]
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     console.log('💰 FeeTierManager: Initialized with advanced optimization algorithms')
   }
 
@@ -155,7 +153,7 @@ export class FeeTierManager {
       }
 
       // Determine current fee tier
-      const currentTier = this.getCurrentFeeTier(pool.feeInfo?.baseFactor || 0)
+      const currentTier = this.getCurrentFeeTier(pool.binStep || 0)
 
       // Find optimal fee tier based on settings and market conditions
       const recommendedTier = await this.findOptimalFeeTier(
@@ -405,7 +403,7 @@ export class FeeTierManager {
     currentTier: FeeTier,
     recommendedTier: FeeTier | null,
     liquidityAmount: number,
-    settings: FeeOptimizationSettings
+    _settings: FeeOptimizationSettings
   ): Promise<FeeAnalysis> {
     if (!recommendedTier || currentTier.id === recommendedTier.id) {
       return {

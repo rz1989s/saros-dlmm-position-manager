@@ -2,7 +2,7 @@
 // 🔮 Real-time price data from Pyth Network and Switchboard for DLMM positions
 // Enhances position valuation accuracy and real-time P&L calculations
 
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
 
 export interface PriceData {
@@ -25,7 +25,6 @@ export interface PriceFeedConfig {
  * Integrates multiple price feed providers for accurate token pricing
  */
 export class OraclePriceFeeds {
-  private connection: Connection
   private priceCache = new Map<string, { price: PriceData; timestamp: number }>()
   private readonly cacheDuration = 10000 // 10 seconds for price data
 
@@ -63,8 +62,7 @@ export class OraclePriceFeeds {
     }
   }
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     // logger.debug('🔮 OraclePriceFeeds: Initialized with multi-provider support')
   }
 
@@ -200,7 +198,7 @@ export class OraclePriceFeeds {
   /**
    * Fetch price from Pyth Network (simulated for development)
    */
-  private async fetchPythPrice(symbol: string, priceId: string): Promise<PriceData> {
+  private async fetchPythPrice(symbol: string, _priceId: string): Promise<PriceData> {
     // In production, this would use @pythnetwork/client
     // For development, simulate realistic price data
 
@@ -220,7 +218,7 @@ export class OraclePriceFeeds {
   /**
    * Fetch price from Switchboard (simulated for development)
    */
-  private async fetchSwitchboardPrice(symbol: string, feedId: string): Promise<PriceData> {
+  private async fetchSwitchboardPrice(symbol: string, _feedId: string): Promise<PriceData> {
     // In production, this would use @switchboard-xyz/solana.js
     // For development, simulate realistic price data
 

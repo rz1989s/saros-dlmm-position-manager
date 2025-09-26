@@ -1,9 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import {
-  HistoricalDataService,
-  HistoricalDataConfig
+  HistoricalDataService
 } from '../../../../src/lib/dlmm/backtesting/historical-data'
-import { HistoricalData, BacktestCache } from '../../../../src/lib/types'
 
 // Mock fetch for API testing
 global.fetch = jest.fn()
@@ -203,7 +201,7 @@ describe('HistoricalDataService', () => {
       await new Promise(resolve => setTimeout(resolve, 20))
 
       // Second request should not use cache (will regenerate with different random values)
-      const secondResult = await shortTTLService.fetchHistoricalData(testPoolAddress, startDate, endDate, '1h')
+      await shortTTLService.fetchHistoricalData(testPoolAddress, startDate, endDate, '1h')
 
       const stats = shortTTLService.getCacheStats()
       expect(stats.totalHits).toBe(0) // No cache hits due to expiration
@@ -290,7 +288,7 @@ describe('HistoricalDataService', () => {
       }
 
       // Check each timestamp's liquidity distribution
-      for (const [timestamp, bins] of liquidityByTimestamp) {
+      for (const [, bins] of liquidityByTimestamp) {
         const activeBins = bins.filter((bin: any) => bin.isActive)
         const inactiveBins = bins.filter((bin: any) => !bin.isActive)
 

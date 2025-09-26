@@ -5,19 +5,18 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from '@solana/wallet-adapter-react'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   LedgerWalletAdapter,
 } from '@solana/wallet-adapter-wallets'
-import { clusterApiUrl } from '@solana/web3.js'
+// import { clusterApiUrl } from '@solana/web3.js' // Currently unused
 
 // Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css'
 
-import { RPC_ENDPOINTS, SOLANA_NETWORK } from '@/lib/constants'
+import { RPC_ENDPOINTS } from '@/lib/constants'
 
 interface WalletContextProviderProps {
   children: React.ReactNode
@@ -25,8 +24,6 @@ interface WalletContextProviderProps {
 
 export function WalletContextProvider({ children }: WalletContextProviderProps) {
   // Always use mainnet - devnet has no real DLMM pools
-  const network = WalletAdapterNetwork.Mainnet
-
   const endpoint = useMemo(() => {
     return RPC_ENDPOINTS.mainnet
   }, [])

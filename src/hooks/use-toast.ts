@@ -388,7 +388,7 @@ export function useEnhancedToast() {
     {
       pending = 'Transaction pending...',
       success = 'Transaction successful!',
-      error = 'Transaction failed',
+      error: _error = 'Transaction failed',
     }: {
       pending?: string
       success?: string | ((result: any) => string)

@@ -1,13 +1,17 @@
 {
   "name": "saros-dlmm-position-manager",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:unused": "eslint src --rule \"no-unused-vars: error\"",
+    "lint:all": "eslint src --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
+    "type-check:strict": "tsc --noEmit --strict --noUnusedLocals --noUnusedParameters --noImplicitReturns",
+    "code-quality": "npm run type-check:strict && npm run lint:unused",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

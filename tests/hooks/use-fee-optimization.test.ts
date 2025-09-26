@@ -8,7 +8,7 @@ import {
   useCustomFeeTier,
   useFeeTierCache,
   useComprehensiveFeeManagement
-} from '../../src/hooks/use-fee-optimization'
+} from '@/hooks/use-fee-optimization'
 
 // Mock the wallet adapter
 const mockUseWallet = {
@@ -21,7 +21,7 @@ jest.mock('@solana/wallet-adapter-react', () => ({
 }))
 
 // Mock the fee tier manager
-jest.mock('../../src/lib/dlmm/fee-tiers', () => ({
+jest.mock('@/lib/dlmm/fee-tiers', () => ({
   feeTierManager: {
     analyzeFeeOptimization: jest.fn(),
     getAvailableFeeTiers: jest.fn(),
@@ -34,11 +34,11 @@ jest.mock('../../src/lib/dlmm/fee-tiers', () => ({
 }))
 
 // Get the mocked manager for type checking
-import { feeTierManager } from '../../src/lib/dlmm/fee-tiers'
+import { feeTierManager } from '@/lib/dlmm/fee-tiers'
 const mockFeeTierManager = feeTierManager as jest.Mocked<typeof feeTierManager>
 
 // Mock constants
-jest.mock('../../src/lib/constants', () => ({
+jest.mock('@/lib/constants', () => ({
   REFRESH_INTERVALS: {
     prices: 1000,
     analytics: 2000,
@@ -54,11 +54,8 @@ describe('Fee Optimization Hooks', () => {
 
     // Setup default mock returns
     mockFeeTierManager.getCacheStats.mockReturnValue({
-      hitRate: 90.5,
-      missRate: 9.5,
-      totalRequests: 200,
-      cacheSize: 75,
-      lastClear: new Date(),
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
     })
   })
 
@@ -71,20 +68,37 @@ describe('Fee Optimization Hooks', () => {
     const mockPoolAddress = new PublicKey('33333333333333333333333333333333')
     const mockAnalysis = {
       currentTier: {
+        id: 'standard-tier',
         name: 'Standard',
         baseFeeBps: 30,
         protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Standard fee tier for volatile pairs',
+        recommendedFor: ['volatile pairs', 'medium volume'],
+        minLiquidity: '10000',
+        maxLiquidity: '100000',
+        isActive: true,
       },
       recommendedTier: {
+        id: 'premium-tier',
         name: 'Premium',
         baseFeeBps: 20,
         protocolFeeBps: 3,
+        totalFeeBps: 23,
+        category: 'stable' as const,
+        description: 'Premium fee tier for stable pairs',
+        recommendedFor: ['stable pairs', 'high volume'],
+        minLiquidity: '50000',
+        isActive: true,
       },
       potentialSavings: 150.75,
-      analysisDetails: {
-        volumeAnalysis: { daily: 10000, weekly: 70000 },
-        liquidityAnalysis: { utilization: 85.5 },
-        competitorAnalysis: { avgFee: 25 },
+      savingsPercentage: 12.5,
+      analysisReason: 'Current tier has higher fees than optimal for this volume and volatility profile',
+      optimization: {
+        timeToBreakeven: 7,
+        projectedAnnualSavings: 1800.25,
+        riskLevel: 'low' as const,
       },
     }
 
@@ -233,20 +247,28 @@ describe('Fee Optimization Hooks', () => {
   describe('useAvailableFeeTiers', () => {
     const mockFeeTiers = [
       {
+        id: 'low-fee-tier',
         name: 'Low Fee',
         baseFeeBps: 10,
         protocolFeeBps: 2,
+        totalFeeBps: 12,
+        category: 'stable' as const,
         description: 'Low volatility pairs',
         recommendedFor: ['stablecoins'],
         minLiquidity: '1000',
+        isActive: true,
       },
       {
+        id: 'standard-tier',
         name: 'Standard',
         baseFeeBps: 30,
         protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
         description: 'Most trading pairs',
         recommendedFor: ['general'],
         minLiquidity: '500',
+        isActive: true,
       },
     ]
 
@@ -318,18 +340,32 @@ describe('Fee Optimization Hooks', () => {
     const mockRecommendations = [
       {
         tier: {
+          id: 'premium-tier',
           name: 'Premium',
           baseFeeBps: 20,
           protocolFeeBps: 3,
+          totalFeeBps: 23,
+          category: 'stable' as const,
+          description: 'Premium tier for stable pairs',
+          recommendedFor: ['high volume pairs'],
+          minLiquidity: '1000',
+          isActive: true,
         },
         confidence: 95.5,
         reasoning: 'High volume pair with stable liquidity',
       },
       {
         tier: {
+          id: 'standard-tier',
           name: 'Standard',
           baseFeeBps: 30,
           protocolFeeBps: 5,
+          totalFeeBps: 35,
+          category: 'volatile' as const,
+          description: 'Standard tier for general use',
+          recommendedFor: ['moderate volume pairs'],
+          minLiquidity: '500',
+          isActive: true,
         },
         confidence: 75.0,
         reasoning: 'Good balance for moderate volume',
@@ -400,15 +436,29 @@ describe('Fee Optimization Hooks', () => {
 
   describe('useMigrationImpact', () => {
     const mockCurrentTier = {
+      id: 'standard',
       name: 'Standard',
       baseFeeBps: 30,
       protocolFeeBps: 5,
+      totalFeeBps: 35,
+      category: 'stable' as const,
+      description: 'Standard fee tier for stable pairs',
+      recommendedFor: ['stable', 'moderate'],
+      minLiquidity: '1000',
+      isActive: true,
     }
 
     const mockTargetTier = {
+      id: 'premium',
       name: 'Premium',
       baseFeeBps: 20,
       protocolFeeBps: 3,
+      totalFeeBps: 23,
+      category: 'volatile' as const,
+      description: 'Premium fee tier for volatile pairs',
+      recommendedFor: ['volatile', 'high-activity'],
+      minLiquidity: '5000',
+      isActive: true,
     }
 
     const mockImpact = {
@@ -493,12 +543,16 @@ describe('Fee Optimization Hooks', () => {
 
   describe('useCustomFeeTier', () => {
     const mockCustomTier = {
+      id: 'custom',
       name: 'Custom Tier',
       baseFeeBps: 25,
       protocolFeeBps: 4,
+      totalFeeBps: 29,
+      category: 'custom' as const,
       description: 'Custom tier for specific needs',
       recommendedFor: ['custom'],
       minLiquidity: '2000',
+      isActive: true,
     }
 
     it('should initialize with correct default state', () => {
@@ -560,8 +614,17 @@ describe('Fee Optimization Hooks', () => {
     })
 
     it('should handle loading state during creation', async () => {
-      mockFeeTierManager.createCustomFeeTier.mockImplementation(() => {
-        return new Promise(resolve => setTimeout(() => resolve(mockCustomTier), 100))
+      mockFeeTierManager.createCustomFeeTier.mockImplementation((name, baseFeeBps, protocolFeeBps, description, recommendedFor, minLiquidity) => {
+        return {
+          ...mockCustomTier,
+          name,
+          baseFeeBps,
+          protocolFeeBps,
+          totalFeeBps: baseFeeBps + protocolFeeBps,
+          description,
+          recommendedFor,
+          minLiquidity,
+        }
       })
 
       const { result } = renderHook(() => useCustomFeeTier())
@@ -579,11 +642,8 @@ describe('Fee Optimization Hooks', () => {
 
   describe('useFeeTierCache', () => {
     const mockCacheStats = {
-      hitRate: 90.5,
-      missRate: 9.5,
-      totalRequests: 200,
-      cacheSize: 75,
-      lastClear: new Date(),
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
     }
 
     it('should initialize with cache stats', () => {
@@ -642,26 +702,89 @@ describe('Fee Optimization Hooks', () => {
     const mockPoolAddress = new PublicKey('33333333333333333333333333333333')
 
     const mockAnalysis = {
-      currentTier: { name: 'Standard', baseFeeBps: 30 },
-      recommendedTier: { name: 'Premium', baseFeeBps: 20 },
+      currentTier: {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Most trading pairs',
+        recommendedFor: ['general'],
+        minLiquidity: '500',
+        isActive: true,
+      },
+      recommendedTier: {
+        id: 'premium-tier',
+        name: 'Premium',
+        baseFeeBps: 20,
+        protocolFeeBps: 3,
+        totalFeeBps: 23,
+        category: 'stable' as const,
+        description: 'Premium tier for stable pairs',
+        recommendedFor: ['stable pairs'],
+        minLiquidity: '1000',
+        isActive: true,
+      },
       potentialSavings: 150,
+      savingsPercentage: 12.0,
+      analysisReason: 'Lower fees available for this volume and volatility profile',
+      optimization: {
+        timeToBreakeven: 5,
+        projectedAnnualSavings: 1800,
+        riskLevel: 'low' as const,
+      },
     }
 
     const mockFeeTiers = [
-      { name: 'Low Fee', baseFeeBps: 10 },
-      { name: 'Standard', baseFeeBps: 30 },
+      {
+        id: 'low-fee-tier',
+        name: 'Low Fee',
+        baseFeeBps: 10,
+        protocolFeeBps: 2,
+        totalFeeBps: 12,
+        category: 'stable' as const,
+        description: 'Low volatility pairs',
+        recommendedFor: ['stablecoins'],
+        minLiquidity: '1000',
+        isActive: true,
+      },
+      {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Most trading pairs',
+        recommendedFor: ['general'],
+        minLiquidity: '500',
+        isActive: true,
+      },
     ]
 
     const mockRecommendations = [
-      { tier: { name: 'Premium', baseFeeBps: 20 }, confidence: 95 },
+      {
+        tier: {
+          id: 'premium-tier',
+          name: 'Premium',
+          baseFeeBps: 20,
+          protocolFeeBps: 3,
+          totalFeeBps: 23,
+          category: 'stable' as const,
+          description: 'Premium tier for stable pairs',
+          recommendedFor: ['stable pairs'],
+          minLiquidity: '1000',
+          isActive: true,
+        },
+        confidence: 95,
+        reasoning: 'Better fee structure for current volume and volatility',
+      },
     ]
 
     const mockCacheStats = {
-      hitRate: 90.5,
-      missRate: 9.5,
-      totalRequests: 200,
-      cacheSize: 75,
-      lastClear: new Date(),
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
     }
 
     beforeEach(() => {
@@ -726,7 +849,31 @@ describe('Fee Optimization Hooks', () => {
     })
 
     it('should indicate no data when analysis is missing', async () => {
-      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(null)
+      const mockCurrentTierLocal = {
+        id: 'standard',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'stable' as const,
+        description: 'Standard fee tier for stable pairs',
+        recommendedFor: ['stable', 'moderate'],
+        minLiquidity: '1000',
+        isActive: true,
+      }
+      const mockNullAnalysis = {
+        currentTier: mockCurrentTierLocal,
+        recommendedTier: null,
+        potentialSavings: 0,
+        savingsPercentage: 0,
+        analysisReason: 'No optimization available',
+        optimization: {
+          timeToBreakeven: 0,
+          projectedAnnualSavings: 0,
+          riskLevel: 'low' as const,
+        },
+      }
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockNullAnalysis)
 
       const { result } = renderHook(() =>
         useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')

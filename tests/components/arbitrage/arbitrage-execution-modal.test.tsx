@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { ArbitrageExecutionModal } from '@/components/arbitrage/arbitrage-execution-modal'
@@ -76,11 +76,14 @@ describe('ArbitrageExecutionModal', () => {
     pools: [
       {
         poolAddress: new PublicKey('11111111111111111111111111111111'),
-        tokenX: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-        tokenY: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+        tokenX: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+        tokenY: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+        activeBin: { binId: 0, price: 150, liquidityX: '1000', liquidityY: '150000' },
         liquidity: 150000,
+        volume24h: 500000,
         fees: 0.0025,
-        slippage: 0.001
+        slippage: 0.001,
+        lastUpdated: new Date()
       }
     ],
     profitability: {
@@ -90,21 +93,27 @@ describe('ArbitrageExecutionModal', () => {
       netProfit: 25.43,
       profitMargin: 0.025,
       breakevenAmount: 1000,
-      maxProfitableAmount: 10000
+      maxProfitableAmount: 10000,
+      returnOnInvestment: 0.025
     },
     path: {
-      inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-      outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+      inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+      outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
       route: [
         {
-          poolId: 'pool1',
-          tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9 },
-          tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6 },
-          priceImpact: 0.001
+          poolAddress: new PublicKey('11111111111111111111111111111111'),
+          tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+          tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+          amountIn: 1000,
+          amountOut: 150000,
+          priceImpact: 0.001,
+          binRange: { min: 0, max: 10 }
         }
       ],
       totalDistance: 1,
-      complexity: 'simple'
+      complexity: 'simple',
+      estimatedGas: 5000,
+      priceImpact: 0.001
     },
     risk: {
       overallRisk: 'low',
@@ -115,15 +124,29 @@ describe('ArbitrageExecutionModal', () => {
       competitionRisk: 0.04,
       riskFactors: ['Low liquidity in secondary pool']
     },
+    executionPlan: [
+      {
+        stepNumber: 1,
+        action: 'swap',
+        pool: new PublicKey('11111111111111111111111111111111'),
+        tokenIn: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+        tokenOut: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+        amount: 1000,
+        expectedOutput: 150000,
+        maxSlippage: 0.005,
+        timeoutMs: 30000,
+        dependencies: []
+      }
+    ],
     confidence: 0.85,
     mev: {
+      strategy: 'private_mempool',
       jitterMs: 8500,
-      protectionEnabled: true,
-      frontrunProtection: true,
-      bundleProtection: false
+      maxFrontrunProtection: 0.1,
+      privateMempoolUsed: true,
+      bundlingRequired: false
     },
-    detectedAt: new Date('2023-12-01T10:00:00Z'),
-    expiresAt: new Date('2023-12-01T10:01:00Z'),
+    timestamp: new Date('2023-12-01T10:00:00Z').getTime(),
     ...overrides
   })
 

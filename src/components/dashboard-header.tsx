@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Activity, BarChart3, Home, TrendingUp, Trophy, TestTube } from 'lucide-react'
+import { BarChart3, Home, TrendingUp, Trophy, TestTube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function DashboardHeader() {

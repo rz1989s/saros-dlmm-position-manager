@@ -587,7 +587,7 @@ function createTimeSeriesPoint(
     benchmarkValue,
     position: createMockPosition(),
     marketPrice: portfolioValue * 0.001, // Mock price
-    marketVolume: 50000,
+    marketVolume: '50000',
   }
 }
 
@@ -617,7 +617,7 @@ function createDLMMTimeSeriesPoint(
       },
     },
     marketPrice: portfolioValue * 0.001,
-    marketVolume: 50000,
+    marketVolume: '50000',
   }
 }
 
@@ -651,7 +651,7 @@ function createStrategyAction(
   return {
     timestamp: new Date(date),
     type,
-    parameters: {},
+    parameters: { reason: 'test action' },
     costs: { gas: 0.01, slippage: 0.005, fees: 0.25 },
     result: {
       success,
@@ -670,7 +670,7 @@ function createStrategyActionWithCosts(
   return {
     timestamp: new Date(date),
     type,
-    parameters: {},
+    parameters: { reason: 'test action' },
     costs: { gas, slippage, fees },
     result: {
       success: true,

@@ -4,7 +4,7 @@ jest.mock('../../../../src/lib/dlmm/backtesting/metrics')
 jest.mock('../../../../src/lib/dlmm/strategies')
 
 // Mock PublicKey to avoid SDK imports
-const MockPublicKey = class {
+const MockEnginePublicKey = class {
   constructor(public key: string) {}
   toString() { return this.key }
   equals(other: any) { return this.key === other.key }
@@ -165,7 +165,7 @@ describe('BacktestEngine', () => {
         name: 'Test Backtest',
         strategy: { id: 'rebalance', parameters: {} },
         market: {
-          poolAddress: new MockPublicKey('11111111111111111111111111111112'),
+          poolAddress: new MockEnginePublicKey('11111111111111111111111111111112'),
           tokenXSymbol: 'SOL',
           tokenYSymbol: 'USDC',
         },
@@ -192,7 +192,7 @@ describe('BacktestEngine', () => {
     it('should validate configuration before starting', async () => {
       const invalidConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-31'),
           endDate: new Date('2024-01-01'), // End before start
@@ -212,7 +212,7 @@ describe('BacktestEngine', () => {
     it('should validate positive initial capital', async () => {
       const invalidConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),
@@ -232,7 +232,7 @@ describe('BacktestEngine', () => {
     it('should validate strategy ID is provided', async () => {
       const invalidConfig = {
         strategy: { id: '', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),
@@ -253,7 +253,7 @@ describe('BacktestEngine', () => {
       const progressCallback = jest.fn()
       const mockConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),
@@ -281,7 +281,7 @@ describe('BacktestEngine', () => {
     it('should include initial action in results', async () => {
       const mockConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),
@@ -302,7 +302,7 @@ describe('BacktestEngine', () => {
     it('should generate meaningful insights and recommendations', async () => {
       const mockConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),
@@ -331,7 +331,7 @@ describe('BacktestEngine', () => {
 
       const mockConfig = {
         strategy: { id: 'test', parameters: {} },
-        market: { poolAddress: new MockPublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
+        market: { poolAddress: new MockEnginePublicKey('test'), tokenXSymbol: 'SOL', tokenYSymbol: 'USDC' },
         timeframe: {
           startDate: new Date('2024-01-01'),
           endDate: new Date('2024-01-31'),

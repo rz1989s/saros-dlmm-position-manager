@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 
 // Mock the dlmm client module before importing anything else
 jest.mock('../../../src/lib/dlmm/client', () => ({
@@ -10,7 +10,7 @@ jest.mock('../../../src/lib/dlmm/client', () => ({
   }
 }))
 
-import { OraclePriceFeeds, PriceData, PriceFeedConfig } from '../../../src/lib/oracle/price-feeds'
+import { OraclePriceFeeds, PriceFeedConfig } from '../../../src/lib/oracle/price-feeds'
 
 // Mock Solana Web3.js
 const mockConnection = {
@@ -18,7 +18,6 @@ const mockConnection = {
   getMultipleAccountsInfo: jest.fn(),
 } as unknown as Connection
 
-const mockPublicKey = new PublicKey('11111111111111111111111111111111')
 
 describe('OraclePriceFeeds', () => {
   let oracleFeeds: OraclePriceFeeds

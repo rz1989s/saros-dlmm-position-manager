@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  TrendingUp, 
-  TrendingDown,
+import {
+  TrendingUp,
   DollarSign,
   Target,
   Calendar,
@@ -18,11 +17,11 @@ import {
   BarChart3,
   LineChart
 } from 'lucide-react'
-import { LineChart as RechartsLine, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, ComposedChart, Bar } from 'recharts'
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, ComposedChart, Bar } from 'recharts'
 import { useUserPositions } from '@/hooks/use-dlmm'
 import { useWalletState } from '@/hooks/use-wallet-integration'
 import { useDataSource } from '@/contexts/data-source-context'
-import { formatCurrency, formatPercentage, formatDuration } from '@/lib/utils/format'
+import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 
 interface PnLData {
   date: string
@@ -54,7 +53,6 @@ export function PnLTracker() {
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '90d' | 'all'>('7d')
   const [pnlData, setPnlData] = useState<PnLData[]>([])
   const [positionsPnL, setPositionsPnL] = useState<PositionPnL[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [totalStats, setTotalStats] = useState({
     totalPnL: 0,
     totalInvested: 0,
@@ -157,7 +155,6 @@ export function PnLTracker() {
       
       // Calculate total stats
       const totalInvested = mockPositions.reduce((sum, pos) => sum + pos.initialValue, 0)
-      const totalCurrent = mockPositions.reduce((sum, pos) => sum + pos.currentValue, 0)
       const totalFees = mockPositions.reduce((sum, pos) => sum + pos.totalFees, 0)
       const totalIL = mockPositions.reduce((sum, pos) => sum + pos.impermanentLoss, 0)
       const totalPnL = mockPositions.reduce((sum, pos) => sum + pos.netPnL, 0)
@@ -182,7 +179,6 @@ export function PnLTracker() {
 
   const generateRealPnLData = async () => {
     console.log('🌐 generateRealPnLData: Fetching real P&L data for timeframe:', timeframe)
-    setIsLoading(true)
 
     try {
       if (!isConnected) {
@@ -231,8 +227,6 @@ export function PnLTracker() {
       console.error('❌ generateRealPnLData: Error fetching real P&L data:', error)
       // Fallback to mock data on error
       generatePnLData()
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -487,7 +481,7 @@ export function PnLTracker() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {positionsPnL.map((position, index) => (
+            {positionsPnL.map((position) => (
               <div key={position.positionId} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">

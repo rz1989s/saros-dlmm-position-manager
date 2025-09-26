@@ -9,14 +9,11 @@ import { WalletStatus } from '@/components/wallet-status'
 import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
 import { PositionCardSkeleton } from '@/components/ui/loading-states'
 import { StaggerList } from '@/components/animations/stagger-list'
-import { motion } from 'framer-motion'
-import { fadeInUp } from '@/lib/animations'
 import { 
-  RefreshCw, 
-  Plus, 
-  Filter, 
-  Search, 
-  Loader2,
+  RefreshCw,
+  Plus,
+  Filter,
+  Search,
   AlertCircle,
   Wallet
 } from 'lucide-react'

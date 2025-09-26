@@ -45,36 +45,92 @@ describe('Pool Analytics Hooks', () => {
 
   const mockAnalyticsData = {
     metrics: {
-      tvl: 2500000,
-      volume24h: 1500000,
+      tvl: '2500000',
+      volume24h: '1500000',
+      fees24h: '15000',
       apr: 12.5,
       activeBins: 25,
-      feesGenerated: 15000,
-      priceRange: { min: 95.0, max: 105.0 },
+      priceChange24h: 2.5,
+      volumeChange24h: -5.2,
+      aprChange24h: 1.8,
+      totalBins: 100,
+      lastUpdated: new Date('2024-01-15'),
     },
     feeDistribution: [
-      { binId: 123, fees: 500, percentage: 25.0 },
-      { binId: 124, fees: 750, percentage: 37.5 },
-      { binId: 125, fees: 250, percentage: 12.5 },
+      {
+        binRange: '123-125',
+        percentage: 25.0,
+        feesCollected: '500',
+        binIds: [123],
+      },
+      {
+        binRange: '124-126',
+        percentage: 37.5,
+        feesCollected: '750',
+        binIds: [124],
+      },
+      {
+        binRange: '125-127',
+        percentage: 12.5,
+        feesCollected: '250',
+        binIds: [125],
+      },
     ],
     liquidityConcentration: {
-      concentrated: 0.65,
-      spread: 0.35,
-      bins: [
-        { binId: 123, liquidity: 10000, percentage: 40.0 },
-        { binId: 124, liquidity: 15000, percentage: 60.0 },
-      ],
+      concentrationRatio: 0.65,
+      highActivityBins: 5,
+      mediumActivityBins: 10,
+      lowActivityBins: 85,
+      optimalRange: true,
+      binEfficiency: {
+        highActivity: 95.0,
+        mediumActivity: 70.0,
+        lowActivity: 30.0,
+      },
     },
     historicalPerformance: {
-      performance7d: 5.2,
-      performance30d: 18.7,
-      performance90d: 52.3,
-      maxDrawdown: -8.5,
-      sharpeRatio: 1.85,
-      dataPoints: [
-        { timestamp: new Date('2024-01-01'), value: 100 },
-        { timestamp: new Date('2024-01-02'), value: 105 },
-      ],
+      apr7d: 5.2,
+      apr30d: 18.7,
+      aprChange7d: 2.3,
+      aprChange30d: -1.5,
+      poolAge: 45,
+      poolAgeCategory: 'mature' as const,
+      volume7d: '10500000',
+      volume30d: '45000000',
+      fees7d: '105000',
+      fees30d: '450000',
+    },
+    poolInfo: {
+      address: new PublicKey('58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2'),
+      tokenX: {
+        address: new PublicKey('SOL0000000000000000000000000000000'),
+        symbol: 'SOL',
+        name: 'Solana',
+        decimals: 9,
+        price: 100.0,
+      },
+      tokenY: {
+        address: new PublicKey('USDC00000000000000000000000000000'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0,
+      },
+      activeBin: {
+        binId: 124,
+        price: 100.0,
+        liquidityX: '15000',
+        liquidityY: '1500000',
+        totalLiquidity: '1515000',
+        isActive: true,
+        feeRate: 0.0025,
+        volume24h: '750000',
+      },
+      totalLiquidity: '2500000',
+      volume24h: '1500000',
+      fees24h: '15000',
+      apr: 12.5,
+      createdAt: new Date('2024-01-01'),
     },
   }
 
@@ -112,11 +168,8 @@ describe('Pool Analytics Hooks', () => {
 
     // Setup default mock returns
     mockDlmmClient.getCacheStats.mockReturnValue({
-      hitRate: 95.0,
-      missRate: 5.0,
-      totalRequests: 300,
-      cacheSize: 150,
-      lastClear: new Date(),
+      pairs: { count: 10, oldestTimestamp: Date.now() - 30000 },
+      positions: { count: 25, oldestTimestamp: Date.now() - 60000 },
     })
 
     mockDlmmClient.getPoolAnalytics.mockResolvedValue(mockAnalyticsData)
@@ -329,8 +382,8 @@ describe('Pool Analytics Hooks', () => {
         expect(result.current.analyticsData).toEqual(mockAnalyticsData)
       })
 
-      // Change to undefined
-      rerender({ poolAddress: undefined })
+      // Change to different pool
+      rerender({ poolAddress: new PublicKey('33333333333333333333333333333333') })
 
       await waitFor(() => {
         expect(result.current.analyticsData).toBeNull()
@@ -342,7 +395,7 @@ describe('Pool Analytics Hooks', () => {
     it('should refetch when pool address changes', async () => {
       const newPoolAddress = new PublicKey('44444444444444444444444444444444')
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ poolAddress }) => usePoolAnalytics(poolAddress, false),
         { initialProps: { poolAddress: mockPoolAddress } }
       )
@@ -469,7 +522,7 @@ describe('Pool Analytics Hooks', () => {
     })
 
     it('should handle null pool list response', async () => {
-      mockDlmmClient.getAvailablePools.mockResolvedValue(null)
+      mockDlmmClient.getAvailablePools.mockResolvedValue([])
 
       const { result } = renderHook(() => usePoolList())
 
@@ -615,12 +668,16 @@ describe('Pool Analytics Hooks', () => {
       // Change to different pool with different data
       const newPoolAddress = new PublicKey('44444444444444444444444444444444')
       const newHistoricalData = {
-        performance7d: 3.2,
-        performance30d: 12.7,
-        performance90d: 35.3,
-        maxDrawdown: -5.5,
-        sharpeRatio: 2.15,
-        dataPoints: [],
+        apr7d: 3.2,
+        apr30d: 12.7,
+        aprChange7d: 1.5,
+        aprChange30d: -2.3,
+        poolAge: 30,
+        poolAgeCategory: 'growing' as const,
+        volume7d: '7500000',
+        volume30d: '32000000',
+        fees7d: '75000',
+        fees30d: '320000',
       }
 
       mockDlmmClient.getPoolAnalytics.mockResolvedValue({

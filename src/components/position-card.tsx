@@ -27,8 +27,7 @@ import {
   formatAddress,
   formatDuration
 } from '@/lib/utils/format'
-import { calculatePositionAnalytics, calculatePositionValue } from '@/lib/dlmm/utils'
-import { cardHover, buttonTap, fadeInUp } from '@/lib/animations'
+import { cardHover, buttonTap } from '@/lib/animations'
 import { AnimatedNumber } from '@/components/animations/animated-number'
 import { PriceDisplay } from '@/components/oracle/price-display'
 

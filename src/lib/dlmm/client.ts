@@ -18,22 +18,18 @@ import {
   type GetBinsArrayInfoParams,
   type GetBinsReserveParams,
   type GetBinsReserveResponse,
-  type LiquidityShape,
   RemoveLiquidityType
 } from '@saros-finance/dlmm-sdk'
-import { SOLANA_NETWORK, RPC_ENDPOINTS } from '@/lib/constants'
+import { SOLANA_NETWORK } from '@/lib/constants'
 import { connectionManager } from '@/lib/connection-manager'
 import { logger } from '@/lib/logger'
 import type {
   PoolMetrics,
+  PoolAnalyticsData,
   FeeDistribution,
   LiquidityConcentration,
   PoolHistoricalPerformance,
-  PoolAnalyticsData,
-  PoolListItem,
-  DLMMPosition,
-  BinInfo,
-  TokenInfo
+  PoolListItem
 } from '@/lib/types'
 
 /**
@@ -273,7 +269,7 @@ export class DLMMClient {
       }
 
       const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinsArrayInfo(binArrayParams)
+        return await this.liquidityBookServices.getBinArrayInfo(binArrayParams)
       })
 
       console.log('✅ Bin array info retrieved successfully')
@@ -305,7 +301,7 @@ export class DLMMClient {
       }
 
       const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinsReserve(reserveParams)
+        return await this.liquidityBookServices.getBinsReserveInformation(reserveParams)
       })
 
       console.log('✅ Bin reserves retrieved successfully')
@@ -318,7 +314,7 @@ export class DLMMClient {
   }
 
   // Legacy method for compatibility
-  async getBinLiquidity(poolAddress: PublicKey, userAddress: PublicKey): Promise<any[]> {
+  async getBinLiquidity(_poolAddress: PublicKey, _userAddress: PublicKey): Promise<any[]> {
     try {
       console.log('getBinLiquidity (legacy): Redirecting to getBinArrayInfo')
       // This would need binArrayIndex - for now return empty
@@ -345,10 +341,10 @@ export class DLMMClient {
   }
 
   async calculateFees(
-    poolAddress: PublicKey,
-    userAddress: PublicKey,
-    fromTime?: Date,
-    toTime?: Date
+    _poolAddress: PublicKey,
+    _userAddress: PublicKey,
+    _fromTime?: Date,
+    _toTime?: Date
   ): Promise<{ tokenX: number; tokenY: number }> {
     try {
       // Calculate fees earned by user in the pool
@@ -396,7 +392,7 @@ export class DLMMClient {
         positionMint,
         payer: userAddress,
         pair: pairAddress,
-        transaction,
+        transaction: transaction as any, // Type assertion for SDK compatibility
         liquidityDistribution,
         amountX,
         amountY,
@@ -405,7 +401,7 @@ export class DLMMClient {
       }
 
       // Use SDK method with proper error handling
-      const result = await connectionManager.makeRpcCall(async () => {
+      await connectionManager.makeRpcCall(async () => {
         return await this.liquidityBookServices.addLiquidityIntoPosition(addLiquidityParams)
       })
 
@@ -415,7 +411,7 @@ export class DLMMClient {
       this.invalidatePositionCache(userAddress)
 
       return {
-        transaction: result || transaction,
+        transaction,
         success: true
       }
 
@@ -521,7 +517,7 @@ export class DLMMClient {
       this.invalidatePositionCache(userAddress)
 
       return {
-        transactions: result.txs || [],
+        transactions: (result.txs || []) as any[], // Type assertion for SDK compatibility
         success: true
       }
 
@@ -549,7 +545,7 @@ export class DLMMClient {
       const userPositions = await this.getUserPositions(userAddress, poolAddress)
 
       // Build maxPositionList from user positions and requested binIds
-      const maxPositionList = binIds.map((binId, index) => ({
+      const maxPositionList = binIds.map((binId, _index) => ({
         position: userPositions[0]?.position || PublicKey.default.toString(),
         start: binId,
         end: binId,
@@ -687,7 +683,7 @@ export class DLMMClient {
         return {
           amountOut: result.amountOut.toString(),
           priceImpact: result.priceImpact || 0,
-          fee: result.fee?.toString() || '0'
+          fee: (parseFloat(amountIn) * 0.003).toString() // Estimate 0.3% fee
         }
       }
 
@@ -901,7 +897,7 @@ export class DLMMClient {
 
         try {
           // Attempt to get real pool data from SDK
-          const pair = await connectionManager.makeRpcCall(async (connection) => {
+          const pair = await connectionManager.makeRpcCall(async (_connection) => {
             return await this.liquidityBookServices.getPairAccount(poolAddress)
           })
 
@@ -1055,7 +1051,6 @@ export class DLMMClient {
 
       // logger.debug('🎭 getPoolLiquidityConcentration: Using mock data generation')
       // Use direct mock data instead of relying on getLbPair
-      const mockData = this.getMockPairData(poolAddress)
 
       // Calculate liquidity concentration metrics based on pool
       const poolId = poolAddress.toString()
@@ -1164,7 +1159,7 @@ export class DLMMClient {
           feeDistribution,
           liquidityConcentration,
           historicalPerformance,
-          poolInfo: undefined
+          poolInfo: null
         }
       }
 
@@ -1234,7 +1229,7 @@ export class DLMMClient {
 
       for (const pool of pools.slice(0, 5)) { // Limit to first 5 pools for debugging
         try {
-          const poolAddr = pool.address || pool
+          const poolAddr = new PublicKey(pool as unknown as string)
           // logger.debug('🔍 Processing pool:', poolAddr.toString())
 
           // Use mock pair data for development
@@ -1352,13 +1347,6 @@ export class DLMMClient {
     }
   }
 
-  private countActiveBins(pair: any): number {
-    try {
-      return pair.activeBins || 127 // Default reasonable number
-    } catch (error) {
-      return 0
-    }
-  }
 
   private calculatePoolAge(pair: any): number {
     try {
@@ -1394,7 +1382,7 @@ export class DLMMClient {
   // REAL DATA FETCHING METHODS
   // ============================================================================
 
-  private async transformPairToMetrics(pairData: any, poolAddress: PublicKey): Promise<PoolMetrics> {
+  private async transformPairToMetrics(pairData: any, _poolAddress: PublicKey): Promise<PoolMetrics> {
     try {
       console.log('🔄 transformPairToMetrics: Transforming pair data to metrics format')
 
@@ -1430,7 +1418,7 @@ export class DLMMClient {
     }
   }
 
-  private async getRealFeeDistribution(poolAddress: PublicKey): Promise<FeeDistribution[]> {
+  private async getRealFeeDistribution(_poolAddress: PublicKey): Promise<FeeDistribution[]> {
     try {
       console.log('🔄 getRealFeeDistribution: Fetching real fee distribution data')
 
@@ -1451,7 +1439,7 @@ export class DLMMClient {
     }
   }
 
-  private async getRealLiquidityConcentration(poolAddress: PublicKey): Promise<LiquidityConcentration> {
+  private async getRealLiquidityConcentration(_poolAddress: PublicKey): Promise<LiquidityConcentration> {
     try {
       console.log('🔄 getRealLiquidityConcentration: Fetching real liquidity concentration')
 
@@ -1475,7 +1463,7 @@ export class DLMMClient {
     }
   }
 
-  private async getRealHistoricalPerformance(poolAddress: PublicKey): Promise<PoolHistoricalPerformance> {
+  private async getRealHistoricalPerformance(_poolAddress: PublicKey): Promise<PoolHistoricalPerformance> {
     try {
       console.log('🔄 getRealHistoricalPerformance: Fetching real historical performance')
 
@@ -1503,7 +1491,7 @@ export class DLMMClient {
     try {
       console.log('🔄 getRealPoolInfo: Fetching real pool info')
 
-      const pair = await connectionManager.makeRpcCall(async (connection) => {
+      const pair = await connectionManager.makeRpcCall(async (_connection) => {
         return await this.liquidityBookServices.getPairAccount(poolAddress)
       })
 

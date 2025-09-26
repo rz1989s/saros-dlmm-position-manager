@@ -4,11 +4,7 @@
 
 import { Connection, PublicKey } from '@solana/web3.js'
 import {
-  type GetBinsArrayInfoParams,
-  type GetBinsReserveParams,
-  type GetBinsReserveResponse,
-  type Pair,
-  type PositionInfo
+  type GetBinsReserveResponse
 } from '@saros-finance/dlmm-sdk'
 import { dlmmClient } from './client'
 import type { BinInfo, LiquidityDistribution, PriceRange } from '@/lib/types'
@@ -44,12 +40,10 @@ export interface BinLiquidityMetrics {
  * Provides advanced bin analysis and liquidity optimization using SDK v1.4.0
  */
 export class AdvancedBinOperations {
-  private connection: Connection
   private binCache = new Map<string, { data: any; timestamp: number }>()
   private readonly cacheDuration = 15000 // 15 seconds for bin data
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     console.log('🔧 AdvancedBinOperations: Initialized with enhanced SDK integration')
   }
 
@@ -204,10 +198,10 @@ export class AdvancedBinOperations {
     console.log('🔄 Getting enhanced bin array info:', { poolAddress: poolAddress.toString(), binArrayIndex })
 
     try {
-      const params: GetBinsArrayInfoParams = {
+      const params = {
         binArrayIndex,
-        pair: poolAddress,
-        payer: userAddress
+        pairAddress: poolAddress,
+        userAddress: userAddress
       }
 
       const result = await dlmmClient.getBinArrayInfo(params)
@@ -230,10 +224,10 @@ export class AdvancedBinOperations {
     console.log('🔄 Getting enhanced bin reserves for position:', positionAddress.toString())
 
     try {
-      const params: GetBinsReserveParams = {
-        position: positionAddress,
-        pair: pairAddress,
-        payer: userAddress
+      const params = {
+        positionAddress: positionAddress,
+        pairAddress: pairAddress,
+        userAddress: userAddress
       }
 
       const result = await dlmmClient.getBinReserves(params)
@@ -249,8 +243,8 @@ export class AdvancedBinOperations {
    * Analyze bin range for liquidity distribution
    */
   private async analyzeBinRange(
-    poolAddress: PublicKey,
-    userAddress: PublicKey,
+    _poolAddress: PublicKey,
+    _userAddress: PublicKey,
     startBin: number,
     endBin: number
   ): Promise<{
@@ -309,7 +303,7 @@ export class AdvancedBinOperations {
    */
   private calculateOptimalRanges(
     activeId: number,
-    binAnalysis: any
+    _binAnalysis: any
   ): AdvancedBinAnalysis['optimalRanges'] {
     const activePrice = this.calculateBinPrice(activeId)
 
@@ -338,7 +332,7 @@ export class AdvancedBinOperations {
   /**
    * Generate bin recommendations based on analysis
    */
-  private generateBinRecommendations(binAnalysis: any, activeId: number): number[] {
+  private generateBinRecommendations(_binAnalysis: any, activeId: number): number[] {
     const recommendations: number[] = []
 
     // Add active bin
@@ -358,8 +352,8 @@ export class AdvancedBinOperations {
    * Get bin reserves for a range of bins
    */
   private async getBinReservesRange(
-    poolAddress: PublicKey,
-    userAddress: PublicKey,
+    _poolAddress: PublicKey,
+    _userAddress: PublicKey,
     startBin: number,
     endBin: number
   ): Promise<any[]> {

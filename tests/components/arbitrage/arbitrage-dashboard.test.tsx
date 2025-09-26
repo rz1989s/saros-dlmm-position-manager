@@ -1,7 +1,8 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
+import { PublicKey } from '@solana/web3.js'
 import { ArbitrageDashboard } from '@/components/arbitrage/arbitrage-dashboard'
 import type { ArbitrageOpportunity } from '@/lib/dlmm/arbitrage'
 
@@ -89,19 +90,45 @@ describe('ArbitrageDashboard', () => {
   const mockOpportunity: ArbitrageOpportunity = {
     id: 'opp-123',
     type: 'direct',
-    tokenPair: 'SOL/USDC',
     pools: [],
+    path: {
+      inputToken: { symbol: 'SOL', name: 'Solana', decimals: 9, address: new PublicKey('So11111111111111111111111111111111111111112'), price: 150 },
+      outputToken: { symbol: 'USDC', name: 'USD Coin', decimals: 6, address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), price: 1 },
+      route: [],
+      totalDistance: 1,
+      complexity: 'simple',
+      estimatedGas: 5000,
+      priceImpact: 0.001
+    },
     profitability: {
+      grossProfit: 16.00,
       netProfit: 15.67,
       profitMargin: 0.025,
-      gasEstimate: 0.005,
-      slippageImpact: 0.001
+      returnOnInvestment: 0.025,
+      breakevenAmount: 1000,
+      maxProfitableAmount: 10000,
+      gasCosts: 0.005,
+      priorityFees: 0.001
     },
-    riskScore: 0.3,
-    executionComplexity: 'low',
-    timeWindow: 30000,
-    detectedAt: new Date(),
-    executionPath: []
+    risk: {
+      liquidityRisk: 0.1,
+      slippageRisk: 0.1,
+      mevRisk: 0.1,
+      temporalRisk: 0.1,
+      competitionRisk: 0.1,
+      overallRisk: 'low',
+      riskFactors: []
+    },
+    executionPlan: [],
+    mev: {
+      strategy: 'private_mempool',
+      jitterMs: 1000,
+      maxFrontrunProtection: 0.1,
+      privateMempoolUsed: false,
+      bundlingRequired: false
+    },
+    timestamp: Date.now(),
+    confidence: 0.85
   }
 
   beforeEach(() => {
@@ -220,7 +247,6 @@ describe('ArbitrageDashboard', () => {
     })
 
     it('enables refresh button when not monitoring', async () => {
-      const user = userEvent.setup()
       render(<ArbitrageDashboard />)
 
       const refreshButton = screen.getByText('Refresh')
@@ -256,7 +282,7 @@ describe('ArbitrageDashboard', () => {
           <div>
             {opportunities.map((opportunity) => (
               <div key={opportunity.id} data-testid="arbitrage-opportunity-card">
-                <div>{opportunity.tokenPair}</div>
+                <div>{opportunity.pools[0]?.tokenX.symbol}/{opportunity.pools[0]?.tokenY.symbol}</div>
                 <div>${opportunity.profitability.netProfit}</div>
               </div>
             ))}
@@ -316,7 +342,7 @@ describe('ArbitrageDashboard', () => {
       // Create a mock component that has opportunities
       const MockDashboardWithOpps = () => {
         const [showExecution, setShowExecution] = React.useState(false)
-        const [selectedOpportunity, setSelectedOpportunity] = React.useState(null)
+        const [selectedOpportunity, setSelectedOpportunity] = React.useState<ArbitrageOpportunity | null>(null)
 
         return (
           <div>
@@ -394,6 +420,7 @@ describe('ArbitrageDashboard', () => {
             }, 5000)
             return () => clearInterval(interval)
           }
+          return undefined
         }, [isMonitoring])
 
         return (
@@ -421,7 +448,7 @@ describe('ArbitrageDashboard', () => {
   describe('Loading States', () => {
     it('shows loading spinner when system is starting', () => {
       const MockLoadingDashboard = () => {
-        const [isLoading, setIsLoading] = React.useState(true)
+        const [isLoading, _setIsLoading] = React.useState(true)
 
         return (
           <button disabled={isLoading}>

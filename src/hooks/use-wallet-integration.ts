@@ -5,8 +5,6 @@ import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { 
   Transaction, 
   TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction,
   PublicKey,
 } from '@solana/web3.js'
 import { DEFAULT_PRIORITY_FEE } from '@/lib/constants'
@@ -120,7 +118,7 @@ export function useWalletIntegration() {
         )
       )
 
-      return results.map((result, index) => {
+      return results.map((result) => {
         if (result.status === 'fulfilled') {
           return {
             signature: result.value,

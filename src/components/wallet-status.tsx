@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Wallet, Copy, ExternalLink, Loader2 } from 'lucide-react'
 import { useWalletState, useWalletIntegration } from '@/hooks/use-wallet-integration'
-import { formatNumber, formatAddress } from '@/lib/utils/format'
+import { formatNumber } from '@/lib/utils/format'
 import { copyToClipboard } from '@/lib/utils'
 
 export function WalletStatus() {

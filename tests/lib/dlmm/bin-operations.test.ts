@@ -1,10 +1,7 @@
 import { PublicKey, Connection } from '@solana/web3.js'
 import {
-  AdvancedBinOperations,
-  type AdvancedBinAnalysis,
-  type BinLiquidityMetrics
+  AdvancedBinOperations
 } from '../../../src/lib/dlmm/bin-operations'
-import type { BinInfo, LiquidityDistribution, PriceRange } from '../../../src/lib/types'
 import {
   type GetBinsArrayInfoParams,
   type GetBinsReserveParams,
@@ -59,6 +56,9 @@ describe('AdvancedBinOperations', () => {
     // Default mock implementations
     mockGetLbPair.mockResolvedValue({
       activeId: 8388608,
+      tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      tokenMintY: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+      binStep: 100,
       feeInfo: { baseFactor: 500 },
       tokenX: {
         address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
@@ -87,8 +87,9 @@ describe('AdvancedBinOperations', () => {
         binId: 8388598 + i,
         reserveX: (Math.random() * 1000).toString(),
         reserveY: (Math.random() * 1000).toString(),
-        price: 100 + (i - 10) * 0.01,
-        isActive: Math.random() > 0.3
+        totalSupply: (Math.random() * 2000).toString(),
+        liquidityShare: (Math.random() * 1000).toString(),
+        binPosistion: Math.floor(Math.random() * 100)
       }))
     )
   })
@@ -189,7 +190,6 @@ describe('AdvancedBinOperations', () => {
 
     it('should calculate optimal ranges with correct risk levels', async () => {
       const analysis = await binOperations.getAdvancedBinAnalysis(mockPoolAddress)
-      const activePrice = 100 * Math.pow(1.01, 8388608) // Calculated based on active bin
 
       // Conservative range should be tightest
       const conservativeRange = analysis.optimalRanges.conservative.max - analysis.optimalRanges.conservative.min
@@ -215,7 +215,12 @@ describe('AdvancedBinOperations', () => {
     })
 
     it('should handle different active bin positions', async () => {
-      mockGetLbPair.mockResolvedValue({ activeId: 9000000 })
+      mockGetLbPair.mockResolvedValue({
+        activeId: 9000000,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100
+      })
 
       const analysis = await binOperations.getAdvancedBinAnalysis(mockPoolAddress)
 
@@ -268,8 +273,9 @@ describe('AdvancedBinOperations', () => {
           binId,
           reserveX: liquidity.toString(),
           reserveY: liquidity.toString(),
-          price: 100 + (i - 10) * 0.01,
-          isActive: liquidity > 100
+          totalSupply: (liquidity * 2).toString(),
+          liquidityShare: liquidity.toString(),
+          binPosistion: i
         }
       })
 
@@ -287,8 +293,9 @@ describe('AdvancedBinOperations', () => {
           binId: 8388598 + i,
           reserveX: '0',
           reserveY: '0',
-          price: 100 + (i - 10) * 0.01,
-          isActive: false
+          totalSupply: '0',
+          liquidityShare: '0',
+          binPosistion: i
         }))
       )
 
@@ -393,8 +400,9 @@ describe('AdvancedBinOperations', () => {
           binId: 8388608,
           reserveX: '1000',
           reserveY: '1000',
-          price: 1.0,
-          isActive: true
+          totalSupply: '2000',
+          liquidityShare: '1000',
+          binPosistion: 1
         }
       ]
       mockGetBinReserves.mockResolvedValue(mockResponse)
@@ -424,7 +432,12 @@ describe('AdvancedBinOperations', () => {
     })
 
     it('should handle extreme bin IDs', async () => {
-      mockGetLbPair.mockResolvedValue({ activeId: 0 }) // Minimum bin ID
+      mockGetLbPair.mockResolvedValue({
+        activeId: 0, // Minimum bin ID
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100
+      })
 
       const analysis = await binOperations.getAdvancedBinAnalysis(mockPoolAddress)
 
@@ -527,7 +540,12 @@ describe('AdvancedBinOperations', () => {
 
   describe('edge cases and error handling', () => {
     it('should handle missing active ID gracefully', async () => {
-      mockGetLbPair.mockResolvedValue({ activeId: undefined })
+      mockGetLbPair.mockResolvedValue({
+        activeId: undefined,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100
+      })
 
       const analysis = await binOperations.getAdvancedBinAnalysis(mockPoolAddress)
 
@@ -548,8 +566,8 @@ describe('AdvancedBinOperations', () => {
 
     it('should handle bins with null/undefined reserves', async () => {
       mockGetBinReserves.mockResolvedValue([
-        { binId: 1, reserveX: null, reserveY: undefined, price: 1.0, isActive: false },
-        { binId: 2, reserveX: '100', reserveY: '200', price: 1.01, isActive: true }
+        { binId: 1, reserveX: null, reserveY: undefined, totalSupply: '0', liquidityShare: '0', binPosistion: 0 },
+        { binId: 2, reserveX: '100', reserveY: '200', totalSupply: '300', liquidityShare: '150', binPosistion: 1 }
       ])
 
       const metrics = await binOperations.getBinLiquidityMetrics(mockPoolAddress)
@@ -560,7 +578,7 @@ describe('AdvancedBinOperations', () => {
 
     it('should handle single bin scenarios', async () => {
       mockGetBinReserves.mockResolvedValue([
-        { binId: 8388608, reserveX: '1000', reserveY: '1000', price: 1.0, isActive: true }
+        { binId: 8388608, reserveX: '1000', reserveY: '1000', totalSupply: '2000', liquidityShare: '1000', binPosistion: 0 }
       ])
 
       const metrics = await binOperations.getBinLiquidityMetrics(mockPoolAddress)
@@ -575,8 +593,9 @@ describe('AdvancedBinOperations', () => {
         binId: 8388598 + i,
         reserveX: i === 10 ? '10000' : '0', // All liquidity in middle bin
         reserveY: i === 10 ? '10000' : '0',
-        price: 100 + (i - 10) * 0.01,
-        isActive: i === 10
+        totalSupply: i === 10 ? '20000' : '0',
+        liquidityShare: i === 10 ? '10000' : '0',
+        binPosistion: i
       }))
 
       mockGetBinReserves.mockResolvedValue(extremeBins)
@@ -592,8 +611,9 @@ describe('AdvancedBinOperations', () => {
         binId: 8388598 + i,
         reserveX: '100',
         reserveY: '100',
-        price: i < 10 ? 0 : -1, // Invalid prices
-        isActive: true
+        totalSupply: '200',
+        liquidityShare: '100',
+        binPosistion: i
       }))
 
       mockGetBinReserves.mockResolvedValue(invalidPriceBins)
@@ -608,8 +628,9 @@ describe('AdvancedBinOperations', () => {
         binId: 8388598 + i,
         reserveX: '999999999999999999', // Very large number
         reserveY: '999999999999999999',
-        price: 1000000 + i,
-        isActive: true
+        totalSupply: '1999999999999999998',
+        liquidityShare: '999999999999999999',
+        binPosistion: i
       }))
 
       mockGetBinReserves.mockResolvedValue(largeBins)
@@ -658,8 +679,8 @@ describe('AdvancedBinOperations', () => {
   describe('bin reserve calculations', () => {
     it('should calculate reserves accurately for position', async () => {
       const mockReserves: GetBinsReserveResponse[] = [
-        { binId: 1, reserveX: '1000.5', reserveY: '2000.75', price: 1.0, isActive: true },
-        { binId: 2, reserveX: '1500.25', reserveY: '3000.50', price: 1.01, isActive: true }
+        { binId: 1, reserveX: '1000.5', reserveY: '2000.75', totalSupply: '3001.25', liquidityShare: '1500.625', binPosistion: 0 },
+        { binId: 2, reserveX: '1500.25', reserveY: '3000.50', totalSupply: '4500.75', liquidityShare: '2250.375', binPosistion: 1 }
       ]
 
       mockGetBinReserves.mockResolvedValue(mockReserves)
@@ -677,8 +698,6 @@ describe('AdvancedBinOperations', () => {
         expect(reserve.binId).toBeDefined()
         expect(reserve.reserveX).toBeDefined()
         expect(reserve.reserveY).toBeDefined()
-        expect(reserve.price).toBeDefined()
-        expect(typeof reserve.isActive).toBe('boolean')
       })
     })
 
@@ -688,8 +707,9 @@ describe('AdvancedBinOperations', () => {
           binId: 1,
           reserveX: '1000.123456789',
           reserveY: '2000.987654321',
-          price: 1.000001,
-          isActive: true
+          totalSupply: '3001.11111111',
+          liquidityShare: '1500.555555555',
+          binPosistion: 0
         }
       ]
 

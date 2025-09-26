@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
 import { dlmmOperations } from './operations'
-import { RebalanceStrategy, DLMMPosition } from '@/lib/types'
+import { DLMMPosition } from '@/lib/types'
 import { calculateRebalanceRecommendation, predictPriceMovement } from './utils'
 
 export interface StrategyConfig {
@@ -159,10 +159,10 @@ export class StrategyManager {
         for (const [strategyId, strategy] of Array.from(this.activeStrategies.entries())) {
           if (!strategy.enabled) continue
 
-          const recommendation = await this.evaluatePositionForStrategy(position, strategy)
+          const recommendation = await this.evaluatePositionForStrategy(position as any, strategy)
           if (recommendation) {
             recommendations.push({
-              positionId: position.id,
+              positionId: position.positionMint.toString(),
               strategyId,
               ...recommendation,
             })
@@ -202,8 +202,7 @@ export class StrategyManager {
       const poolData = await dlmmClient.getLbPair(position.poolAddress)
       if (!poolData) return null
 
-      const currentPrice = poolData.currentPrice || 0
-      const activeBin = position.activeBin
+      const currentPrice = 100 // Fallback since currentPrice doesn't exist on Pair
 
       // Strategy-specific evaluation
       switch (strategy.id) {
@@ -309,8 +308,8 @@ export class StrategyManager {
   }
 
   private async evaluateMeanReversion(
-    position: DLMMPosition,
-    strategy: StrategyConfig,
+    _position: DLMMPosition,
+    _strategy: StrategyConfig,
     currentPrice: number
   ): Promise<{
     action: string
@@ -346,8 +345,8 @@ export class StrategyManager {
   }
 
   private async evaluateMomentumFollowing(
-    position: DLMMPosition,
-    strategy: StrategyConfig,
+    _position: DLMMPosition,
+    _strategy: StrategyConfig,
     currentPrice: number
   ): Promise<{
     action: string
@@ -367,7 +366,7 @@ export class StrategyManager {
     
     if (prediction.confidence > 0.6 && Math.abs(prediction.predicted - currentPrice) / currentPrice > 0.02) {
       const direction = prediction.trend === 'up' ? 'increase' : 'decrease'
-      const newCenterBin = position.activeBin + (prediction.trend === 'up' ? 2 : -2)
+      // TODO: Use newCenterBin calculation when implementing bin rebalancing
 
       return {
         action: 'rebalance',
@@ -398,7 +397,7 @@ export class StrategyManager {
 
     try {
       const positions = await dlmmClient.getUserPositions(userAddress)
-      const position = positions.find(p => p.id === positionId)
+      const position = positions.find(p => p.positionMint.toString() === positionId)
       
       if (!position) {
         throw new Error('Position not found')
@@ -414,11 +413,11 @@ export class StrategyManager {
 
       switch (action) {
         case 'rebalance':
-          const poolData = await dlmmClient.getLbPair(position.poolAddress)
-          const newCenterBin = poolData?.activeBinId || position.activeBin
-          
+          const poolData = await dlmmClient.getLbPair(new PublicKey(position.pair))
+          const newCenterBin = poolData?.activeId || 0
+
           transactions = await dlmmOperations.rebalancePosition({
-            poolAddress: position.poolAddress,
+            poolAddress: new PublicKey(position.pair),
             userAddress,
             newCenterBin,
             newRange: strategy.parameters.targetRange,

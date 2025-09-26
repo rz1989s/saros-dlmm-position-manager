@@ -1,48 +1,19 @@
-import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { Wallet } from '@solana/wallet-adapter-react'
 import {
   ArbitrageExecutionPlanner,
-  ExecutionPlan,
-  ExecutionStrategy,
-  MEVProtectionPlan,
-  MEVProtectionStrategy,
-  ContingencyPlan,
-  RiskManagementPlan,
-  ExecutionTiming,
-  ExecutionResults,
   ExecutionPreferences,
-  TransactionGroup,
-  JitterConfiguration,
-  FrontrunProtectionPlan,
-  SandwichProtectionPlan,
-  MEVFailsafe,
-  TriggerCondition,
-  ContingencyResponse,
-  StopLossCondition,
-  PositionSizingStrategy,
-  ExecutionMonitoring,
   ProgressCallback,
   PerformanceMetric
-} from '../../../../src/lib/dlmm/arbitrage/execution-planner'
+} from '@/lib/dlmm/arbitrage/execution-planner'
 import {
   ArbitrageOpportunity,
-  ArbitragePool,
-  ArbitragePath,
-  RouteStep,
-  ProfitabilityMetrics,
-  RiskAssessment,
-  ExecutionStep,
-  MEVProtection
-} from '../../../../src/lib/dlmm/arbitrage/detection-engine'
+  ArbitragePool
+} from '@/lib/dlmm/arbitrage/detection-engine'
 import {
-  DetailedProfitabilityAnalysis,
-  ProfitabilityScenario,
-  RiskAdjustedProfitability,
-  CostBreakdown,
-  MarketImpactAnalysis
-} from '../../../../src/lib/dlmm/arbitrage/profitability-calculator'
-import { TokenInfo } from '../../../../src/lib/types'
-import { BinData } from '@saros-finance/dlmm-sdk'
+  DetailedProfitabilityAnalysis
+} from '@/lib/dlmm/arbitrage/profitability-calculator'
+import { TokenInfo } from '@/lib/types'
 
 // Mock external dependencies
 jest.mock('@solana/web3.js', () => ({
@@ -52,7 +23,6 @@ jest.mock('@solana/web3.js', () => ({
     equals: jest.fn((other) => key === other.toString())
   })),
   Transaction: jest.fn(),
-  VersionedTransaction: jest.fn()
 }))
 
 jest.mock('@solana/wallet-adapter-react', () => ({
@@ -97,7 +67,7 @@ describe('ArbitrageExecutionPlanner', () => {
     } as any
 
     mockTokenX = {
-      address: 'So11111111111111111111111111111111111111112',
+      address: new PublicKey('So11111111111111111111111111111111111111112'),
       symbol: 'SOL',
       name: 'Solana',
       decimals: 9,
@@ -107,7 +77,7 @@ describe('ArbitrageExecutionPlanner', () => {
     }
 
     mockTokenY = {
-      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
       symbol: 'USDC',
       name: 'USD Coin',
       decimals: 6,
@@ -122,11 +92,17 @@ describe('ArbitrageExecutionPlanner', () => {
       poolAddress: mockPoolAddress,
       tokenX: mockTokenX,
       tokenY: mockTokenY,
-      activeBin: {} as BinData,
+      activeBin: {
+        binId: 0,
+        price: 100,
+        liquidityX: '1000000',
+        liquidityY: '100000000'
+      },
       liquidity: 100000,
       volume24h: 50000,
       fees: 0.003,
-      slippage: 0.001
+      slippage: 0.001,
+      lastUpdated: new Date()
     }
 
     mockOpportunity = {
@@ -148,7 +124,9 @@ describe('ArbitrageExecutionPlanner', () => {
           }
         ],
         totalDistance: 2,
-        complexity: 'simple'
+        complexity: 'simple',
+        estimatedGas: 200000,
+        priceImpact: 0.001
       },
       profitability: {
         grossProfit: 20,
@@ -339,11 +317,10 @@ describe('ArbitrageExecutionPlanner', () => {
 
     it('should handle execution preferences', async () => {
       const preferences: ExecutionPreferences = {
-        maxRisk: 0.5,
-        allowParallel: true,
-        useMEVProtection: true,
-        preferSpeed: true,
-        preferCost: false
+        maxSlippage: 0.05,
+        preferredMEVProtection: 'private_mempool',
+        executionTimeframe: 'immediate',
+        riskTolerance: 'moderate'
       }
 
       const plan = await planner.createExecutionPlan(
@@ -633,7 +610,7 @@ describe('ArbitrageExecutionPlanner', () => {
         const createMEVProtectionPlan = (planner as any).createMEVProtectionPlan.bind(planner)
         const plan = await createMEVProtectionPlan(mockOpportunity, { useMEVProtection: true })
 
-        const privateMempoolStrategy = plan.strategies.find(s => s.type === 'private_mempool')
+        const privateMempoolStrategy = plan.strategies.find((s: any) => s.type === 'private_mempool')
         expect(privateMempoolStrategy).toBeDefined()
         expect(privateMempoolStrategy!.effectiveness).toBeGreaterThan(0.5)
       })
@@ -642,7 +619,7 @@ describe('ArbitrageExecutionPlanner', () => {
         const createMEVProtectionPlan = (planner as any).createMEVProtectionPlan.bind(planner)
         const plan = await createMEVProtectionPlan(mockOpportunity, {})
 
-        const timingStrategy = plan.strategies.find(s => s.type === 'timing_randomization')
+        const timingStrategy = plan.strategies.find((s: any) => s.type === 'timing_randomization')
         expect(timingStrategy).toBeDefined()
         expect(timingStrategy!.cost).toBe(0)
       })
@@ -677,7 +654,7 @@ describe('ArbitrageExecutionPlanner', () => {
         const plan = await createMEVProtectionPlan(mockOpportunity, { useMEVProtection: false })
 
         expect(plan.privateMempoolUsed).toBe(false)
-        const privateMempoolStrategy = plan.strategies.find(s => s.type === 'private_mempool')
+        const privateMempoolStrategy = plan.strategies.find((s: any) => s.type === 'private_mempool')
         expect(privateMempoolStrategy).toBeUndefined()
       })
     })
@@ -687,7 +664,7 @@ describe('ArbitrageExecutionPlanner', () => {
         const createContingencyPlans = (planner as any).createContingencyPlans.bind(planner)
         const plans = await createContingencyPlans(mockOpportunity, mockProfitabilityAnalysis)
 
-        const priceMovementPlan = plans.find(p => p.scenario === 'Adverse Price Movement')
+        const priceMovementPlan = plans.find((p: any) => p.scenario === 'Adverse Price Movement')
         expect(priceMovementPlan).toBeDefined()
         expect(priceMovementPlan!.triggerConditions).toBeInstanceOf(Array)
         expect(priceMovementPlan!.response.action).toBe('modify')
@@ -697,7 +674,7 @@ describe('ArbitrageExecutionPlanner', () => {
         const createContingencyPlans = (planner as any).createContingencyPlans.bind(planner)
         const plans = await createContingencyPlans(mockOpportunity, mockProfitabilityAnalysis)
 
-        const competitionPlan = plans.find(p => p.scenario === 'High Competition Detected')
+        const competitionPlan = plans.find((p: any) => p.scenario === 'High Competition Detected')
         expect(competitionPlan).toBeDefined()
         expect(competitionPlan!.response.action).toBe('delay')
         expect(competitionPlan!.response.delayMs).toBeGreaterThan(0)
@@ -707,9 +684,9 @@ describe('ArbitrageExecutionPlanner', () => {
         const createContingencyPlans = (planner as any).createContingencyPlans.bind(planner)
         const plans = await createContingencyPlans(mockOpportunity, mockProfitabilityAnalysis)
 
-        plans.forEach(plan => {
+        plans.forEach((plan: any) => {
           expect(plan.fallbackOptions).toBeInstanceOf(Array)
-          plan.fallbackOptions.forEach(option => {
+          plan.fallbackOptions.forEach((option: any) => {
             expect(typeof option.description).toBe('string')
             expect(typeof option.costImpact).toBe('number')
             expect(typeof option.successProbability).toBe('number')
@@ -735,9 +712,9 @@ describe('ArbitrageExecutionPlanner', () => {
         const createRiskManagementPlan = (planner as any).createRiskManagementPlan.bind(planner)
         const plan = await createRiskManagementPlan(mockOpportunity, mockProfitabilityAnalysis)
 
-        const absoluteLossCondition = plan.stopLossConditions.find(c => c.type === 'absolute_loss')
-        const percentageLossCondition = plan.stopLossConditions.find(c => c.type === 'percentage_loss')
-        const timeBasedCondition = plan.stopLossConditions.find(c => c.type === 'time_based')
+        const absoluteLossCondition = plan.stopLossConditions.find((c: any) => c.type === 'absolute_loss')
+        const percentageLossCondition = plan.stopLossConditions.find((c: any) => c.type === 'percentage_loss')
+        const timeBasedCondition = plan.stopLossConditions.find((c: any) => c.type === 'time_based')
 
         expect(absoluteLossCondition).toBeDefined()
         expect(percentageLossCondition).toBeDefined()
@@ -1084,11 +1061,11 @@ describe('ArbitrageExecutionPlanner', () => {
 
     it('should handle extreme execution preferences', async () => {
       const extremePreferences: ExecutionPreferences = {
-        maxRisk: Number.MAX_VALUE,
-        allowParallel: true,
-        useMEVProtection: true,
-        preferSpeed: true,
-        preferCost: true // Conflicting preferences
+        maxSlippage: 0.99,
+        maxGasFee: Number.MAX_VALUE,
+        preferredMEVProtection: 'private_mempool',
+        executionTimeframe: 'immediate',
+        riskTolerance: 'aggressive'
       }
 
       const plan = await planner.createExecutionPlan(

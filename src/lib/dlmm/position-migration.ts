@@ -2,9 +2,9 @@
 // 🔄 Cross-pool position migration and consolidation system
 // Advanced position management with intelligent migration strategies
 
-import { Connection, PublicKey, Transaction } from '@solana/web3.js'
+import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import type { DLMMPosition, PositionAnalytics } from '@/lib/types'
+import type { DLMMPosition } from '@/lib/types'
 
 export interface MigrationRoute {
   id: string
@@ -75,12 +75,10 @@ export interface CrossPoolOpportunity {
  * Handles cross-pool migrations, consolidations, and optimizations
  */
 export class PositionMigrationManager {
-  private connection: Connection
   private migrationCache = new Map<string, { data: any; timestamp: number }>()
   private readonly cacheDuration = 180000 // 3 minutes for migration analysis
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     console.log('🔄 PositionMigrationManager: Initialized with advanced cross-pool capabilities')
   }
 
@@ -148,7 +146,7 @@ export class PositionMigrationManager {
    */
   async createMigrationPlan(
     opportunities: CrossPoolOpportunity[],
-    userAddress: PublicKey,
+    _userAddress: PublicKey,
     preferences: {
       riskTolerance: 'conservative' | 'moderate' | 'aggressive'
       maxGasCost: number
@@ -567,7 +565,7 @@ export class PositionMigrationManager {
   /**
    * Execute individual migration step
    */
-  private async executeStep(step: MigrationStep, userAddress: PublicKey): Promise<void> {
+  private async executeStep(step: MigrationStep, _userAddress: PublicKey): Promise<void> {
     // Simulate step execution
     console.log(`Executing ${step.type} step...`)
 

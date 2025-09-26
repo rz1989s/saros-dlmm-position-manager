@@ -3,6 +3,9 @@
 // Cache buster: HIGH_LEVEL_SDK_IMPLEMENTATION_${Date.now()}
 
 import { Connection, PublicKey } from '@solana/web3.js'
+// Note: These high-level classes are not available in SDK v1.4.0
+// Commenting out until SDK provides these interfaces
+/*
 import {
   DLMMPool,
   LiquidityPosition,
@@ -13,19 +16,111 @@ import {
   DLMMErrorCode,
   DLMM_DEFAULTS
 } from '@saros-finance/dlmm-sdk'
-import { SOLANA_NETWORK, RPC_ENDPOINTS } from '@/lib/constants'
+*/
+import { SOLANA_NETWORK } from '@/lib/constants'
 import { connectionManager } from '@/lib/connection-manager'
 import type {
   PoolMetrics,
-  FeeDistribution,
-  LiquidityConcentration,
-  PoolHistoricalPerformance,
-  PoolAnalyticsData,
-  PoolListItem,
-  DLMMPosition,
-  BinInfo,
-  TokenInfo
+  PoolAnalyticsData
 } from '@/lib/types'
+
+// Stub types for missing SDK classes (not available in v1.4.0)
+interface DLMMPool {
+  activeId: number
+  feeTier: number
+  binStep: number
+  getCurrentPrice(): number
+  getBinIdFromPrice(price: number): number
+  getActiveBins(count: number): any[]
+  refresh(): Promise<void>
+}
+
+// Stub class for LiquidityPosition (not available in SDK v1.4.0)
+class LiquidityPositionStub {
+  constructor(
+    public positionId: string,
+    public positionMint: string,
+    public pair: string
+  ) {}
+
+  isActive(): boolean { return false }
+  getPriceRange(): { lower: number; upper: number } { return { lower: 0, upper: 0 } }
+  async getTotalValue(): Promise<number> { return 0 }
+  async getAccumulatedFees(): Promise<{ tokenX: number; tokenY: number; total: number }> {
+    return { tokenX: 0, tokenY: 0, total: 0 }
+  }
+  async addLiquidity(_params: any): Promise<TransactionResult> {
+    throw new Error('addLiquidity not implemented in SDK v1.4.0')
+  }
+  async removeLiquidity(_percentage: number): Promise<{ tokenX: number; tokenY: number }> {
+    throw new Error('removeLiquidity not implemented in SDK v1.4.0')
+  }
+  async collectFees(): Promise<{ tokenX: number; tokenY: number }> {
+    throw new Error('collectFees not implemented in SDK v1.4.0')
+  }
+  async close(): Promise<{ tokenX: number; tokenY: number }> {
+    throw new Error('close not implemented in SDK v1.4.0')
+  }
+
+  static async load(_connection: Connection, _positionId: PublicKey): Promise<LiquidityPositionStub> {
+    throw new Error('LiquidityPosition.load not implemented in SDK v1.4.0')
+  }
+
+  static async getUserPositions(_connection: Connection, _userAddress: PublicKey): Promise<LiquidityPositionStub[]> {
+    throw new Error('LiquidityPosition.getUserPositions not implemented in SDK v1.4.0')
+  }
+}
+
+type LiquidityPosition = LiquidityPositionStub
+
+interface PositionParameters {
+  pool: DLMMPool
+  lowerBinId: number
+  upperBinId: number
+  tokenXAmount: number
+  tokenYAmount: number
+  wallet: PublicKey
+  slippageTolerance: number
+}
+
+interface TransactionResult {
+  signature: string
+  success: boolean
+}
+
+class DLMMError extends Error {
+  constructor(public code: DLMMErrorCode, message: string, public context?: any) {
+    super(message)
+  }
+}
+
+enum DLMMErrorCode {
+  INVALID_BIN_RANGE = 'INVALID_BIN_RANGE',
+  INSUFFICIENT_LIQUIDITY = 'INSUFFICIENT_LIQUIDITY',
+  POSITION_NOT_FOUND = 'POSITION_NOT_FOUND',
+  PRICE_OUT_OF_RANGE = 'PRICE_OUT_OF_RANGE'
+}
+
+// Stub implementations for missing SDK functionality
+async function createPosition(_params: PositionParameters): Promise<LiquidityPosition> {
+  throw new Error('createPosition not implemented in SDK v1.4.0')
+}
+
+// Add static methods to stub classes
+class DLMMPoolStub implements DLMMPool {
+  activeId = 0
+  feeTier = 0
+  binStep = 0
+
+  getCurrentPrice(): number { return 0 }
+  getBinIdFromPrice(_price: number): number { return 0 }
+  getActiveBins(_count: number): any[] { return [] }
+  async refresh(): Promise<void> {}
+
+  static async load(_connection: Connection, _poolAddress: PublicKey): Promise<DLMMPool> {
+    throw new Error('DLMMPool.load not implemented in SDK v1.4.0')
+  }
+}
 
 /**
  * High-Level DLMM Client using modern SDK patterns
@@ -75,8 +170,8 @@ export class DLMMClientV2 {
     }
 
     try {
-      // Use high-level SDK method
-      const pool = await DLMMPool.load(this.connection, publicKey)
+      // Use high-level SDK method (stub implementation)
+      const pool = await DLMMPoolStub.load(this.connection, publicKey)
 
       console.log('✅ Pool loaded from SDK:', poolId)
       console.log('  Current Price:', pool.getCurrentPrice())
@@ -164,13 +259,13 @@ export class DLMMClientV2 {
     console.log('🔄 Loading user positions with high-level SDK:', userId)
 
     try {
-      // Use high-level SDK method
-      const positions = await LiquidityPosition.getUserPositions(this.connection, publicKey)
+      // Use high-level SDK method (stub implementation)
+      const positions = await LiquidityPositionStub.getUserPositions(this.connection, publicKey)
 
       console.log('✅ User positions loaded:', positions.length, 'positions')
 
       // Cache positions
-      positions.forEach(position => {
+      positions.forEach((position: LiquidityPosition) => {
         this.positionCache.set(position.positionId, { position, timestamp: Date.now() })
       })
 
@@ -405,14 +500,13 @@ export class DLMMClientV2 {
   /**
    * Get pool analytics using high-level SDK data
    */
-  async getPoolAnalytics(poolAddress: PublicKey | string, useRealData = true): Promise<PoolAnalyticsData> {
+  async getPoolAnalytics(poolAddress: PublicKey | string, _useRealData = true): Promise<PoolAnalyticsData> {
     console.log('🔄 Getting pool analytics with SDK data...')
 
     try {
       const pool = await this.getPool(poolAddress)
 
       // Get current pool state
-      const currentPrice = pool.getCurrentPrice()
       const activeBins = await pool.getActiveBins(20) // Get 20 bins around active
 
       // Calculate metrics from SDK data
@@ -424,7 +518,9 @@ export class DLMMClientV2 {
         activeBins: activeBins.length,
         priceChange24h: 0, // Would need historical price data
         volumeChange24h: 0, // Would need historical volume data
-        aprChange24h: 0 // Would need historical APR data
+        aprChange24h: 0, // Would need historical APR data
+        totalBins: 0, // Would count from pool data
+        lastUpdated: new Date()
       }
 
       // Build comprehensive analytics
@@ -432,24 +528,30 @@ export class DLMMClientV2 {
         metrics,
         feeDistribution: [], // Would calculate from bin fees
         liquidityConcentration: {
-          currentPrice,
-          activeBinRange: {
-            min: Math.min(...activeBins.map(b => b.binId)),
-            max: Math.max(...activeBins.map(b => b.binId))
-          },
-          liquidityDistribution: activeBins.map(bin => ({
-            binId: bin.binId,
-            price: bin.price,
-            liquidity: bin.liquidityX + bin.liquidityY,
-            utilization: bin.liquidityX > 0 && bin.liquidityY > 0 ? 1 : 0.5
-          }))
+          concentrationRatio: 0, // Would calculate from bin liquidity data
+          highActivityBins: 0, // Would count from bin arrays
+          mediumActivityBins: 0, // Would count from bin arrays
+          lowActivityBins: 0, // Would count from bin arrays
+          optimalRange: false, // Would determine from concentration ratio
+          binEfficiency: {
+            highActivity: 0, // Would calculate efficiency metrics
+            mediumActivity: 0,
+            lowActivity: 0
+          }
         },
         historicalPerformance: {
-          priceHistory: [], // Would need historical price data
-          volumeHistory: [], // Would need historical volume data
-          feeHistory: [], // Would need historical fee data
-          aprHistory: [] // Would need historical APR data
-        }
+          apr7d: 0, // Would calculate from historical data
+          apr30d: 0, // Would calculate from historical data
+          aprChange7d: 0, // Would calculate from historical data
+          aprChange30d: 0, // Would calculate from historical data
+          poolAge: 0, // Would calculate from creation date
+          poolAgeCategory: 'new' as const, // Would determine from pool age
+          volume7d: '0', // Would aggregate from historical data
+          volume30d: '0', // Would aggregate from historical data
+          fees7d: '0', // Would aggregate from historical data
+          fees30d: '0' // Would aggregate from historical data
+        },
+        poolInfo: null // Would build from pool data if available
       }
 
       console.log('✅ Pool analytics calculated from SDK data')
@@ -474,8 +576,8 @@ export class DLMMClientV2 {
       return cached.position
     }
 
-    // Load from SDK
-    const position = await LiquidityPosition.load(this.connection, new PublicKey(positionId))
+    // Load from SDK (stub implementation)
+    const position = await LiquidityPositionStub.load(this.connection, new PublicKey(positionId))
 
     // Cache for future use
     this.positionCache.set(positionId, { position, timestamp: Date.now() })

@@ -18,21 +18,13 @@ import {
   type GetBinsArrayInfoParams,
   type GetBinsReserveParams,
   type GetBinsReserveResponse,
-  type LiquidityShape,
-  type RemoveLiquidityType
+  RemoveLiquidityType
 } from '@saros-finance/dlmm-sdk'
-import { SOLANA_NETWORK, RPC_ENDPOINTS } from '@/lib/constants'
+import { SOLANA_NETWORK } from '@/lib/constants'
 import { connectionManager } from '@/lib/connection-manager'
 import type {
   PoolMetrics,
-  FeeDistribution,
-  LiquidityConcentration,
-  PoolHistoricalPerformance,
-  PoolAnalyticsData,
-  PoolListItem,
-  DLMMPosition,
-  BinInfo,
-  TokenInfo
+  PoolAnalyticsData
 } from '@/lib/types'
 
 /**
@@ -285,7 +277,7 @@ export class ImprovedDLMMClient {
         positionMint,
         payer: userAddress,
         pair: pairAddress,
-        transaction,
+        transaction: transaction as any, // Type assertion for SDK compatibility
         liquidityDistribution,
         amountX,
         amountY,
@@ -294,7 +286,7 @@ export class ImprovedDLMMClient {
       }
 
       // Use SDK method with proper error handling
-      const result = await connectionManager.makeRpcCall(async () => {
+      await connectionManager.makeRpcCall(async () => {
         return await this.liquidityBookServices.addLiquidityIntoPosition(addLiquidityParams)
       })
 
@@ -304,7 +296,7 @@ export class ImprovedDLMMClient {
       this.invalidatePositionCache(userAddress)
 
       return {
-        transaction: result || transaction,
+        transaction,
         success: true
       }
 
@@ -366,7 +358,7 @@ export class ImprovedDLMMClient {
       this.invalidatePositionCache(userAddress)
 
       return {
-        transactions: result.txs || [],
+        transactions: (result.txs || []) as any[], // Type assertion for SDK compatibility
         success: true
       }
 
@@ -404,7 +396,7 @@ export class ImprovedDLMMClient {
       }
 
       const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinsArrayInfo(binArrayParams)
+        return await this.liquidityBookServices.getBinArrayInfo(binArrayParams)
       })
 
       console.log('✅ Bin array info retrieved successfully')
@@ -436,7 +428,7 @@ export class ImprovedDLMMClient {
       }
 
       const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinsReserve(reserveParams)
+        return await this.liquidityBookServices.getBinsReserveInformation(reserveParams)
       })
 
       console.log('✅ Bin reserves retrieved successfully')
@@ -510,7 +502,7 @@ export class ImprovedDLMMClient {
   /**
    * Get enhanced pool analytics using SDK data
    */
-  async getPoolAnalytics(poolAddress: PublicKey, useRealData = true): Promise<PoolAnalyticsData> {
+  async getPoolAnalytics(poolAddress: PublicKey, _useRealData = true): Promise<PoolAnalyticsData> {
     console.log('🔄 Getting enhanced pool analytics...')
 
     try {
@@ -528,7 +520,9 @@ export class ImprovedDLMMClient {
         activeBins: 0, // Would count from bin array data
         priceChange24h: 0, // Would need historical price data
         volumeChange24h: 0, // Would need historical volume data
-        aprChange24h: 0 // Would need historical APR data
+        aprChange24h: 0, // Would need historical APR data
+        totalBins: 0, // Would count from pair data
+        lastUpdated: new Date()
       }
 
       // Build comprehensive analytics
@@ -536,16 +530,30 @@ export class ImprovedDLMMClient {
         metrics,
         feeDistribution: [], // Would build from bin fee data
         liquidityConcentration: {
-          currentPrice: 0, // Would calculate from active bin
-          activeBinRange: { min: 0, max: 0 }, // Would get from bin arrays
-          liquidityDistribution: [] // Would build from bin liquidity data
+          concentrationRatio: 0, // Would calculate from bin liquidity data
+          highActivityBins: 0, // Would count from bin arrays
+          mediumActivityBins: 0, // Would count from bin arrays
+          lowActivityBins: 0, // Would count from bin arrays
+          optimalRange: false, // Would determine from concentration ratio
+          binEfficiency: {
+            highActivity: 0, // Would calculate efficiency metrics
+            mediumActivity: 0,
+            lowActivity: 0
+          }
         },
         historicalPerformance: {
-          priceHistory: [],
-          volumeHistory: [],
-          feeHistory: [],
-          aprHistory: []
-        }
+          apr7d: 0, // Would calculate from historical data
+          apr30d: 0, // Would calculate from historical data
+          aprChange7d: 0, // Would calculate from historical data
+          aprChange30d: 0, // Would calculate from historical data
+          poolAge: 0, // Would calculate from creation date
+          poolAgeCategory: 'new' as const, // Would determine from pool age
+          volume7d: '0', // Would aggregate from historical data
+          volume30d: '0', // Would aggregate from historical data
+          fees7d: '0', // Would aggregate from historical data
+          fees30d: '0' // Would aggregate from historical data
+        },
+        poolInfo: null // Would build from pair data if available
       }
 
       console.log('✅ Enhanced pool analytics calculated')

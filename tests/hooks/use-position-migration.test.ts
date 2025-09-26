@@ -39,16 +39,58 @@ describe('Position Migration Hooks', () => {
     {
       id: '1',
       poolAddress: new PublicKey('22222222222222222222222222222222'),
-      tokenX: { address: 'USDC', symbol: 'USDC', decimals: 6 },
-      tokenY: { address: 'SOL', symbol: 'SOL', decimals: 9 },
+      userAddress: new PublicKey('11111111111111111111111111111112'),
+      tokenX: {
+        address: new PublicKey('USDC00000000000000000000000000000'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0
+      },
+      tokenY: {
+        address: new PublicKey('SOL0000000000000000000000000000000'),
+        symbol: 'SOL',
+        name: 'Solana',
+        decimals: 9,
+        price: 100.0
+      },
+      activeBin: 100,
       liquidityAmount: '1000',
+      feesEarned: {
+        tokenX: '10',
+        tokenY: '20'
+      },
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+      isActive: true
     },
     {
       id: '2',
       poolAddress: new PublicKey('33333333333333333333333333333333'),
-      tokenX: { address: 'USDC', symbol: 'USDC', decimals: 6 },
-      tokenY: { address: 'BTC', symbol: 'BTC', decimals: 8 },
+      userAddress: new PublicKey('11111111111111111111111111111112'),
+      tokenX: {
+        address: new PublicKey('USDC00000000000000000000000000000'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0
+      },
+      tokenY: {
+        address: new PublicKey('BTC0000000000000000000000000000000'),
+        symbol: 'BTC',
+        name: 'Bitcoin',
+        decimals: 8,
+        price: 50000.0
+      },
+      activeBin: 200,
       liquidityAmount: '2000',
+      feesEarned: {
+        tokenX: '20',
+        tokenY: '40'
+      },
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+      isActive: true
     },
   ]
 
@@ -62,11 +104,8 @@ describe('Position Migration Hooks', () => {
 
     // Setup default mock returns
     mockPositionMigrationManager.getCacheStats.mockReturnValue({
-      hitRate: 88.5,
-      missRate: 11.5,
-      totalRequests: 150,
-      cacheSize: 60,
-      lastClear: new Date(),
+      count: 60,
+      keys: ['migration-key-1', 'migration-key-2', 'migration-key-3']
     })
   })
 
@@ -78,30 +117,32 @@ describe('Position Migration Hooks', () => {
   describe('useMigrationOpportunities', () => {
     const mockOpportunities = [
       {
-        id: 'opp-1',
-        sourcePosition: mockPositions[0],
+        fromPosition: mockPositions[0],
         targetPool: new PublicKey('44444444444444444444444444444444'),
-        recommendation: 'highly_recommended',
-        projectedBenefit: 250.5,
-        migrationCost: 15.0,
+        targetPair: 'USDC/SOL',
         improvementMetrics: {
+          feeImprovement: 1.5,
           aprImprovement: 2.5,
           liquidityImprovement: 15.0,
-          riskReduction: 10.0,
+          volumeImprovement: 10.0,
         },
+        migrationCost: 15.0,
+        projectedBenefit: 250.5,
+        recommendation: 'highly_recommended' as const,
       },
       {
-        id: 'opp-2',
-        sourcePosition: mockPositions[1],
+        fromPosition: mockPositions[1],
         targetPool: new PublicKey('55555555555555555555555555555555'),
-        recommendation: 'recommended',
-        projectedBenefit: 100.0,
-        migrationCost: 25.0,
+        targetPair: 'USDC/BTC',
         improvementMetrics: {
+          feeImprovement: 0.8,
           aprImprovement: 1.2,
           liquidityImprovement: 5.0,
-          riskReduction: 2.0,
+          volumeImprovement: 3.0,
         },
+        migrationCost: 25.0,
+        projectedBenefit: 100.0,
+        recommendation: 'recommended' as const,
       },
     ]
 
@@ -143,7 +184,7 @@ describe('Position Migration Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => useMigrationOpportunities(mockPositions, false))
 
@@ -234,12 +275,18 @@ describe('Position Migration Hooks', () => {
   describe('useMigrationPlan', () => {
     const mockOpportunities = [
       {
-        id: 'opp-1',
-        sourcePosition: mockPositions[0],
+        fromPosition: mockPositions[0],
         targetPool: new PublicKey('44444444444444444444444444444444'),
-        recommendation: 'highly_recommended',
-        projectedBenefit: 250.5,
+        targetPair: 'USDC/SOL',
+        improvementMetrics: {
+          feeImprovement: 1.5,
+          aprImprovement: 2.5,
+          liquidityImprovement: 15.0,
+          volumeImprovement: 10.0,
+        },
         migrationCost: 15.0,
+        projectedBenefit: 250.5,
+        recommendation: 'highly_recommended' as const,
       },
     ]
 
@@ -252,21 +299,49 @@ describe('Position Migration Hooks', () => {
 
     const mockMigrationPlan = {
       id: 'plan-123',
+      name: 'USDC/SOL Migration Plan',
+      description: 'Migrate position to better pool',
+      positions: [mockPositions[0]],
       routes: [
         {
-          from: mockPositions[0].poolAddress,
-          to: new PublicKey('44444444444444444444444444444444'),
-          steps: ['withdraw', 'swap', 'deposit'],
+          id: 'route-1',
+          fromPool: mockPositions[0].poolAddress,
+          toPool: new PublicKey('44444444444444444444444444444444'),
+          fromPair: 'USDC/SOL',
+          toPair: 'USDC/SOL',
+          migrationReason: 'better_fees' as const,
+          estimatedCost: 15.0,
+          estimatedBenefit: 250.5,
+          timeToBreakeven: 30,
+          confidence: 0.95
         },
       ],
-      steps: [
-        { id: '1', action: 'withdraw', status: 'pending' },
-        { id: '2', action: 'swap', status: 'pending' },
-        { id: '3', action: 'deposit', status: 'pending' },
-      ],
-      estimatedDuration: 5.5,
       totalCost: 15.0,
-      expectedBenefit: 250.5,
+      totalBenefit: 250.5,
+      estimatedDuration: 5.5,
+      riskLevel: 'low' as const,
+      steps: [
+        {
+          id: '1',
+          order: 1,
+          type: 'remove_liquidity' as const,
+          description: 'Remove liquidity from source pool',
+          poolAddress: mockPositions[0].poolAddress,
+          estimatedGas: 0.005,
+          estimatedTime: 30,
+          dependencies: []
+        },
+        {
+          id: '2',
+          order: 2,
+          type: 'add_liquidity' as const,
+          description: 'Add liquidity to target pool',
+          poolAddress: new PublicKey('44444444444444444444444444444444'),
+          estimatedGas: 0.005,
+          estimatedTime: 30,
+          dependencies: ['1']
+        },
+      ],
     }
 
     it('should initialize with correct default state', () => {
@@ -298,7 +373,7 @@ describe('Position Migration Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => useMigrationPlan())
 
@@ -344,7 +419,18 @@ describe('Position Migration Hooks', () => {
 
     it('should handle loading state during creation', async () => {
       mockPositionMigrationManager.createMigrationPlan.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve(mockMigrationPlan), 100))
+        () => new Promise(resolve => setTimeout(() => resolve({
+          id: 'plan-123',
+          name: 'Test Plan',
+          description: 'Test migration plan',
+          positions: [],
+          routes: [],
+          totalCost: 10.0,
+          totalBenefit: 50.0,
+          estimatedDuration: 5.5,
+          riskLevel: 'low' as const,
+          steps: []
+        }), 100))
       )
 
       const { result } = renderHook(() => useMigrationPlan())
@@ -381,25 +467,58 @@ describe('Position Migration Hooks', () => {
   describe('useMigrationExecution', () => {
     const mockMigrationPlan = {
       id: 'plan-123',
+      name: 'Test Migration Plan',
+      description: 'Test migration for execution',
+      positions: [mockPositions[0]],
       routes: [],
-      steps: [
-        { id: '1', action: 'withdraw', status: 'pending' },
-        { id: '2', action: 'swap', status: 'pending' },
-        { id: '3', action: 'deposit', status: 'pending' },
-      ],
+      totalCost: 10.0,
+      totalBenefit: 50.0,
       estimatedDuration: 5.5,
+      riskLevel: 'low' as const,
+      steps: [
+        {
+          id: '1',
+          order: 1,
+          type: 'remove_liquidity' as const,
+          description: 'Remove liquidity',
+          poolAddress: mockPositions[0].poolAddress,
+          estimatedGas: 0.003,
+          estimatedTime: 30,
+          dependencies: []
+        },
+        {
+          id: '2',
+          order: 2,
+          type: 'swap_tokens' as const,
+          description: 'Swap tokens',
+          poolAddress: mockPositions[0].poolAddress,
+          estimatedGas: 0.003,
+          estimatedTime: 30,
+          dependencies: ['1']
+        },
+        {
+          id: '3',
+          order: 3,
+          type: 'add_liquidity' as const,
+          description: 'Add liquidity',
+          poolAddress: mockPositions[0].poolAddress,
+          estimatedGas: 0.003,
+          estimatedTime: 30,
+          dependencies: ['2']
+        },
+      ],
     }
 
     const mockProgress = {
-      id: 'progress-123',
       planId: 'plan-123',
-      status: 'completed',
+      status: 'completed' as const,
       currentStep: 3,
       totalSteps: 3,
       completedSteps: ['1', '2', '3'],
       failedSteps: [],
       startTime: new Date(),
       endTime: new Date(),
+      errors: []
     }
 
     it('should initialize with correct default state', () => {
@@ -411,23 +530,28 @@ describe('Position Migration Hooks', () => {
     })
 
     it('should execute migration plan successfully', async () => {
-      const mockProgressCallback = jest.fn()
       mockPositionMigrationManager.executeMigrationPlan.mockImplementation(
-        (plan, publicKey, progressCallback) => {
+        (plan, _publicKey, progressCallback) => {
           // Simulate progress updates
-          progressCallback({
-            id: 'progress-123',
+          progressCallback?.({
             planId: plan.id,
-            status: 'running',
+            status: 'in_progress',
             currentStep: 1,
             totalSteps: 3,
+            completedSteps: ['1'],
+            failedSteps: [],
+            startTime: new Date(),
+            errors: []
           })
-          progressCallback({
-            id: 'progress-123',
+          progressCallback?.({
             planId: plan.id,
-            status: 'running',
+            status: 'in_progress',
             currentStep: 2,
             totalSteps: 3,
+            completedSteps: ['1', '2'],
+            failedSteps: [],
+            startTime: new Date(),
+            errors: []
           })
           return Promise.resolve(mockProgress)
         }
@@ -451,7 +575,7 @@ describe('Position Migration Hooks', () => {
 
     it('should handle disconnected wallet', async () => {
       mockUseWallet.connected = false
-      mockUseWallet.publicKey = null
+      mockUseWallet.publicKey = new PublicKey('11111111111111111111111111111111')
 
       const { result } = renderHook(() => useMigrationExecution())
 
@@ -496,7 +620,17 @@ describe('Position Migration Hooks', () => {
 
     it('should handle loading state during execution', async () => {
       mockPositionMigrationManager.executeMigrationPlan.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve(mockProgress), 100))
+        () => new Promise(resolve => setTimeout(() => resolve({
+          planId: 'plan-123',
+          status: 'completed' as const,
+          currentStep: 3,
+          totalSteps: 3,
+          completedSteps: ['1', '2', '3'],
+          failedSteps: [],
+          startTime: new Date(),
+          endTime: new Date(),
+          errors: []
+        }), 100))
       )
 
       const { result } = renderHook(() => useMigrationExecution())
@@ -533,25 +667,46 @@ describe('Position Migration Hooks', () => {
   describe('useMigrationInsights', () => {
     const mockOpportunities = [
       {
-        id: 'opp-1',
-        recommendation: 'highly_recommended',
-        projectedBenefit: 250.5,
+        fromPosition: mockPositions[0],
+        targetPool: new PublicKey('44444444444444444444444444444444'),
+        targetPair: 'USDC/SOL',
+        improvementMetrics: {
+          feeImprovement: 1.5,
+          aprImprovement: 2.5,
+          liquidityImprovement: 15.0,
+          volumeImprovement: 10.0,
+        },
         migrationCost: 15.0,
-        improvementMetrics: { aprImprovement: 2.5 },
+        projectedBenefit: 250.5,
+        recommendation: 'highly_recommended' as const,
       },
       {
-        id: 'opp-2',
-        recommendation: 'recommended',
-        projectedBenefit: 100.0,
+        fromPosition: mockPositions[1],
+        targetPool: new PublicKey('55555555555555555555555555555555'),
+        targetPair: 'USDC/BTC',
+        improvementMetrics: {
+          feeImprovement: 0.8,
+          aprImprovement: 1.2,
+          liquidityImprovement: 5.0,
+          volumeImprovement: 3.0,
+        },
         migrationCost: 25.0,
-        improvementMetrics: { aprImprovement: 1.2 },
+        projectedBenefit: 100.0,
+        recommendation: 'recommended' as const,
       },
       {
-        id: 'opp-3',
-        recommendation: 'neutral',
-        projectedBenefit: 50.0,
+        fromPosition: mockPositions[0],
+        targetPool: new PublicKey('66666666666666666666666666666666'),
+        targetPair: 'USDC/ETH',
+        improvementMetrics: {
+          feeImprovement: 0.3,
+          aprImprovement: 0.8,
+          liquidityImprovement: 2.0,
+          volumeImprovement: 1.0,
+        },
         migrationCost: 30.0,
-        improvementMetrics: { aprImprovement: 0.8 },
+        projectedBenefit: 50.0,
+        recommendation: 'neutral' as const,
       },
     ]
 
@@ -597,11 +752,8 @@ describe('Position Migration Hooks', () => {
 
   describe('useMigrationCache', () => {
     const mockCacheStats = {
-      hitRate: 88.5,
-      missRate: 11.5,
-      totalRequests: 150,
-      cacheSize: 60,
-      lastClear: new Date(),
+      count: 60,
+      keys: ['migration-key-1', 'migration-key-2', 'migration-key-3']
     }
 
     it('should initialize with cache stats', () => {
@@ -659,31 +811,58 @@ describe('Position Migration Hooks', () => {
   describe('useComprehensiveMigration', () => {
     const mockOpportunities = [
       {
-        id: 'opp-1',
-        recommendation: 'highly_recommended',
-        projectedBenefit: 250.5,
+        fromPosition: mockPositions[0],
+        targetPool: new PublicKey('44444444444444444444444444444444'),
+        targetPair: 'USDC/SOL',
+        improvementMetrics: {
+          feeImprovement: 1.5,
+          aprImprovement: 2.5,
+          liquidityImprovement: 15.0,
+          volumeImprovement: 10.0,
+        },
         migrationCost: 15.0,
+        projectedBenefit: 250.5,
+        recommendation: 'highly_recommended' as const,
       },
       {
-        id: 'opp-2',
-        recommendation: 'recommended',
-        projectedBenefit: 150.0,
+        fromPosition: mockPositions[1],
+        targetPool: new PublicKey('55555555555555555555555555555555'),
+        targetPair: 'USDC/BTC',
+        improvementMetrics: {
+          feeImprovement: 0.8,
+          aprImprovement: 1.5,
+          liquidityImprovement: 8.0,
+          volumeImprovement: 5.0,
+        },
         migrationCost: 20.0,
+        projectedBenefit: 150.0,
+        recommendation: 'recommended' as const,
       },
     ]
 
     const mockMigrationPlan = {
       id: 'plan-123',
+      name: 'Comprehensive Migration Plan',
+      description: 'Full migration plan',
+      positions: mockPositions,
       routes: [],
-      steps: [],
+      totalCost: 35.0,
+      totalBenefit: 400.5,
       estimatedDuration: 5.5,
+      riskLevel: 'low' as const,
+      steps: [],
     }
 
     const mockProgress = {
-      id: 'progress-123',
-      status: 'completed',
+      planId: 'plan-123',
+      status: 'completed' as const,
       currentStep: 3,
       totalSteps: 3,
+      completedSteps: ['1', '2', '3'],
+      failedSteps: [],
+      startTime: new Date(),
+      endTime: new Date(),
+      errors: []
     }
 
     beforeEach(() => {
@@ -762,14 +941,32 @@ describe('Position Migration Hooks', () => {
     it('should indicate high value opportunities correctly', async () => {
       const highValueOpportunities = [
         {
-          id: 'high-1',
-          recommendation: 'highly_recommended',
+          fromPosition: mockPositions[0],
+          targetPool: new PublicKey('44444444444444444444444444444444'),
+          targetPair: 'USDC/SOL',
+          improvementMetrics: {
+            feeImprovement: 2.0,
+            aprImprovement: 3.0,
+            liquidityImprovement: 20.0,
+            volumeImprovement: 15.0,
+          },
+          migrationCost: 10.0,
           projectedBenefit: 150.0, // Above 100 threshold
+          recommendation: 'highly_recommended' as const,
         },
         {
-          id: 'high-2',
-          recommendation: 'recommended',
+          fromPosition: mockPositions[1],
+          targetPool: new PublicKey('55555555555555555555555555555555'),
+          targetPair: 'USDC/BTC',
+          improvementMetrics: {
+            feeImprovement: 1.0,
+            aprImprovement: 1.5,
+            liquidityImprovement: 5.0,
+            volumeImprovement: 3.0,
+          },
+          migrationCost: 15.0,
           projectedBenefit: 50.0, // Below threshold but highly recommended
+          recommendation: 'recommended' as const,
         },
       ]
 

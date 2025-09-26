@@ -180,6 +180,9 @@ export function usePoolAnalytics(
         intervalRef.current = null
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, poolAddress, loading, refreshing, fetchAnalytics])
 
   // Cleanup on unmount

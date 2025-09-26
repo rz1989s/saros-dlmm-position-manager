@@ -1,9 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import {
-  Download,
   Smartphone,
   Bell,
   Trash2,
@@ -24,9 +22,9 @@ import { ConnectionStatus } from './offline-indicator'
 import { PWAStatus } from './pwa-provider'
 
 export function PWASettings() {
-  const { canPrompt, isInstalled, promptInstall } = useInstallPrompt()
+  const { canPrompt, isInstalled } = useInstallPrompt()
   const { permission, requestPermission, subscribeToPush } = useNotifications()
-  const { cacheSize, clearCache, refreshCacheSize } = useCacheManager()
+  const { clearCache, refreshCacheSize } = useCacheManager()
   const { percentage, usedFormatted, quotaFormatted } = useStorageUsage()
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(permission === 'granted')

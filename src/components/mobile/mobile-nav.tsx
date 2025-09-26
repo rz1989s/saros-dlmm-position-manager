@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { ReactNode, useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Home, BarChart3, Zap, Menu, X, Settings, User } from 'lucide-react'
@@ -155,6 +155,7 @@ export function MobileDrawer({
         document.body.style.overflow = 'unset'
       }
     }
+    return undefined
   }, [isOpen])
 
   const drawerVariants = {
@@ -381,7 +382,7 @@ export function SwipeNavigation({
   className = '',
   threshold = 100
 }: SwipeNavigationProps) {
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info
 
     if (Math.abs(offset.x) > threshold || Math.abs(velocity.x) > 500) {

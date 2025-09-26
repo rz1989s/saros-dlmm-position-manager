@@ -8,8 +8,6 @@ import {
   Shield,
   Award,
   BarChart3,
-  Cpu,
-  Globe,
   Heart,
   CheckCircle,
   ArrowRight,

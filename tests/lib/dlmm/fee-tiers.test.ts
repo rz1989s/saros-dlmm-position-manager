@@ -2,7 +2,6 @@ import { PublicKey, Connection } from '@solana/web3.js'
 import {
   FeeTierManager,
   type FeeTier,
-  type FeeAnalysis,
   type FeeOptimizationSettings
 } from '../../../src/lib/dlmm/fee-tiers'
 

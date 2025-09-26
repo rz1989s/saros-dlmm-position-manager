@@ -5,7 +5,7 @@ jest.mock('../../../../src/lib/dlmm/backtesting/metrics')
 jest.mock('../../../../src/lib/dlmm/strategies')
 
 // Mock PublicKey class
-const MockPublicKey = class {
+const MockIndexPublicKey = class {
   constructor(public key: string) {}
   toString() { return this.key }
   equals(other: any) { return this.key === other.key }
@@ -68,7 +68,7 @@ describe('Backtesting Module Integration', () => {
           name: 'Test Backtest',
           strategy: { id: 'rebalance', parameters: {} },
           market: {
-            poolAddress: new MockPublicKey('11111111111111111111111111111112'),
+            poolAddress: new MockIndexPublicKey('11111111111111111111111111111112'),
             tokenXSymbol: 'SOL',
             tokenYSymbol: 'USDC',
           },
@@ -374,7 +374,7 @@ describe('Backtesting Module Integration', () => {
 
         const comparison = BacktestUtils.compareBacktests(result1 as any, result2 as any)
 
-        const totalReturnComparison = comparison.comparison.find(c => c.metric === 'totalReturn')
+        const totalReturnComparison = comparison.comparison.find((c: any) => c.metric === 'totalReturn')
         expect(totalReturnComparison?.winner).toBe('tie')
       })
     })
@@ -396,7 +396,7 @@ describe('Backtesting Module Integration', () => {
         name: 'Integration Test',
         strategy: { id: 'rebalance', parameters: {} },
         market: {
-          poolAddress: new MockPublicKey('11111111111111111111111111111112'),
+          poolAddress: new MockIndexPublicKey('11111111111111111111111111111112'),
           tokenXSymbol: 'SOL',
           tokenYSymbol: 'USDC',
         },
@@ -422,7 +422,7 @@ describe('Backtesting Module Integration', () => {
         name: 'Invalid Test',
         strategy: { id: '', parameters: {} }, // Invalid
         market: {
-          poolAddress: new MockPublicKey('11111111111111111111111111111112'),
+          poolAddress: new MockIndexPublicKey('11111111111111111111111111111112'),
           tokenXSymbol: 'SOL',
           tokenYSymbol: 'USDC',
         },
@@ -443,7 +443,7 @@ describe('Backtesting Module Integration', () => {
         name: `Test Config ${i}`,
         strategy: { id: 'rebalance', parameters: {} },
         market: {
-          poolAddress: new MockPublicKey('11111111111111111111111111111112'),
+          poolAddress: new MockIndexPublicKey('11111111111111111111111111111112'),
           tokenXSymbol: 'SOL',
           tokenYSymbol: 'USDC',
         },

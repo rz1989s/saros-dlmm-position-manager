@@ -24,6 +24,7 @@ export interface TokenInfo {
   decimals: number
   logoURI?: string
   price: number
+  tags?: string[]
 }
 
 export interface BinInfo {
@@ -651,7 +652,7 @@ export interface PoolAnalyticsData {
   feeDistribution: FeeDistribution[]
   liquidityConcentration: LiquidityConcentration | null
   historicalPerformance: PoolHistoricalPerformance | null
-  poolInfo: PoolInfo
+  poolInfo: PoolInfo | null
 }
 
 export interface PoolListItem {

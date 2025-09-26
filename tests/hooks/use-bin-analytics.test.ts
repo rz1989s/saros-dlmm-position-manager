@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { PublicKey } from '@solana/web3.js'
+import { BN } from '@coral-xyz/anchor'
 import {
   useAdvancedBinAnalysis,
   useBinLiquidityMetrics,
@@ -7,11 +8,11 @@ import {
   useBinReserves,
   useBinCacheManagement,
   useComprehensiveBinData
-} from '../../src/hooks/use-bin-analytics'
+} from '@/hooks/use-bin-analytics'
 
 // Mock the wallet adapter
 const mockUseWallet = {
-  publicKey: new PublicKey('11111111111111111111111111111112'),
+  publicKey: new PublicKey('11111111111111111111111111111112') as PublicKey | null,
   connected: true,
 }
 
@@ -20,7 +21,7 @@ jest.mock('@solana/wallet-adapter-react', () => ({
 }))
 
 // Mock the advanced bin operations
-jest.mock('../../src/lib/dlmm/bin-operations', () => ({
+jest.mock('@/lib/dlmm/bin-operations', () => ({
   advancedBinOperations: {
     getAdvancedBinAnalysis: jest.fn(),
     getBinLiquidityMetrics: jest.fn(),
@@ -32,11 +33,11 @@ jest.mock('../../src/lib/dlmm/bin-operations', () => ({
 }))
 
 // Get the mocked operations for type checking
-import { advancedBinOperations } from '../../src/lib/dlmm/bin-operations'
+import { advancedBinOperations } from '@/lib/dlmm/bin-operations'
 const mockAdvancedBinOperations = advancedBinOperations as jest.Mocked<typeof advancedBinOperations>
 
 // Mock constants
-jest.mock('../../src/lib/constants', () => ({
+jest.mock('@/lib/constants', () => ({
   REFRESH_INTERVALS: {
     prices: 1000, // 1 second for testing
     analytics: 2000, // 2 seconds for testing
@@ -58,11 +59,8 @@ describe('Bin Analytics Hooks', () => {
 
     // Setup default mock returns
     mockAdvancedBinOperations.getCacheStats.mockReturnValue({
-      hitRate: 94.2,
-      missRate: 5.8,
-      totalRequests: 250,
-      cacheSize: 120,
-      lastClear: new Date(),
+      count: 120,
+      oldestTimestamp: Date.now() - 3600000, // 1 hour ago
     })
   })
 
@@ -79,33 +77,71 @@ describe('Bin Analytics Hooks', () => {
           liquidityX: '1000',
           liquidityY: '2000',
           price: 100.5,
-          feesX: '10',
-          feesY: '20',
+          isActive: true,
+          feeRate: 0.0025,
+          volume24h: '50000',
         },
         {
           binId: 124,
           liquidityX: '1500',
           liquidityY: '3000',
           price: 101.0,
-          feesX: '15',
-          feesY: '30',
+          isActive: true,
+          feeRate: 0.0025,
+          volume24h: '75000',
         },
       ],
       recommendedBins: [123, 124, 125],
       liquidityDistribution: {
         concentrated: 0.65,
         spread: 0.35,
-        totalLiquidity: '7500',
+        ranges: [
+          {
+            min: 95.0,
+            max: 105.0,
+            binIds: [123, 124, 125],
+            liquidity: '7500'
+          }
+        ]
       },
-      priceRange: {
-        min: 95.0,
-        max: 105.0,
-        current: 100.5,
+      priceRanges: [
+        {
+          min: 95.0,
+          max: 105.0,
+          binIds: [123, 124, 125],
+          liquidity: '7500'
+        },
+        {
+          min: 90.0,
+          max: 110.0,
+          binIds: [120, 121, 122, 123, 124, 125, 126, 127, 128],
+          liquidity: '15000'
+        }
+      ],
+      optimalRanges: {
+        conservative: {
+          min: 98.0,
+          max: 103.0,
+          binIds: [122, 123, 124, 125],
+          liquidity: '5000'
+        },
+        balanced: {
+          min: 95.0,
+          max: 106.0,
+          binIds: [121, 122, 123, 124, 125, 126],
+          liquidity: '8000'
+        },
+        aggressive: {
+          min: 90.0,
+          max: 112.0,
+          binIds: [118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129],
+          liquidity: '12000'
+        }
       },
-      volatilityMetrics: {
-        shortTerm: 0.12,
-        longTerm: 0.08,
-        trend: 'increasing',
+      binEfficiency: {
+        highActivity: 0.75,
+        mediumActivity: 0.45,
+        lowActivity: 0.15,
       },
     }
 
@@ -255,8 +291,11 @@ describe('Bin Analytics Hooks', () => {
 
   describe('useBinLiquidityMetrics', () => {
     const mockMetrics = {
-      totalLiquidity: 75000,
+      totalLiquidity: '75000',
       activeBinCount: 25,
+      averageLiquidity: '3000',
+      liquidityConcentration: 0.72,
+      priceVolatility: 0.15,
       utilizationRate: 0.85,
       concentrationIndex: 0.72,
       liquidityDepth: {
@@ -533,7 +572,7 @@ describe('Bin Analytics Hooks', () => {
     it('should update when parameters change', async () => {
       mockAdvancedBinOperations.getEnhancedBinArrayInfo.mockResolvedValue(mockBinArrayInfo)
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ index }) => useBinArrayInfo(mockPoolAddress, index, false),
         { initialProps: { index: 5 } }
       )
@@ -565,7 +604,9 @@ describe('Bin Analytics Hooks', () => {
         binId: 123,
         reserveX: '1000',
         reserveY: '2000',
-        liquidityShare: '500',
+        totalSupply: '3000',
+        liquidityShare: new BN('500'),
+        binPosistion: 0,
         feesX: '10',
         feesY: '20',
       },
@@ -573,7 +614,9 @@ describe('Bin Analytics Hooks', () => {
         binId: 124,
         reserveX: '1500',
         reserveY: '3000',
-        liquidityShare: '750',
+        totalSupply: '4500',
+        liquidityShare: new BN('750'),
+        binPosistion: 1,
         feesX: '15',
         feesY: '30',
       },
@@ -709,7 +752,7 @@ describe('Bin Analytics Hooks', () => {
 
       const newPositionAddress = new PublicKey('55555555555555555555555555555555')
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ positionAddress }) => useBinReserves(positionAddress, mockPoolAddress, false),
         { initialProps: { positionAddress: mockPositionAddress } }
       )
@@ -737,11 +780,8 @@ describe('Bin Analytics Hooks', () => {
 
   describe('useBinCacheManagement', () => {
     const mockCacheStats = {
-      hitRate: 94.2,
-      missRate: 5.8,
-      totalRequests: 250,
-      cacheSize: 120,
-      lastClear: new Date(),
+      count: 120,
+      oldestTimestamp: Date.now() - 300000, // 5 minutes ago
     }
 
     it('should initialize with cache stats', () => {
@@ -823,28 +863,68 @@ describe('Bin Analytics Hooks', () => {
   describe('useComprehensiveBinData', () => {
     const mockAnalysis = {
       activeBins: [
-        { binId: 123, liquidityX: '1000', liquidityY: '2000' },
+        { binId: 123, liquidityX: '1000', liquidityY: '2000', price: 100.0, isActive: true, feeRate: 0.0025, volume24h: '5000' },
       ],
       recommendedBins: [123],
       liquidityDistribution: {
         concentrated: 0.65,
         spread: 0.35,
-        totalLiquidity: '3000',
+        ranges: [
+          {
+            min: 95.0,
+            max: 105.0,
+            binIds: [123],
+            liquidity: '3000'
+          }
+        ]
+      },
+      priceRanges: [
+        {
+          min: 95.0,
+          max: 105.0,
+          binIds: [123],
+          liquidity: '3000'
+        }
+      ],
+      optimalRanges: {
+        conservative: {
+          min: 98.0,
+          max: 103.0,
+          binIds: [123],
+          liquidity: '2000'
+        },
+        balanced: {
+          min: 95.0,
+          max: 105.0,
+          binIds: [123],
+          liquidity: '3000'
+        },
+        aggressive: {
+          min: 90.0,
+          max: 110.0,
+          binIds: [123],
+          liquidity: '5000'
+        }
+      },
+      binEfficiency: {
+        highActivity: 0.75,
+        mediumActivity: 0.45,
+        lowActivity: 0.15,
       },
     }
 
     const mockMetrics = {
-      totalLiquidity: 75000,
+      totalLiquidity: '75000',
       activeBinCount: 25,
+      averageLiquidity: '3000',
+      liquidityConcentration: 0.65,
+      priceVolatility: 0.12,
       utilizationRate: 0.85,
     }
 
     const mockCacheStats = {
-      hitRate: 94.2,
-      missRate: 5.8,
-      totalRequests: 250,
-      cacheSize: 120,
-      lastClear: new Date(),
+      count: 120,
+      oldestTimestamp: Date.now() - 300000, // 5 minutes ago
     }
 
     beforeEach(() => {
@@ -900,7 +980,7 @@ describe('Bin Analytics Hooks', () => {
     })
 
     it('should indicate no data when analysis is missing', async () => {
-      mockAdvancedBinOperations.getAdvancedBinAnalysis.mockResolvedValue(null)
+      mockAdvancedBinOperations.getAdvancedBinAnalysis.mockRejectedValue(new Error('Analysis failed'))
 
       const { result } = renderHook(() => useComprehensiveBinData(mockPoolAddress, false))
 
@@ -910,7 +990,7 @@ describe('Bin Analytics Hooks', () => {
     })
 
     it('should indicate no data when metrics is missing', async () => {
-      mockAdvancedBinOperations.getBinLiquidityMetrics.mockResolvedValue(null)
+      mockAdvancedBinOperations.getBinLiquidityMetrics.mockRejectedValue(new Error('Metrics failed'))
 
       const { result } = renderHook(() => useComprehensiveBinData(mockPoolAddress, false))
 

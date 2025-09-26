@@ -20,7 +20,8 @@ interface PriceChartProps {
   data: PriceData[]
   currentPrice: number
   priceChange24h: number
-  onTimeframeChange?: (timeframe: string) => void
+  // eslint-disable-next-line no-unused-vars
+  onTimeframeChange?: (_timeframe: string) => void
   height?: number
 }
 
@@ -50,12 +51,12 @@ const generateMockData = (hours: number): PriceData[] => {
   return data
 }
 
-export function PriceChart({ 
-  data = generateMockData(24), 
+export function PriceChart({
+  data = generateMockData(24),
   currentPrice = 152.45,
   priceChange24h = 0.0325,
-  onTimeframeChange,
-  height = 300 
+  onTimeframeChange, // eslint-disable-line no-unused-vars
+  height = 300
 }: PriceChartProps) {
   const [timeframe, setTimeframe] = useState('24H')
   const [metric, setMetric] = useState<'price' | 'volume' | 'fees' | 'volatility'>('price')
@@ -63,7 +64,6 @@ export function PriceChart({
 
   // Calculate moving average
   const dataWithMA = useMemo(() => {
-    const ma = []
     const period = 5
     
     return data.map((point, index) => {
@@ -81,7 +81,7 @@ export function PriceChart({
     })
   }, [data, metric])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as PriceData & { ma?: number }
       return (
@@ -130,10 +130,6 @@ export function PriceChart({
       case 'volatility': return '#ef4444'
       default: return '#10b981'
     }
-  }
-
-  const getMetricValue = (point: PriceData) => {
-    return point[metric]
   }
 
   const timeframes = ['1H', '4H', '24H', '7D', '30D']

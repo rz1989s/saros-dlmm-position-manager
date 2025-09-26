@@ -126,12 +126,10 @@ export interface RebalancingStrategy {
  * Manages multi-position analysis, consolidation, and optimization
  */
 export class PortfolioAggregationManager {
-  private connection: Connection
   private portfolioCache = new Map<string, { data: any; timestamp: number }>()
   private readonly cacheDuration = 120000 // 2 minutes for portfolio data
 
-  constructor(connection: Connection) {
-    this.connection = connection
+  constructor(_connection: Connection) {
     console.log('📊 PortfolioAggregationManager: Initialized with comprehensive multi-position analysis')
   }
 
@@ -197,7 +195,7 @@ export class PortfolioAggregationManager {
   async generatePortfolioSummary(
     positions: DLMMPosition[],
     analytics: PositionAnalytics[],
-    userAddress: PublicKey
+    _userAddress: PublicKey
   ): Promise<PortfolioSummary> {
     console.log('📊 Generating portfolio summary for', positions.length, 'positions...')
 
@@ -317,7 +315,7 @@ export class PortfolioAggregationManager {
    */
   async identifyConsolidationOpportunities(
     positions: DLMMPosition[],
-    userAddress: PublicKey
+    _userAddress: PublicKey
   ): Promise<ConsolidationOpportunity[]> {
     console.log('🔄 Identifying consolidation opportunities...')
 

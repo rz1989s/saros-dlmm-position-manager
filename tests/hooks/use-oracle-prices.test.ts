@@ -6,7 +6,7 @@ import {
   usePositionValuation,
   useOracleCache,
   useComprehensivePriceData
-} from '../../src/hooks/use-oracle-prices'
+} from '@/hooks/use-oracle-prices'
 
 // Mock the wallet adapter
 const mockUseWallet = {
@@ -19,7 +19,7 @@ jest.mock('@solana/wallet-adapter-react', () => ({
 }))
 
 // Mock the oracle price feeds
-jest.mock('../../src/lib/oracle/price-feeds', () => ({
+jest.mock('@/lib/oracle/price-feeds', () => ({
   oraclePriceFeeds: {
     getTokenPrice: jest.fn(),
     getMultipleTokenPrices: jest.fn(),
@@ -31,11 +31,11 @@ jest.mock('../../src/lib/oracle/price-feeds', () => ({
 }))
 
 // Get the mocked price feeds for type checking
-import { oraclePriceFeeds } from '../../src/lib/oracle/price-feeds'
+import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
 const mockOraclePriceFeeds = oraclePriceFeeds as jest.Mocked<typeof oraclePriceFeeds>
 
 // Mock constants
-jest.mock('../../src/lib/constants', () => ({
+jest.mock('@/lib/constants', () => ({
   REFRESH_INTERVALS: {
     prices: 1000, // 1 second for testing
     analytics: 2000,
@@ -51,11 +51,8 @@ describe('Oracle Prices Hooks', () => {
 
     // Setup default mock returns
     mockOraclePriceFeeds.getCacheStats.mockReturnValue({
-      hitRate: 85.5,
-      missRate: 14.5,
-      totalRequests: 100,
-      cacheSize: 50,
-      lastClear: new Date(),
+      count: 50,
+      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
     })
 
     mockOraclePriceFeeds.getSupportedTokens.mockReturnValue(['USDC', 'SOL', 'BTC', 'ETH'])
@@ -70,7 +67,7 @@ describe('Oracle Prices Hooks', () => {
     const mockPriceData = {
       symbol: 'SOL',
       price: 100.5,
-      source: 'pyth',
+      source: 'pyth' as const,
       confidence: 0.95,
       timestamp: new Date(),
     }
@@ -193,14 +190,14 @@ describe('Oracle Prices Hooks', () => {
       SOL: {
         symbol: 'SOL',
         price: 100.5,
-        source: 'pyth',
+        source: 'pyth' as const,
         confidence: 0.95,
         timestamp: new Date(),
       },
       USDC: {
         symbol: 'USDC',
         price: 1.0,
-        source: 'pyth',
+        source: 'pyth' as const,
         confidence: 0.99,
         timestamp: new Date(),
       },
@@ -288,7 +285,7 @@ describe('Oracle Prices Hooks', () => {
     it('should update when symbols array changes', async () => {
       mockOraclePriceFeeds.getMultipleTokenPrices.mockResolvedValue(mockMultiplePrices)
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ symbols }) => useMultipleTokenPrices(symbols, false),
         { initialProps: { symbols: ['SOL'] } }
       )
@@ -315,14 +312,14 @@ describe('Oracle Prices Hooks', () => {
         USDC: {
           symbol: 'USDC',
           price: 1.0,
-          source: 'pyth',
+          source: 'pyth' as const,
           confidence: 0.99,
           timestamp: new Date(),
         },
         SOL: {
           symbol: 'SOL',
           price: 100.5,
-          source: 'pyth',
+          source: 'pyth' as const,
           confidence: 0.95,
           timestamp: new Date(),
         },
@@ -422,7 +419,7 @@ describe('Oracle Prices Hooks', () => {
     it('should handle parameter changes', async () => {
       mockOraclePriceFeeds.getPositionValue.mockResolvedValue(mockValuation)
 
-      const { result, rerender } = renderHook(
+      const { rerender } = renderHook(
         ({ tokenXAmount }) => usePositionValuation('USDC', 'SOL', tokenXAmount, '500', false),
         { initialProps: { tokenXAmount: '1000' } }
       )
@@ -442,11 +439,8 @@ describe('Oracle Prices Hooks', () => {
 
   describe('useOracleCache', () => {
     const mockCacheStats = {
-      hitRate: 85.5,
-      missRate: 14.5,
-      totalRequests: 100,
-      cacheSize: 50,
-      lastClear: new Date(),
+      count: 50,
+      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
     }
 
     const mockSupportedTokens = ['USDC', 'SOL', 'BTC', 'ETH']
@@ -512,25 +506,22 @@ describe('Oracle Prices Hooks', () => {
       SOL: {
         symbol: 'SOL',
         price: 100.5,
-        source: 'pyth',
+        source: 'pyth' as const,
         confidence: 0.95,
         timestamp: new Date(),
       },
       USDC: {
         symbol: 'USDC',
         price: 1.0,
-        source: 'pyth',
+        source: 'pyth' as const,
         confidence: 0.99,
         timestamp: new Date(),
       },
     }
 
     const mockCacheStats = {
-      hitRate: 85.5,
-      missRate: 14.5,
-      totalRequests: 100,
-      cacheSize: 50,
-      lastClear: new Date(),
+      count: 50,
+      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
     }
 
     it('should combine multiple token prices with cache data', async () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, ComponentType, LazyExoticComponent } from 'react'
+import { Suspense, ComponentType, LazyExoticComponent, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnalyticsSkeleton, ChartSkeleton, StrategySkeleton } from '@/components/ui/loading-states'
@@ -8,10 +8,9 @@ import { AnalyticsSkeleton, ChartSkeleton, StrategySkeleton } from '@/components
 interface LazyWrapperProps {
   children: React.ReactNode
   fallback?: React.ReactNode
-  error?: React.ReactNode
 }
 
-export function LazyWrapper({ children, fallback, error }: LazyWrapperProps) {
+export function LazyWrapper({ children, fallback }: LazyWrapperProps) {
   return (
     <Suspense fallback={fallback || <Skeleton className="h-64 w-full" />}>
       {children}
@@ -97,6 +96,9 @@ export function ProgressiveLoading({
 
       return () => clearTimeout(timer)
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [when, delay])
 
   if (when && shouldLoad) {
@@ -105,8 +107,6 @@ export function ProgressiveLoading({
 
   return <>{fallback || <Skeleton className="h-64 w-full" />}</>
 }
-
-import { useState, useEffect } from 'react'
 
 export function LazyImage({
   src,

@@ -39,7 +39,7 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const [currentSnap, setCurrentSnap] = useState(initialSnap)
   const sheetRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const [, setIsDragging] = useState(false)
 
   useEffect(() => {
     if (preventBodyScroll && isOpen) {
@@ -48,9 +48,10 @@ export function BottomSheet({
         document.body.style.overflow = 'unset'
       }
     }
+    return undefined
   }, [isOpen, preventBodyScroll])
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info
     const height = window.innerHeight
     const currentY = height * (1 - snapPoints[currentSnap])

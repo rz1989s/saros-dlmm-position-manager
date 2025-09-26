@@ -20,7 +20,7 @@ import {
 import { ArbitrageOpportunity } from '@/lib/dlmm/arbitrage'
 import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 
-interface ArbitrageOpportunityCardProps {
+export interface ArbitrageOpportunityCardProps {
   opportunity: ArbitrageOpportunity
   onExecute: (amount: number) => void
   onAnalyze: () => void

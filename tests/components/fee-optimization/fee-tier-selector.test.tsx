@@ -1,9 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { FeeTierSelector } from '@/components/fee-optimization/fee-tier-selector'
-import type { FeeTier, FeeOptimizationSettings } from '@/lib/dlmm/fee-tiers'
+import type { FeeTier } from '@/lib/dlmm/fee-tiers'
 
 // Mock hooks
 jest.mock('@/hooks/use-fee-optimization', () => ({
@@ -124,23 +124,38 @@ describe('FeeTierSelector Component', () => {
     {
       id: 'tier-1',
       name: 'Stable Pair - Low',
+      baseFeeBps: 20,
+      protocolFeeBps: 5,
       category: 'stable',
       totalFeeBps: 25,
-      description: 'For stable pairs with low volatility'
+      description: 'For stable pairs with low volatility',
+      recommendedFor: ['USDC/USDT', 'stablecoins'],
+      minLiquidity: '10000',
+      isActive: true
     },
     {
       id: 'tier-2',
       name: 'Volatile Pair - Medium',
+      baseFeeBps: 80,
+      protocolFeeBps: 20,
       category: 'volatile',
       totalFeeBps: 100,
-      description: 'For volatile pairs with medium risk'
+      description: 'For volatile pairs with medium risk',
+      recommendedFor: ['SOL/USDC', 'major pairs'],
+      minLiquidity: '5000',
+      isActive: true
     },
     {
       id: 'tier-3',
       name: 'Exotic Pair - High',
+      baseFeeBps: 250,
+      protocolFeeBps: 50,
       category: 'exotic',
       totalFeeBps: 300,
-      description: 'For exotic pairs with high risk and returns'
+      description: 'For exotic pairs with high risk and returns',
+      recommendedFor: ['meme tokens', 'new listings'],
+      minLiquidity: '1000',
+      isActive: true
     }
   ]
 
@@ -622,7 +637,18 @@ describe('FeeTierSelector Component', () => {
   describe('Category Icons and Colors', () => {
     it('displays correct icons for different categories', () => {
       const customFeeTiers: FeeTier[] = [
-        { id: '1', name: 'Custom', category: 'custom', totalFeeBps: 50, description: 'Custom tier' }
+        {
+          id: '1',
+          name: 'Custom',
+          baseFeeBps: 40,
+          protocolFeeBps: 10,
+          category: 'custom',
+          totalFeeBps: 50,
+          description: 'Custom tier',
+          recommendedFor: ['specialized strategies'],
+          minLiquidity: '2000',
+          isActive: true
+        }
       ]
 
       mockUseComprehensiveFeeManagement.mockReturnValue({
@@ -641,7 +667,18 @@ describe('FeeTierSelector Component', () => {
 
     it('handles unknown category gracefully', () => {
       const unknownCategoryTiers: FeeTier[] = [
-        { id: '1', name: 'Unknown', category: 'unknown', totalFeeBps: 50, description: 'Unknown tier' }
+        {
+          id: '1',
+          name: 'Unknown',
+          baseFeeBps: 40,
+          protocolFeeBps: 10,
+          category: 'custom',
+          totalFeeBps: 50,
+          description: 'Unknown tier',
+          recommendedFor: ['testing'],
+          minLiquidity: '1000',
+          isActive: true
+        }
       ]
 
       mockUseComprehensiveFeeManagement.mockReturnValue({

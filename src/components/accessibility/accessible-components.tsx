@@ -4,8 +4,6 @@ import React, { forwardRef, useEffect, useRef, useState, ReactNode } from 'react
 import { motion, MotionProps } from 'framer-motion'
 import { ChevronDown, ChevronUp, Info, AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   useReducedMotion,
@@ -14,7 +12,6 @@ import {
   FocusManager,
   LiveRegionManager,
   generateId,
-  KeyboardKeys,
   handleKeyboardNavigation
 } from '@/lib/accessibility'
 

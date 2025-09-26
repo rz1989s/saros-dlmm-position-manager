@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import {
   PriceDisplay,
@@ -43,9 +43,9 @@ jest.mock('@/components/ui/skeleton', () => ({
 
 describe('PriceDisplay Component', () => {
   const mockUseTokenPrice = require('@/hooks/use-oracle-prices').useTokenPrice
-  const mockUseMultipleTokenPrices = require('@/hooks/use-oracle-prices').useMultipleTokenPrices
 
   const mockPriceData: PriceData = {
+    symbol: 'SOL',
     price: 100.50,
     source: 'pyth',
     confidence: 0.95,
@@ -383,6 +383,7 @@ describe('PriceCard Component', () => {
   const mockUseTokenPrice = require('@/hooks/use-oracle-prices').useTokenPrice
 
   const mockPriceData: PriceData = {
+    symbol: 'SOL',
     price: 100.50,
     source: 'pyth',
     confidence: 0.95,
@@ -718,7 +719,13 @@ describe('Integration Tests', () => {
 
   describe('Performance Considerations', () => {
     it('does not re-render unnecessarily when price data is the same', () => {
-      const stablePriceData = mockPriceData
+      const stablePriceData = {
+        symbol: 'SOL',
+        price: 100.50,
+        source: 'pyth' as const,
+        confidence: 0.95,
+        timestamp: new Date('2023-12-01T10:00:00Z')
+      }
       mockUseTokenPrice.mockReturnValue({
         priceData: stablePriceData,
         loading: false,

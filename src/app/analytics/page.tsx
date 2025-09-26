@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { PublicKey } from '@solana/web3.js'
 import { DashboardHeader } from '@/components/dashboard-header'
-import { LazyAnalyticsWrapper, LazyChartWrapper } from '@/components/ui/lazy-loading'
+import { LazyAnalyticsWrapper } from '@/components/ui/lazy-loading'
 import {
   LazyPnLTracker,
   LazyPortfolioOverview,
@@ -69,12 +68,11 @@ const ChartHandlers = {
 
 function AnalyticsPageComponent() {
   const [selectedPoolIndex, setSelectedPoolIndex] = useState(0)
-  const [selectedMetric, setSelectedMetric] = useState<'liquidity' | 'volume' | 'fees'>('liquidity')
   const [activeTab, setActiveTab] = useState('pnl')
-  const { isRealDataMode, isMockDataMode } = useDataSource()
+  const { isRealDataMode } = useDataSource()
 
   // Fetch available pools
-  const { pools, loading: poolsLoading, refreshPools } = usePoolList()
+  const { pools, loading: poolsLoading } = usePoolList()
 
   // Get selected pool address as string (FIXED: Ensure proper string conversion)
   const selectedPoolAddress = useMemo(() => {
@@ -125,7 +123,6 @@ function AnalyticsPageComponent() {
   const { metrics, feeDistribution, liquidityConcentration, historicalPerformance } = analytics
 
   const isLoading = poolsLoading || analyticsLoading
-  const selectedPool = pools[selectedPoolIndex]
 
   // Generate real chart data from SDK/blockchain
   const generateRealChartData = useCallback((poolAddress: string) => {

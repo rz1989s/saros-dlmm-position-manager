@@ -1,11 +1,6 @@
 import { PublicKey, Connection } from '@solana/web3.js'
 import {
-  PortfolioAggregationManager,
-  type PortfolioPosition,
-  type PortfolioSummary,
-  type ConsolidationOpportunity,
-  type DiversificationAnalysis,
-  type RebalancingStrategy
+  PortfolioAggregationManager
 } from '../../../src/lib/dlmm/portfolio-aggregation'
 import type { DLMMPosition, PositionAnalytics } from '../../../src/lib/types'
 
@@ -478,7 +473,7 @@ describe('PortfolioAggregationManager', () => {
         if (current.priority === previous.priority) {
           expect(current.projectedSavings).toBeLessThanOrEqual(previous.projectedSavings)
         }
-      })
+      }
     })
 
     it('should handle positions with no consolidation opportunities', async () => {

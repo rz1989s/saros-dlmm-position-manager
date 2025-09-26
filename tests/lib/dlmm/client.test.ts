@@ -115,6 +115,10 @@ describe('DLMMClient', () => {
     it('should fetch specific LB pair successfully', async () => {
       const mockPairData = {
         publicKey: mockPoolAddress,
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
         tokenX: { mint: 'USDC', symbol: 'USDC' },
         tokenY: { mint: 'SOL', symbol: 'SOL' },
         activeBin: { binId: 123, price: 100 },
@@ -142,6 +146,13 @@ describe('DLMMClient', () => {
     it('should fetch user positions successfully', async () => {
       const mockPositions = [
         {
+          pair: '11111111111111111111111111111112',
+          positionMint: 'PositionMint1111111111111111111111111',
+          position: 'Position1111111111111111111111111111',
+          liquidityShares: '1000',
+          lowerBinId: 118,
+          upperBinId: 124,
+          space: 32,
           id: '1',
           poolAddress: 'pool1',
           tokenX: { address: 'USDC', symbol: 'USDC' },
@@ -200,9 +211,10 @@ describe('DLMMClient', () => {
     it('should create add liquidity transaction successfully', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: '11111111111111111111111111111112',
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
       mockLiquidityBookServices.addLiquidityIntoPosition.mockResolvedValue(mockTransaction)
@@ -229,9 +241,10 @@ describe('DLMMClient', () => {
     it('should handle SDK fallback gracefully', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: '11111111111111111111111111111112',
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
       mockLiquidityBookServices.addLiquidityIntoPosition.mockRejectedValue(new Error('SDK error'))
@@ -258,16 +271,24 @@ describe('DLMMClient', () => {
   describe('createRemoveLiquidityTransaction', () => {
     const mockPoolAddress = new PublicKey('11111111111111111111111111111112')
     const mockUserAddress = new PublicKey('22222222222222222222222222222222')
-    const mockTransaction = { signature: 'mock-remove-transaction' }
 
     it('should create remove liquidity transaction successfully', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: '11111111111111111111111111111112',
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
-      const mockUserPositions = [{ position: 'mock-position', positionMint: 'mock-position-mint' }]
+      const mockUserPositions = [{
+        pair: mockPoolAddress.toString(),
+        positionMint: 'mock-position-mint',
+        position: 'mock-position',
+        liquidityShares: '1000',
+        lowerBinId: 118,
+        upperBinId: 124,
+        space: 32
+      }]
       const mockRemoveResult = { txs: [], success: true }
 
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
@@ -293,11 +314,20 @@ describe('DLMMClient', () => {
     it('should handle SDK fallback for remove liquidity', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: '11111111111111111111111111111112',
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
-      const mockUserPositions = [{ position: 'mock-position', positionMint: 'mock-position-mint' }]
+      const mockUserPositions = [{
+        pair: mockPoolAddress.toString(),
+        positionMint: 'mock-position-mint',
+        position: 'mock-position',
+        liquidityShares: '1000',
+        lowerBinId: 118,
+        upperBinId: 124,
+        space: 32
+      }]
 
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
       mockLiquidityBookServices.getUserPositions.mockResolvedValue(mockUserPositions)
@@ -326,9 +356,10 @@ describe('DLMMClient', () => {
     it('should simulate swap successfully', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: mockTokenIn.toString(),
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
 
@@ -354,9 +385,10 @@ describe('DLMMClient', () => {
     it('should return intelligent fallback data', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: mockTokenIn.toString(),
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
 
@@ -379,9 +411,10 @@ describe('DLMMClient', () => {
     it('should handle zero amount input', async () => {
       // Mock pair data for pool validation
       const mockPairData = {
+        activeId: 123,
         tokenMintX: mockTokenIn.toString(),
         tokenMintY: '22222222222222222222222222222222',
-        activeId: 123
+        binStep: 100
       }
       mockLiquidityBookServices.getPairAccount.mockResolvedValue(mockPairData)
 

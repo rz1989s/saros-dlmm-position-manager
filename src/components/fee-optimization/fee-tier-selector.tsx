@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/dialog'
 import {
   TrendingUp,
-  TrendingDown,
   Zap,
   Shield,
   DollarSign,
@@ -41,8 +40,7 @@ import {
 } from 'lucide-react'
 import {
   useComprehensiveFeeManagement,
-  useMigrationImpact,
-  useCustomFeeTier
+  useMigrationImpact
 } from '@/hooks/use-fee-optimization'
 import { formatCurrency, formatPercentage } from '@/lib/utils'
 import type { FeeTier, FeeOptimizationSettings } from '@/lib/dlmm/fee-tiers'

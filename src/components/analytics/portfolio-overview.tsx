@@ -16,7 +16,7 @@ import {
   RefreshCw,
   BarChart3
 } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { useUserPositions } from '@/hooks/use-dlmm'
 import { useWalletState } from '@/hooks/use-wallet-integration'
 import { useDataSource } from '@/contexts/data-source-context'

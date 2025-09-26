@@ -1,9 +1,7 @@
 import { PublicKey, Connection } from '@solana/web3.js'
 import {
   PositionMigrationManager,
-  type MigrationRoute,
   type MigrationPlan,
-  type MigrationStep,
   type MigrationProgress,
   type CrossPoolOpportunity
 } from '../../../src/lib/dlmm/position-migration'
@@ -533,8 +531,6 @@ describe('PositionMigrationManager', () => {
     })
 
     it('should calculate execution time accurately', async () => {
-      const startTime = Date.now()
-
       const progress = await migrationManager.executeMigrationPlan(
         mockPlan,
         mockUserAddress,

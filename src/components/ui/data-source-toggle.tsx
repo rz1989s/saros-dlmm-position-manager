@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react'
 import { useDataSource, DataMode } from '@/contexts/data-source-context'
 import { useWalletState } from '@/hooks/use-wallet-integration'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {

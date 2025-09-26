@@ -15,7 +15,7 @@ const mockBins = Array.from({ length: 20 }, (_, i) => ({
 }))
 
 export function BinVisualization() {
-  const [bins, setBins] = useState(mockBins)
+  const [bins] = useState(mockBins)
   const [selectedBin, setSelectedBin] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import { dlmmClient } from '@/lib/dlmm/client'
 import { useDLMM, useUserPositions } from '@/hooks/use-dlmm'
 
 // Advanced feature imports
@@ -19,7 +18,6 @@ import type {
   PredictiveCacheStats,
   ArbitrageOpportunity,
   ArbitrageStats,
-  DLMMPosition,
   TokenInfo
 } from '@/lib/types'
 
@@ -40,14 +38,13 @@ import type {
 // ============================================================================
 
 export function useAdvancedBacktesting() {
-  const { publicKey, connected } = useWallet()
-  const { client } = useDLMM()
-  const [backtestEngine] = useState(() => new BacktestEngine(client.getConnection()))
-  const [activeBacktests, setActiveBacktests] = useState<Map<string, BacktestResult>>(new Map())
+  const { connected } = useWallet()
+  const [backtestEngine] = useState(() => new BacktestEngine())
+  const [activeBacktests, setActiveBacktests] = useState<BacktestResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const runBacktest = useCallback(async (config: BacktestConfig): Promise<string> => {
+  const runBacktest = useCallback(async (config: BacktestConfig): Promise<BacktestResult> => {
     if (!connected) {
       throw new Error('Wallet not connected')
     }
@@ -58,24 +55,19 @@ export function useAdvancedBacktesting() {
     try {
       console.log('🎯 Starting advanced backtest:', config.name)
 
-      const backtestId = await backtestEngine.runBacktest(config)
-
-      // Monitor backtest progress
-      const monitorProgress = () => {
-        const result = backtestEngine.getBacktestResult(backtestId)
-        if (result) {
-          setActiveBacktests(prev => new Map(prev.set(backtestId, result)))
-
-          if (result.status === 'completed' || result.status === 'error') {
-            setLoading(false)
-          } else {
-            setTimeout(monitorProgress, 1000) // Check every second
-          }
+      // Run the backtest with progress monitoring
+      const result = await backtestEngine.runBacktest(config, (progress) => {
+        // Update loading state based on progress
+        if (progress.phase === 'completed') {
+          setLoading(false)
         }
-      }
+      })
 
-      monitorProgress()
-      return backtestId
+      // Add to active backtests
+      setActiveBacktests(prev => [...prev, result])
+      setLoading(false)
+
+      return result
 
     } catch (error: any) {
       setError(error.message)
@@ -84,29 +76,25 @@ export function useAdvancedBacktesting() {
     }
   }, [connected, backtestEngine])
 
-  const getBacktestResult = useCallback((backtestId: string): BacktestResult | null => {
-    return activeBacktests.get(backtestId) || null
+  const getBacktestResult = useCallback((resultId: string): BacktestResult | null => {
+    return activeBacktests.find(result => result.config.name === resultId) || null
   }, [activeBacktests])
 
-  const cancelBacktest = useCallback((backtestId: string) => {
-    backtestEngine.cancelBacktest(backtestId)
-    setActiveBacktests(prev => {
-      const newMap = new Map(prev)
-      newMap.delete(backtestId)
-      return newMap
-    })
+  const cancelBacktest = useCallback(() => {
+    backtestEngine.cancelBacktest()
+    console.log('🛑 Backtest cancellation requested')
   }, [backtestEngine])
 
   const getBacktestHistory = useCallback(() => {
-    return backtestEngine.getBacktestHistory()
-  }, [backtestEngine])
+    return activeBacktests.filter(result => result.status === 'completed')
+  }, [activeBacktests])
 
   return {
     runBacktest,
     getBacktestResult,
     cancelBacktest,
     getBacktestHistory,
-    activeBacktests: Array.from(activeBacktests.values()),
+    activeBacktests,
     loading,
     error,
     isEnabled: connected
@@ -210,7 +198,7 @@ export function usePredictiveCache() {
 // ============================================================================
 
 export function useArbitrageDetection() {
-  const { publicKey, connected } = useWallet()
+  const { connected } = useWallet()
   const wallet = useWallet()
   const { client } = useDLMM()
   const { positions } = useUserPositions()
@@ -389,7 +377,7 @@ export function useAdvancedDLMM() {
   const backtesting = useAdvancedBacktesting()
   const predictiveCache = usePredictiveCache()
   const arbitrage = useArbitrageDetection()
-  const { connected, publicKey } = useWallet()
+  const { connected } = useWallet()
 
   const allFeaturesEnabled = useMemo(() => {
     return backtesting.isEnabled &&

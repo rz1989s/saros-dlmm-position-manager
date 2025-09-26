@@ -11,7 +11,6 @@ interface ConnectionAttempt {
 class ConnectionManager {
   private connections: Map<string, Connection> = new Map()
   private connectionStatus: Map<string, ConnectionAttempt> = new Map()
-  private currentConnectionIndex: number = 0
   private requestQueue: Array<{ resolve: Function; reject: Function; request: Function }> = []
   private requestCount: number = 0
   private lastResetTime: number = Date.now()

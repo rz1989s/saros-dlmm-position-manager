@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Activity, Clock } from 'lucide-react'
+import { TrendingUp, Activity, Clock } from 'lucide-react'
 import { formatCurrency, formatPercentage, formatDuration } from '@/lib/utils/format'
 
 const mockAnalytics = {
@@ -24,7 +24,7 @@ const mockAnalytics = {
 }
 
 export function AnalyticsPanel() {
-  const [analytics, setAnalytics] = useState(mockAnalytics)
+  const [analytics] = useState(mockAnalytics)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

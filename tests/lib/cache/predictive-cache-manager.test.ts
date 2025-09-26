@@ -3,13 +3,10 @@ import {
   predictiveCacheManager
 } from '@/lib/cache/predictive-cache-manager'
 import { PublicKey } from '@solana/web3.js'
+import { UserBehaviorPattern as BaseUserBehaviorPattern } from '@/lib/types'
 
-// Define UserBehaviorPattern to match the PredictiveCacheManager's interface
-type UserBehaviorPattern = {
-  id: string
-  userId: string
-  sessionId: string
-  timestamp: Date
+// Extended TestUserBehaviorPattern for comprehensive cache testing
+interface TestUserBehaviorPattern extends BaseUserBehaviorPattern {
   navigationPath: string[]
   currentPage: string
   timeOnPage: number
@@ -27,6 +24,41 @@ type UserBehaviorPattern = {
   deviceType: 'desktop' | 'mobile' | 'tablet'
   connectionSpeed: 'fast' | 'medium' | 'slow'
 }
+
+// Helper function to create complete TestUserBehaviorPattern objects
+function createTestUserBehaviorPattern(overrides: Partial<TestUserBehaviorPattern> = {}): TestUserBehaviorPattern {
+  const defaults: TestUserBehaviorPattern = {
+    id: 'test-pattern',
+    userId: 'test-user',
+    sessionId: 'test-session',
+    timestamp: new Date(),
+    action: 'view',
+    target: '/dashboard',
+    context: {
+      route: '/dashboard',
+      timeOnPage: 1000,
+      walletConnected: true,
+      positionCount: 0,
+      lastRefresh: new Date()
+    },
+    metadata: {},
+    navigationPath: ['/dashboard'],
+    currentPage: '/dashboard',
+    timeOnPage: 1000,
+    viewedPools: [],
+    viewedPositions: [],
+    recentActions: [],
+    timeOfDay: 12,
+    dayOfWeek: 1,
+    isWeekend: false,
+    deviceType: 'desktop',
+    connectionSpeed: 'fast'
+  }
+
+  return { ...defaults, ...overrides }
+}
+
+
 
 // Mock timers for controlled testing
 jest.useFakeTimers()
@@ -67,11 +99,22 @@ describe('PredictiveCacheManager', () => {
 
   describe('User Behavior Recording', () => {
     it('should record user behavior pattern', () => {
-      const pattern: UserBehaviorPattern = {
+      const pattern: TestUserBehaviorPattern = {
         id: 'pattern1',
         userId: 'user123',
         sessionId: 'session456',
         timestamp: new Date(),
+        action: 'view',
+        target: '/positions',
+        context: {
+          route: '/positions',
+          previousRoute: '/dashboard',
+          timeOnPage: 5000,
+          walletConnected: true,
+          positionCount: 2,
+          lastRefresh: new Date()
+        },
+        metadata: {},
         navigationPath: ['/dashboard', '/positions'],
         currentPage: '/positions',
         timeOnPage: 5000,
@@ -103,11 +146,21 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle multiple patterns for same user', () => {
-      const createPattern = (id: string): UserBehaviorPattern => ({
+      const createPattern = (id: string): TestUserBehaviorPattern => ({
         id,
         userId: 'user123',
         sessionId: 'session456',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 1000,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: {},
         navigationPath: ['/dashboard'],
         currentPage: '/dashboard',
         timeOnPage: 1000,
@@ -131,11 +184,21 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle multiple users', () => {
-      const pattern1: UserBehaviorPattern = {
+      const pattern1: TestUserBehaviorPattern = {
         id: 'pattern1',
         userId: 'user1',
         sessionId: 'session1',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 1000,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: {},
         navigationPath: ['/dashboard'],
         currentPage: '/dashboard',
         timeOnPage: 1000,
@@ -149,7 +212,7 @@ describe('PredictiveCacheManager', () => {
         connectionSpeed: 'fast'
       }
 
-      const pattern2: UserBehaviorPattern = {
+      const pattern2: TestUserBehaviorPattern = {
         ...pattern1,
         id: 'pattern2',
         userId: 'user2',
@@ -165,11 +228,21 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should limit patterns per user to prevent memory bloat', () => {
-      const createPattern = (id: string): UserBehaviorPattern => ({
+      const createPattern = (id: string): TestUserBehaviorPattern => ({
         id,
         userId: 'user123',
         sessionId: 'session456',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 1000,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: {},
         navigationPath: ['/dashboard'],
         currentPage: '/dashboard',
         timeOnPage: 1000,
@@ -195,7 +268,7 @@ describe('PredictiveCacheManager', () => {
 
   describe('Pattern Analysis and Prediction', () => {
     it('should trigger pattern analysis on behavior recording', async () => {
-      const pattern: UserBehaviorPattern = {
+      const pattern = createTestUserBehaviorPattern({
         id: 'analysis-test',
         userId: 'user123',
         sessionId: 'analysis-session',
@@ -217,7 +290,7 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'desktop',
         connectionSpeed: 'fast'
-      }
+      })
 
       manager.recordUserBehavior(pattern)
 
@@ -227,7 +300,7 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle users with no historical patterns', () => {
-      const newUserPattern: UserBehaviorPattern = {
+      const newUserPattern = createTestUserBehaviorPattern({
         id: 'newuser1',
         userId: 'newuser',
         sessionId: 'newsession',
@@ -243,7 +316,7 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'mobile',
         connectionSpeed: 'medium'
-      }
+      })
 
       manager.recordUserBehavior(newUserPattern)
 
@@ -255,7 +328,7 @@ describe('PredictiveCacheManager', () => {
 
   describe('Background Processing and Queue Management', () => {
     it('should process patterns in background', async () => {
-      const pattern: UserBehaviorPattern = {
+      const pattern = createTestUserBehaviorPattern({
         id: 'background-test',
         userId: 'user123',
         sessionId: 'bg-session',
@@ -281,7 +354,7 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'desktop',
         connectionSpeed: 'fast'
-      }
+      })
 
       manager.recordUserBehavior(pattern)
 
@@ -294,7 +367,7 @@ describe('PredictiveCacheManager', () => {
 
     it('should handle rapid pattern recording without issues', () => {
       for (let i = 0; i < 10; i++) {
-        const pattern: UserBehaviorPattern = {
+        const pattern = createTestUserBehaviorPattern({
           id: `rapid-${i}`,
           userId: 'rapid-user',
           sessionId: `rapid-session-${i}`,
@@ -316,7 +389,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        }
+        })
 
         manager.recordUserBehavior(pattern)
       }
@@ -327,10 +400,10 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle concurrent pattern processing', async () => {
-      const patterns: UserBehaviorPattern[] = []
+      const patterns: TestUserBehaviorPattern[] = []
 
       for (let i = 0; i < 5; i++) {
-        patterns.push({
+        patterns.push(createTestUserBehaviorPattern({
           id: `concurrent-${i}`,
           userId: `user-${i % 2}`, // Two different users
           sessionId: `concurrent-session-${i}`,
@@ -346,7 +419,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        })
+        }))
       }
 
       // Record all patterns simultaneously
@@ -385,7 +458,7 @@ describe('PredictiveCacheManager', () => {
     it('should calculate success rate correctly', async () => {
       // Add some patterns to generate preload jobs
       for (let i = 0; i < 3; i++) {
-        const pattern: UserBehaviorPattern = {
+        const pattern = createTestUserBehaviorPattern({
           id: `success-test-${i}`,
           userId: 'user123',
           sessionId: `success-session-${i}`,
@@ -407,7 +480,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        }
+        })
 
         manager.recordUserBehavior(pattern)
       }
@@ -423,7 +496,7 @@ describe('PredictiveCacheManager', () => {
       // Generate patterns for multiple users
       for (let userId = 1; userId <= 3; userId++) {
         for (let patternId = 1; patternId <= 5; patternId++) {
-          const pattern: UserBehaviorPattern = {
+          const pattern = createTestUserBehaviorPattern({
             id: `multi-user-${userId}-${patternId}`,
             userId: `user${userId}`,
             sessionId: `session${userId}-${patternId}`,
@@ -445,7 +518,7 @@ describe('PredictiveCacheManager', () => {
             isWeekend: userId % 7 >= 5,
             deviceType: userId % 2 === 0 ? 'mobile' : 'desktop',
             connectionSpeed: 'fast'
-          }
+          })
 
           manager.recordUserBehavior(pattern)
         }
@@ -462,7 +535,7 @@ describe('PredictiveCacheManager', () => {
       // Create old patterns
       const oldDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000) // 8 days ago
 
-      const oldPattern: UserBehaviorPattern = {
+      const oldPattern = createTestUserBehaviorPattern({
         id: 'old-pattern',
         userId: 'user123',
         sessionId: 'old-session',
@@ -478,13 +551,13 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'desktop',
         connectionSpeed: 'fast'
-      }
+      })
 
-      const recentPattern: UserBehaviorPattern = {
+      const recentPattern = createTestUserBehaviorPattern({
         ...oldPattern,
         id: 'recent-pattern',
         timestamp: new Date()
-      }
+      })
 
       manager.recordUserBehavior(oldPattern)
       manager.recordUserBehavior(recentPattern)
@@ -501,7 +574,7 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should remove users with no recent patterns', () => {
-      const oldUserPattern: UserBehaviorPattern = {
+      const oldUserPattern = createTestUserBehaviorPattern({
         id: 'old-user',
         userId: 'old-user',
         sessionId: 'old-session',
@@ -517,7 +590,7 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'desktop',
         connectionSpeed: 'fast'
-      }
+      })
 
       manager.recordUserBehavior(oldUserPattern)
 
@@ -533,11 +606,21 @@ describe('PredictiveCacheManager', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle empty navigation paths', () => {
-      const emptyNavPattern: UserBehaviorPattern = {
+      const emptyNavPattern: TestUserBehaviorPattern = {
         id: 'empty-nav',
         userId: 'user123',
         sessionId: 'empty-session',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 1000,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: {},
         navigationPath: [], // Empty navigation
         currentPage: '/dashboard',
         timeOnPage: 1000,
@@ -559,11 +642,21 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle extreme time values', () => {
-      const extremeTimePattern: UserBehaviorPattern = {
+      const extremeTimePattern: TestUserBehaviorPattern = {
         id: 'extreme-time',
         userId: 'user123',
         sessionId: 'extreme-session',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 999999,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: { testCase: 'extreme-time' },
         navigationPath: ['/dashboard'],
         currentPage: '/dashboard',
         timeOnPage: 999999, // Very long time
@@ -587,11 +680,21 @@ describe('PredictiveCacheManager', () => {
     it('should handle very large patterns array', () => {
       // Test memory efficiency with large number of patterns
       for (let i = 0; i < 200; i++) {
-        const pattern: UserBehaviorPattern = {
+        const pattern: TestUserBehaviorPattern = {
           id: `large-test-${i}`,
           userId: 'large-user',
           sessionId: `large-session-${i}`,
           timestamp: new Date(),
+          action: 'view',
+          target: '/dashboard',
+          context: {
+            route: '/dashboard',
+            timeOnPage: 1000,
+            walletConnected: true,
+            positionCount: i % 10,
+            lastRefresh: new Date()
+          },
+          metadata: { testIndex: i },
           navigationPath: ['/dashboard'],
           currentPage: '/dashboard',
           timeOnPage: 1000,
@@ -615,11 +718,21 @@ describe('PredictiveCacheManager', () => {
     })
 
     it('should handle patterns with empty recent actions', () => {
-      const emptyActionsPattern: UserBehaviorPattern = {
+      const emptyActionsPattern: TestUserBehaviorPattern = {
         id: 'empty-actions',
         userId: 'user123',
         sessionId: 'empty-actions-session',
         timestamp: new Date(),
+        action: 'view',
+        target: '/dashboard',
+        context: {
+          route: '/dashboard',
+          timeOnPage: 2000,
+          walletConnected: true,
+          positionCount: 0,
+          lastRefresh: new Date()
+        },
+        metadata: { testCase: 'empty-actions' },
         navigationPath: ['/dashboard'],
         currentPage: '/dashboard',
         timeOnPage: 2000,
@@ -659,7 +772,7 @@ describe('PredictiveCacheManager', () => {
 
       // Process multiple patterns quickly
       for (let i = 0; i < 50; i++) {
-        const pattern: UserBehaviorPattern = {
+        const pattern = createTestUserBehaviorPattern({
           id: `perf-${i}`,
           userId: `user-${i % 5}`, // 5 different users
           sessionId: `perf-session-${i}`,
@@ -681,7 +794,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: (i % 7) >= 5,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        }
+        })
 
         manager.recordUserBehavior(pattern)
       }
@@ -698,10 +811,10 @@ describe('PredictiveCacheManager', () => {
 
     it('should maintain prediction accuracy targets through consistent patterns', async () => {
       // Set up predictable patterns
-      const predictablePatterns: UserBehaviorPattern[] = []
+      const predictablePatterns: TestUserBehaviorPattern[] = []
 
       for (let i = 0; i < 10; i++) {
-        predictablePatterns.push({
+        predictablePatterns.push(createTestUserBehaviorPattern({
           id: `predictable-${i}`,
           userId: 'predictable-user',
           sessionId: `predictable-session-${i}`,
@@ -727,14 +840,14 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        })
+        }))
       }
 
       // Record historical patterns
       predictablePatterns.forEach(pattern => manager.recordUserBehavior(pattern))
 
       // Record a similar current pattern that should trigger predictions
-      const currentPattern: UserBehaviorPattern = {
+      const currentPattern = createTestUserBehaviorPattern({
         id: 'current-predictable',
         userId: 'predictable-user',
         sessionId: 'current-predictable-session',
@@ -756,7 +869,7 @@ describe('PredictiveCacheManager', () => {
         isWeekend: false,
         deviceType: 'desktop',
         connectionSpeed: 'fast'
-      }
+      })
 
       manager.recordUserBehavior(currentPattern)
 
@@ -782,7 +895,7 @@ describe('PredictiveCacheManager', () => {
 
       deviceTypes.forEach((device, deviceIndex) => {
         connectionSpeeds.forEach((speed, speedIndex) => {
-          const pattern: UserBehaviorPattern = {
+          const pattern = createTestUserBehaviorPattern({
             id: `mixed-${deviceIndex}-${speedIndex}`,
             userId: 'mixed-user',
             sessionId: `mixed-session-${deviceIndex}-${speedIndex}`,
@@ -798,7 +911,7 @@ describe('PredictiveCacheManager', () => {
             isWeekend: false,
             deviceType: device,
             connectionSpeed: speed
-          }
+          })
 
           manager.recordUserBehavior(pattern)
         })
@@ -812,7 +925,7 @@ describe('PredictiveCacheManager', () => {
     it('should handle weekend vs weekday patterns', () => {
       // Create weekend patterns
       for (let i = 0; i < 5; i++) {
-        const weekendPattern: UserBehaviorPattern = {
+        const weekendPattern = createTestUserBehaviorPattern({
           id: `weekend-${i}`,
           userId: 'weekend-user',
           sessionId: `weekend-session-${i}`,
@@ -833,14 +946,14 @@ describe('PredictiveCacheManager', () => {
           isWeekend: true,
           deviceType: 'mobile',
           connectionSpeed: 'medium'
-        }
+        })
 
         manager.recordUserBehavior(weekendPattern)
       }
 
       // Create weekday patterns
       for (let i = 0; i < 5; i++) {
-        const weekdayPattern: UserBehaviorPattern = {
+        const weekdayPattern = createTestUserBehaviorPattern({
           id: `weekday-${i}`,
           userId: 'weekend-user',
           sessionId: `weekday-session-${i}`,
@@ -862,7 +975,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        }
+        })
 
         manager.recordUserBehavior(weekdayPattern)
       }
@@ -878,7 +991,7 @@ describe('PredictiveCacheManager', () => {
       // Simulate continuous pattern recording over time
       for (let hour = 0; hour < 24; hour++) {
         for (let minute = 0; minute < 4; minute++) { // 4 patterns per hour
-          const pattern: UserBehaviorPattern = {
+          const pattern = createTestUserBehaviorPattern({
             id: `continuous-${hour}-${minute}`,
             userId: 'continuous-user',
             sessionId: `continuous-session-${hour}-${minute}`,
@@ -894,7 +1007,7 @@ describe('PredictiveCacheManager', () => {
             isWeekend: (hour % 7) >= 5,
             deviceType: 'desktop',
             connectionSpeed: 'fast'
-          }
+          })
 
           manager.recordUserBehavior(pattern)
         }
@@ -913,7 +1026,7 @@ describe('PredictiveCacheManager', () => {
       const recentDate = new Date()
 
       users.forEach((userId, index) => {
-        const pattern: UserBehaviorPattern = {
+        const pattern = createTestUserBehaviorPattern({
           id: `cleanup-${userId}`,
           userId,
           sessionId: `cleanup-session-${userId}`,
@@ -929,7 +1042,7 @@ describe('PredictiveCacheManager', () => {
           isWeekend: false,
           deviceType: 'desktop',
           connectionSpeed: 'fast'
-        }
+        })
 
         manager.recordUserBehavior(pattern)
       })

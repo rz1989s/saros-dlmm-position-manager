@@ -1,6 +1,6 @@
-import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
+import { Connection, Transaction } from '@solana/web3.js'
 import { Wallet } from '@solana/wallet-adapter-react'
-import { ArbitrageOpportunity, ExecutionStep } from './detection-engine'
+import { ArbitrageOpportunity } from './detection-engine'
 import { DetailedProfitabilityAnalysis } from './profitability-calculator'
 
 export interface ExecutionPlan {
@@ -227,6 +227,17 @@ export interface LoggingConfiguration {
 
 export type ExecutionStatus = 'planned' | 'ready' | 'executing' | 'completed' | 'failed' | 'cancelled'
 
+export interface ExecutionPreferences {
+  maxGasFee?: number
+  maxSlippage?: number
+  preferredMEVProtection?: 'flashloan' | 'private_mempool' | 'timing'
+  executionTimeframe?: 'immediate' | 'optimal_timing' | 'cost_optimized'
+  riskTolerance?: 'conservative' | 'moderate' | 'aggressive'
+  prioritizeProfitability?: boolean
+  allowParallel?: boolean
+  useMEVProtection?: boolean
+}
+
 export interface ExecutionResults {
   success: boolean
   actualProfit: number
@@ -307,15 +318,12 @@ interface EmergencyExitPlan {
 }
 
 export class ArbitrageExecutionPlanner {
-  private connection: Connection
-  private wallet: Wallet
   private activePlans: Map<string, ExecutionPlan> = new Map()
   private readonly MAX_CONCURRENT_EXECUTIONS = 3
-  private readonly DEFAULT_TIMEOUT_MS = 30000
+  // private readonly DEFAULT_TIMEOUT_MS = 30000 // Unused for now
 
-  constructor(connection: Connection, wallet: Wallet) {
-    this.connection = connection
-    this.wallet = wallet
+  constructor(_connection: Connection, _wallet: Wallet) {
+    // Constructor parameters marked with underscore as they may be used in future implementations
   }
 
   async createExecutionPlan(
@@ -535,7 +543,7 @@ export class ArbitrageExecutionPlanner {
 
   private async createContingencyPlans(
     opportunity: ArbitrageOpportunity,
-    profitabilityAnalysis: DetailedProfitabilityAnalysis
+    _profitabilityAnalysis: DetailedProfitabilityAnalysis
   ): Promise<ContingencyPlan[]> {
 
     const plans: ContingencyPlan[] = []
@@ -647,7 +655,7 @@ export class ArbitrageExecutionPlanner {
 
   private async optimizeExecutionTiming(
     opportunity: ArbitrageOpportunity,
-    profitabilityAnalysis: DetailedProfitabilityAnalysis
+    _profitabilityAnalysis: DetailedProfitabilityAnalysis
   ): Promise<ExecutionTiming> {
 
     const now = new Date()
@@ -684,7 +692,7 @@ export class ArbitrageExecutionPlanner {
 
   private async setupExecutionMonitoring(
     opportunity: ArbitrageOpportunity,
-    preferences: ExecutionPreferences
+    _preferences: ExecutionPreferences
   ): Promise<ExecutionMonitoring> {
 
     const progressCallbacks: ProgressCallback[] = [
@@ -741,16 +749,16 @@ export class ArbitrageExecutionPlanner {
   }
 
   private async buildTransactionGroups(
-    opportunity: ArbitrageOpportunity,
-    strategyType: ExecutionStrategy['type']
+    _opportunity: ArbitrageOpportunity,
+    _strategyType: ExecutionStrategy['type']
   ): Promise<TransactionGroup[]> {
     // Implementation would build actual transaction groups
     return []
   }
 
   private designGasOptimization(
-    opportunity: ArbitrageOpportunity,
-    preferences: ExecutionPreferences
+    _opportunity: ArbitrageOpportunity,
+    _preferences: ExecutionPreferences
   ): GasOptimizationStrategy {
     return {
       type: 'priority_fee',
@@ -760,8 +768,8 @@ export class ArbitrageExecutionPlanner {
   }
 
   private designSlippageManagement(
-    opportunity: ArbitrageOpportunity,
-    preferences: ExecutionPreferences
+    _opportunity: ArbitrageOpportunity,
+    _preferences: ExecutionPreferences
   ): SlippageManagementStrategy {
     return {
       type: 'adaptive',
@@ -777,7 +785,7 @@ export class ArbitrageExecutionPlanner {
 
   private getStrategyDescription(
     type: ExecutionStrategy['type'],
-    opportunity: ArbitrageOpportunity
+    _opportunity: ArbitrageOpportunity
   ): string {
     switch (type) {
       case 'atomic': return 'Single atomic transaction execution'
@@ -789,10 +797,10 @@ export class ArbitrageExecutionPlanner {
   }
 
   private estimateExecutionTime(
-    opportunity: ArbitrageOpportunity,
+    _opportunity: ArbitrageOpportunity,
     strategyType: ExecutionStrategy['type']
   ): number {
-    const baseTime = opportunity.executionPlan.length * 3000 // 3s per step
+    const baseTime = _opportunity.executionPlan.length * 3000 // 3s per step
     const strategyMultiplier = {
       atomic: 0.5,
       sequential: 1.0,
@@ -854,9 +862,9 @@ export class ArbitrageExecutionPlanner {
 
   // Mock implementations for MEV protection methods
   private async setupPrivateMempool(): Promise<void> {}
-  private async executePrivateMempool(txs: Transaction[]): Promise<string[]> { return [] }
+  private async executePrivateMempool(_txs: Transaction[]): Promise<string[]> { return [] }
   private async cleanupPrivateMempool(): Promise<void> {}
-  private async executeWithJitter(txs: Transaction[]): Promise<string[]> { return [] }
+  private async executeWithJitter(_txs: Transaction[]): Promise<string[]> { return [] }
   private async abortExecution(): Promise<void> {}
   private async switchToPrivateExecution(): Promise<void> {}
 
@@ -893,14 +901,6 @@ export class ArbitrageExecutionPlanner {
       .filter(p => p.results?.success)
       .reduce((sum, p) => sum + p.results!.actualProfit, 0)
   }
-}
-
-export interface ExecutionPreferences {
-  maxRisk?: number
-  allowParallel?: boolean
-  useMEVProtection?: boolean
-  preferSpeed?: boolean
-  preferCost?: boolean
 }
 
 export default ArbitrageExecutionPlanner

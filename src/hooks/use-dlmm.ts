@@ -5,7 +5,6 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
 import { DLMMPosition, PoolInfo, BinInfo } from '@/lib/types'
-import { formatBinData } from '@/lib/dlmm/utils'
 import { REFRESH_INTERVALS } from '@/lib/constants'
 
 // Enhanced DLMM hooks using improved SDK client with:
@@ -142,6 +141,9 @@ export function useUserPositions(enableRealtime: boolean = true) {
         intervalRef.current = null
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, connected, publicKey, refreshing, fetchPositions])
 
   // Cleanup on unmount
@@ -216,7 +218,7 @@ export function usePoolData(poolAddress?: PublicKey, enableRealtime: boolean = t
             liquidityX: '0', // Would get from bin liquidity data
             liquidityY: '0', // Would get from bin liquidity data
             isActive: true,
-            feeRate: pair.feeParameters?.baseFactor || 0,
+            feeRate: pair.staticFeeParameters?.baseFactor || 0,
             volume24h: '0', // Would need external data source
           },
           totalLiquidity: '0', // Would calculate from bin reserves
@@ -271,6 +273,9 @@ export function usePoolData(poolAddress?: PublicKey, enableRealtime: boolean = t
         intervalRef.current = null
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, poolAddress, loading, fetchPoolData])
 
   // Cleanup on unmount
@@ -332,7 +337,7 @@ export function useAllPools() {
             liquidityX: '0', // Would get from reserves
             liquidityY: '0', // Would get from reserves
             isActive: true,
-            feeRate: pair.feeParameters?.baseFactor || 0,
+            feeRate: pair.staticFeeParameters?.baseFactor || 0,
             volume24h: '0',
           },
           totalLiquidity: '0', // Would calculate from reserves
@@ -446,6 +451,9 @@ export function useSwapQuote(
         intervalRef.current = null
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, poolAddress, amountIn, tokenIn, loading, getQuote])
 
   // Cleanup on unmount

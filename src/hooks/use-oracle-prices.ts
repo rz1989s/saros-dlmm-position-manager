@@ -4,7 +4,6 @@
 // 🔮 React hooks for real-time price data integration with DLMM positions
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
 import { oraclePriceFeeds, type PriceData } from '@/lib/oracle/price-feeds'
 import { REFRESH_INTERVALS } from '@/lib/constants'
 
@@ -71,6 +70,9 @@ export function useTokenPrice(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, symbol, loading, fetchPrice])
 
   // Cleanup
@@ -152,6 +154,9 @@ export function useMultipleTokenPrices(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, symbols.length, loading, fetchPrices])
 
   // Cleanup
@@ -247,6 +252,9 @@ export function usePositionValuation(
         }
       }
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [enableRealtime, tokenXSymbol, tokenYSymbol, loading, calculateValuation])
 
   // Cleanup

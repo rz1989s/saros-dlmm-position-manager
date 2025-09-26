@@ -82,7 +82,7 @@ export function useServiceWorker() {
   useEffect(() => {
     let mounted = true
 
-    const handleUpdateAvailable = (event: any) => {
+    const handleUpdateAvailable = (_event: any) => {
       if (mounted) {
         setUpdateAvailable(true)
         trackPWAEvent('sw_update_available')

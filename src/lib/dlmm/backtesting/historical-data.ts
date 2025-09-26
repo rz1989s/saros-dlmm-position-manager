@@ -174,10 +174,10 @@ export class HistoricalDataService {
    * Attempt to fetch real data from API (placeholder for future implementation)
    */
   private async fetchFromAPI(
-    poolAddress: PublicKey,
-    startDate: Date,
-    endDate: Date,
-    interval: string
+    _poolAddress: PublicKey,
+    _startDate: Date,
+    _endDate: Date,
+    _interval: string
   ): Promise<HistoricalData | null> {
     // This would integrate with Saros API or other data providers
     // For now, we return null to trigger mock data fallback
