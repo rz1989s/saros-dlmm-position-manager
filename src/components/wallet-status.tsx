@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Wallet, Copy, ExternalLink, Loader2 } from 'lucide-react'
@@ -74,7 +75,7 @@ export function WalletStatus() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {walletIcon ? (
-              <img src={walletIcon} alt={walletName} className="w-8 h-8 rounded" />
+              <Image src={walletIcon} alt={walletName} width={32} height={32} className="w-8 h-8 rounded" />
             ) : (
               <Wallet className="h-8 w-8 text-saros-primary" />
             )}

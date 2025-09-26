@@ -261,7 +261,7 @@ const PositionsList = memo(function PositionsList({
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Positions Found</h3>
               <p className="text-muted-foreground text-center mb-6 max-w-md">
-                You don't have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
+                You don&apos;t have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
               </p>
               <Button onClick={handleCreatePosition}>
                 <Plus className="h-4 w-4 mr-2" />

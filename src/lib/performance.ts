@@ -169,19 +169,22 @@ export const PerformanceOptimizer = {
     return React.memo(Component, propsAreEqual) as T
   },
 
-  createStableCallback: <T extends (...args: any[]) => any>(
-    callback: T,
-    deps: DependencyList
-  ): T => {
-    return useCallback(callback, deps)
-  },
+  // Moved to standalone hooks below to follow React Hook rules
+}
 
-  memoizeValue: <T>(
-    factory: () => T,
-    deps: DependencyList
-  ): T => {
-    return useMemo(factory, deps)
-  }
+// Proper React hook replacements for removed object methods
+export function useStableCallback<T extends (...args: any[]) => any>(
+  callback: T,
+  deps: DependencyList
+): T {
+  return useCallback(callback, deps)
+}
+
+export function useMemoizedValue<T>(
+  factory: () => T,
+  deps: DependencyList
+): T {
+  return useMemo(factory, deps)
 }
 
 export function useStableRef<T>(value: T) {

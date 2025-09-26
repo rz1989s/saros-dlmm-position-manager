@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, ComponentType, LazyExoticComponent } from 'react'
+import Image from 'next/image'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnalyticsSkeleton, ChartSkeleton, StrategySkeleton } from '@/components/ui/loading-states'
 
@@ -126,9 +127,11 @@ export function LazyImage({
       {!loaded && !error && (
         <Skeleton className="w-full h-full" />
       )}
-      <img
+      <Image
         src={src}
         alt={alt}
+        width={400}
+        height={300}
         className={`transition-opacity duration-300 ${
           loaded ? 'opacity-100' : 'opacity-0'
         } ${className}`}
@@ -137,9 +140,11 @@ export function LazyImage({
         style={{ display: loaded ? 'block' : 'none' }}
       />
       {error && placeholder && (
-        <img
+        <Image
           src={placeholder}
           alt={alt}
+          width={400}
+          height={300}
           className={className}
         />
       )}

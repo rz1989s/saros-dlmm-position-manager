@@ -97,7 +97,7 @@ function AnalyticsPageComponent() {
     })
     setActiveTab(newTab)
     console.log('✅ TAB STATE UPDATED to:', newTab)
-  }, [selectedPoolAddress]) // Removed activeTab from dependencies to prevent function recreation
+  }, [selectedPoolAddress]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get pool analytics data
   const {

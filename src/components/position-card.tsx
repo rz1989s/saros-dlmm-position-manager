@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -104,16 +105,20 @@ const PositionCard = memo(function PositionCard({
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="flex -space-x-1 sm:-space-x-2 flex-shrink-0">
               {position.tokenX.logoURI && (
-                <img 
-                  src={position.tokenX.logoURI} 
+                <Image
+                  src={position.tokenX.logoURI}
                   alt={position.tokenX.symbol}
+                  width={32}
+                  height={32}
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-background"
                 />
               )}
               {position.tokenY.logoURI && (
-                <img 
-                  src={position.tokenY.logoURI} 
+                <Image
+                  src={position.tokenY.logoURI}
                   alt={position.tokenY.symbol}
+                  width={32}
+                  height={32}
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-background"
                 />
               )}

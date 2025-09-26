@@ -431,7 +431,7 @@ export function FeeTierSelector({
           <DialogHeader>
             <DialogTitle>Confirm Fee Tier Migration</DialogTitle>
             <DialogDescription>
-              You're about to change from {currentTier?.name} to {selectedTier?.name}.
+              You&apos;re about to change from {currentTier?.name} to {selectedTier?.name}.
               Review the impact below before confirming.
             </DialogDescription>
           </DialogHeader>
