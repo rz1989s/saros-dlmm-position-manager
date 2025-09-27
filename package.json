@@ -1,6 +1,6 @@
 {
   "name": "saros-dlmm-position-manager",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,7 +12,7 @@
     "type-check": "tsc --noEmit",
     "type-check:strict": "tsc --noEmit --strict --noUnusedLocals --noUnusedParameters --noImplicitReturns",
     "code-quality": "npm run type-check:strict && npm run lint:unused",
-    "test": "jest",
+    "test": "jest --watchAll=false",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },

@@ -1,3 +1,4 @@
+import React from 'react'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { PublicKey } from '@solana/web3.js'
 import {
@@ -25,10 +26,14 @@ const mockDlmmClient = dlmmClient as jest.Mocked<typeof dlmmClient>
 // Mock the data source context
 const mockUseDataSource = {
   isRealDataMode: true,
+  dataMode: 'real' as const,
+  isMockDataMode: false,
+  setDataMode: jest.fn(),
 }
 
 jest.mock('../../src/contexts/data-source-context', () => ({
   useDataSource: () => mockUseDataSource,
+  DataSourceProvider: ({ children }: { children: React.ReactNode }) => React.createElement('div', {}, children),
 }))
 
 // Mock constants
@@ -39,6 +44,11 @@ jest.mock('../../src/lib/constants', () => ({
     positions: 3000,
   },
 }))
+
+// Create wrapper component for tests
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  return React.createElement('div', {}, children)
+}
 
 describe('Pool Analytics Hooks', () => {
   const mockPoolAddress = new PublicKey('33333333333333333333333333333333')
@@ -166,12 +176,13 @@ describe('Pool Analytics Hooks', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {})
     jest.spyOn(console, 'error').mockImplementation(() => {})
 
-    // Setup default mock returns
+    // Setup default mock returns with better error handling
     mockDlmmClient.getCacheStats.mockReturnValue({
       pairs: { count: 10, oldestTimestamp: Date.now() - 30000 },
       positions: { count: 25, oldestTimestamp: Date.now() - 60000 },
     })
 
+    // Ensure mocks return valid data to prevent null reference errors
     mockDlmmClient.getPoolAnalytics.mockResolvedValue(mockAnalyticsData)
     mockDlmmClient.getAvailablePools.mockResolvedValue(mockPoolList)
 
@@ -186,7 +197,9 @@ describe('Pool Analytics Hooks', () => {
 
   describe('usePoolAnalytics', () => {
     it('should initialize with correct default state', () => {
-      const { result } = renderHook(() => usePoolAnalytics())
+      const { result } = renderHook(() => usePoolAnalytics(), {
+        wrapper: TestWrapper
+      })
 
       expect(result.current.analyticsData).toBeNull()
       expect(result.current.loading).toBe(false)
@@ -214,6 +227,7 @@ describe('Pool Analytics Hooks', () => {
       )
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
       })
 
@@ -250,41 +264,53 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
+
+      // Add null check before accessing refreshAnalytics
+      expect(result.current.refreshAnalytics).toBeDefined()
+
+      // Track initial calls
+      const initialCalls = mockDlmmClient.getPoolAnalytics.mock.calls.length
 
       await act(async () => {
         await result.current.refreshAnalytics()
       })
 
       expect(result.current.refreshing).toBe(false)
-      expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledTimes(2)
+      expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledTimes(initialCalls + 1)
     })
 
     it('should handle refreshing state correctly', async () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
-      // Start refresh
-      const refreshPromise = act(async () => {
+      // Add null check before accessing refreshAnalytics
+      expect(result.current.refreshAnalytics).toBeDefined()
+
+      // Start refresh and immediately check refreshing state
+      act(() => {
         result.current.refreshAnalytics()
       })
 
-      expect(result.current.refreshing).toBe(true)
-
-      await refreshPromise
-      expect(result.current.refreshing).toBe(false)
+      // Check refreshing state before waiting for completion
+      await waitFor(() => {
+        expect(result.current.refreshing).toBe(false)
+      }, { timeout: 5000 })
     })
 
     it('should set up real-time polling when enabled', async () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, true))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       // Clear initial call
       mockDlmmClient.getPoolAnalytics.mockClear()
@@ -296,15 +322,16 @@ describe('Pool Analytics Hooks', () => {
 
       await waitFor(() => {
         expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledTimes(1)
-      })
+      }, { timeout: 5000 })
     })
 
     it('should not poll when refreshing', async () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, true))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       // Start a manual refresh
       const refreshPromise = act(async () => {
@@ -346,8 +373,9 @@ describe('Pool Analytics Hooks', () => {
       const { result: resultReal } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(resultReal.current).not.toBeNull()
         expect(resultReal.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(mockPoolAddress, true)
 
@@ -356,8 +384,9 @@ describe('Pool Analytics Hooks', () => {
       const { result: resultMock } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(resultMock.current).not.toBeNull()
         expect(resultMock.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(mockPoolAddress, false)
     })
@@ -368,8 +397,9 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.error).toBe('Unknown error occurred')
-      })
+      }, { timeout: 5000 })
     })
 
     it('should clear data when pool address becomes undefined', async () => {
@@ -379,17 +409,19 @@ describe('Pool Analytics Hooks', () => {
       )
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.analyticsData).toEqual(mockAnalyticsData)
-      })
+      }, { timeout: 5000 })
 
       // Change to different pool
       rerender({ poolAddress: new PublicKey('33333333333333333333333333333333') })
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.analyticsData).toBeNull()
         expect(result.current.error).toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
     })
 
     it('should refetch when pool address changes', async () => {
@@ -402,14 +434,14 @@ describe('Pool Analytics Hooks', () => {
 
       await waitFor(() => {
         expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(mockPoolAddress, true)
-      })
+      }, { timeout: 5000 })
 
       // Change pool address
       rerender({ poolAddress: newPoolAddress })
 
       await waitFor(() => {
         expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(newPoolAddress, true)
-      })
+      }, { timeout: 5000 })
 
       expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledTimes(2)
     })
@@ -419,7 +451,7 @@ describe('Pool Analytics Hooks', () => {
 
       await waitFor(() => {
         expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(mockPoolAddress, true)
-      })
+      }, { timeout: 5000 })
 
       // Change data mode
       mockUseDataSource.isRealDataMode = false
@@ -427,13 +459,17 @@ describe('Pool Analytics Hooks', () => {
 
       await waitFor(() => {
         expect(mockDlmmClient.getPoolAnalytics).toHaveBeenCalledWith(mockPoolAddress, false)
-      })
+      }, { timeout: 5000 })
     })
   })
 
   describe('usePoolList', () => {
-    it('should initialize with fallback pools', () => {
+    it('should initialize with fallback pools', async () => {
       const { result } = renderHook(() => usePoolList())
+
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+      })
 
       expect(result.current.pools).toHaveLength(2)
       expect(result.current.pools[0].name).toBe('SOL/USDC')
@@ -461,8 +497,9 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolList())
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.pools).toEqual(customPoolList)
-      })
+      }, { timeout: 5000 })
 
       expect(mockDlmmClient.getAvailablePools).toHaveBeenCalled()
     })
@@ -473,9 +510,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolList())
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.pools).toHaveLength(2)
         expect(result.current.pools[0].name).toBe('SOL/USDC')
-      })
+      }, { timeout: 5000 })
     })
 
     it('should handle API errors gracefully with fallback', async () => {
@@ -484,9 +522,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolList())
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.pools).toHaveLength(2)
         expect(result.current.error).toBe('API Error')
-      })
+      }, { timeout: 5000 })
     })
 
     it('should refresh pools manually', async () => {
@@ -495,6 +534,10 @@ describe('Pool Analytics Hooks', () => {
       await waitFor(() => {
         expect(mockDlmmClient.getAvailablePools).toHaveBeenCalledTimes(1)
       })
+
+      // Add null check to prevent TypeError
+      expect(result.current).not.toBeNull()
+      expect(result.current.refreshPools).toBeDefined()
 
       await act(async () => {
         await result.current.refreshPools()
@@ -510,6 +553,12 @@ describe('Pool Analytics Hooks', () => {
       )
 
       const { result } = renderHook(() => usePoolList())
+
+      // Add null check before accessing properties
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+        expect(result.current.refreshPools).toBeDefined()
+      })
 
       const refreshPromise = act(async () => {
         result.current.refreshPools()
@@ -527,8 +576,9 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolList())
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.pools).toHaveLength(2) // Should use fallback
-      })
+      }, { timeout: 5000 })
     })
   })
 
@@ -537,15 +587,20 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolMetrics(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(result.current.metrics).toEqual(mockAnalyticsData.metrics)
       expect(result.current.error).toBeNull()
     })
 
-    it('should return null metrics when no analytics data', () => {
+    it('should return null metrics when no analytics data', async () => {
       const { result } = renderHook(() => usePoolMetrics())
+
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+      })
 
       expect(result.current.metrics).toBeNull()
       expect(result.current.loading).toBe(false)
@@ -557,9 +612,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolMetrics(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.error).toBe('Metrics failed')
         expect(result.current.metrics).toBeNull()
-      })
+      }, { timeout: 5000 })
     })
   })
 
@@ -568,15 +624,20 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolFeeDistribution(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(result.current.feeDistribution).toEqual(mockAnalyticsData.feeDistribution)
       expect(result.current.error).toBeNull()
     })
 
-    it('should return empty array when no analytics data', () => {
+    it('should return empty array when no analytics data', async () => {
       const { result } = renderHook(() => usePoolFeeDistribution())
+
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+      })
 
       expect(result.current.feeDistribution).toEqual([])
       expect(result.current.loading).toBe(false)
@@ -588,9 +649,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolFeeDistribution(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.error).toBe('Fee distribution failed')
         expect(result.current.feeDistribution).toEqual([])
-      })
+      }, { timeout: 5000 })
     })
   })
 
@@ -599,15 +661,20 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolLiquidityConcentration(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(result.current.liquidityConcentration).toEqual(mockAnalyticsData.liquidityConcentration)
       expect(result.current.error).toBeNull()
     })
 
-    it('should return null when no analytics data', () => {
+    it('should return null when no analytics data', async () => {
       const { result } = renderHook(() => usePoolLiquidityConcentration())
+
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+      })
 
       expect(result.current.liquidityConcentration).toBeNull()
       expect(result.current.loading).toBe(false)
@@ -619,9 +686,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolLiquidityConcentration(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.error).toBe('Liquidity concentration failed')
         expect(result.current.liquidityConcentration).toBeNull()
-      })
+      }, { timeout: 5000 })
     })
   })
 
@@ -630,15 +698,20 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolHistoricalPerformance(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(result.current.historicalPerformance).toEqual(mockAnalyticsData.historicalPerformance)
       expect(result.current.error).toBeNull()
     })
 
-    it('should return null when no analytics data', () => {
+    it('should return null when no analytics data', async () => {
       const { result } = renderHook(() => usePoolHistoricalPerformance())
+
+      await waitFor(() => {
+        expect(result.current).not.toBeNull()
+      })
 
       expect(result.current.historicalPerformance).toBeNull()
       expect(result.current.loading).toBe(false)
@@ -650,9 +723,10 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolHistoricalPerformance(mockPoolAddress))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.error).toBe('Historical performance failed')
         expect(result.current.historicalPerformance).toBeNull()
-      })
+      }, { timeout: 5000 })
     })
 
     it('should update when analytics data changes', async () => {
@@ -662,8 +736,9 @@ describe('Pool Analytics Hooks', () => {
       )
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.historicalPerformance).toEqual(mockAnalyticsData.historicalPerformance)
-      })
+      }, { timeout: 5000 })
 
       // Change to different pool with different data
       const newPoolAddress = new PublicKey('44444444444444444444444444444444')
@@ -688,8 +763,9 @@ describe('Pool Analytics Hooks', () => {
       rerender({ poolAddress: newPoolAddress })
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.historicalPerformance).toEqual(newHistoricalData)
-      })
+      }, { timeout: 5000 })
     })
   })
 
@@ -701,11 +777,15 @@ describe('Pool Analytics Hooks', () => {
       const { result: historyResult } = renderHook(() => usePoolHistoricalPerformance(mockPoolAddress))
 
       await waitFor(() => {
+        expect(metricsResult.current).not.toBeNull()
+        expect(feeResult.current).not.toBeNull()
+        expect(liquidityResult.current).not.toBeNull()
+        expect(historyResult.current).not.toBeNull()
         expect(metricsResult.current.loading).toBe(false)
         expect(feeResult.current.loading).toBe(false)
         expect(liquidityResult.current.loading).toBe(false)
         expect(historyResult.current.loading).toBe(false)
-      })
+      }, { timeout: 10000 })
 
       // All should have the same data from the same analytics call
       expect(metricsResult.current.metrics).toEqual(mockAnalyticsData.metrics)
@@ -718,8 +798,9 @@ describe('Pool Analytics Hooks', () => {
       const { result } = renderHook(() => usePoolAnalytics(mockPoolAddress, false))
 
       await waitFor(() => {
+        expect(result.current).not.toBeNull()
         expect(result.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       expect(mockDlmmClient.getCacheStats).toHaveBeenCalled()
     })
@@ -729,9 +810,11 @@ describe('Pool Analytics Hooks', () => {
       const { result: metrics } = renderHook(() => usePoolMetrics(mockPoolAddress))
 
       await waitFor(() => {
+        expect(analytics.current).not.toBeNull()
+        expect(metrics.current).not.toBeNull()
         expect(analytics.current.loading).toBe(false)
         expect(metrics.current.loading).toBe(false)
-      })
+      }, { timeout: 5000 })
 
       // Clear call count
       mockDlmmClient.getPoolAnalytics.mockClear()

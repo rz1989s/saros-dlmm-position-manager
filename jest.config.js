@@ -13,6 +13,13 @@ const customJestConfig = {
   // Test environment
   testEnvironment: 'jsdom',
 
+  // Timeout configuration for Solana operations
+  testTimeout: 30000, // 30 seconds for complex Solana operations
+
+  // Performance configuration
+  maxWorkers: '50%', // Prevent system overload
+  clearMocks: true, // Clear mocks between tests for isolation
+
   // Module paths
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

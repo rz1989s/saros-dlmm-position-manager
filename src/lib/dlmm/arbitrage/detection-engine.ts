@@ -110,6 +110,7 @@ export class CrossPoolArbitrageEngine {
   private readonly UPDATE_INTERVAL_MS = 5000
   private readonly MIN_PROFIT_USD = 10
   private readonly MAX_RISK_SCORE = 0.7
+  private idCounter = 0
 
   constructor(_connection: Connection) {
     this.patterns = this.initializeArbitragePatterns()
@@ -350,7 +351,7 @@ export class CrossPoolArbitrageEngine {
   }
 
   private calculateDirectArbitrageOpportunity(poolA: ArbitragePool, poolB: ArbitragePool): ArbitrageOpportunity | null {
-    const opportunityId = `direct_${poolA.poolAddress.toString()}_${poolB.poolAddress.toString()}_${Date.now()}`
+    const opportunityId = `direct_${poolA.poolAddress.toString()}_${poolB.poolAddress.toString()}_${Date.now()}_${++this.idCounter}`
 
     // Mock calculation - would implement actual price differential analysis
     const grossProfit = Math.random() * 20 + 5 // $5-25

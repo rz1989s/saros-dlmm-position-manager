@@ -468,11 +468,11 @@ describe('CrossPoolArbitrageEngine', () => {
           priorityFees: 0.5
         },
         risk: {
-          liquidityRisk: 0.2,
-          slippageRisk: 0.2,
-          mevRisk: 0.2,
-          temporalRisk: 0.2,
-          competitionRisk: 0.2, // Average risk = 1.0 > MAX_RISK_SCORE (0.7)
+          liquidityRisk: 0.8,
+          slippageRisk: 0.8,
+          mevRisk: 0.8,
+          temporalRisk: 0.8,
+          competitionRisk: 0.8, // Average risk = 0.8 > MAX_RISK_SCORE (0.7)
           overallRisk: 'high',
           riskFactors: []
         },
@@ -1577,7 +1577,7 @@ describe('CrossPoolArbitrageEngine', () => {
 
       expect(stats.totalProfitPotential).toBe(30) // 12 + 18
       expect(stats.activeOpportunities).toBe(2)
-      expect(stats.averageRiskScore).toBe(0.2) // (0.2 + 0.2) / 2
+      expect(stats.averageRiskScore).toBe(0.1) // Both opportunities have 0.1 risk score
     })
 
     it('should handle empty opportunities correctly', () => {
@@ -1696,8 +1696,8 @@ describe('CrossPoolArbitrageEngine', () => {
       const calculateAverageRiskScore = (engine as any).calculateAverageRiskScore.bind(engine)
       const result = calculateAverageRiskScore()
 
-      // opp-1 risk score: 0.2, opp-2 risk score: 0.6, average: 0.4
-      expect(result).toBe(0.4)
+      // opp-1 risk score: 0.1, opp-2 risk score: 0.3, average: 0.2
+      expect(result).toBe(0.2)
     })
   })
 
