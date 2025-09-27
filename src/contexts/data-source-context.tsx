@@ -23,7 +23,6 @@ const DATA_MODE_STORAGE_KEY = 'saros-data-mode'
 export function DataSourceProvider({ children }: DataSourceProviderProps) {
   // Initialize with default to prevent hydration mismatch
   const [dataMode, setDataModeState] = useState<DataMode>('mock')
-  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load from localStorage on mount (client-side only)
   useEffect(() => {
@@ -31,7 +30,6 @@ export function DataSourceProvider({ children }: DataSourceProviderProps) {
     if (stored === 'mock' || stored === 'real') {
       setDataModeState(stored)
     }
-    setIsHydrated(true)
   }, [])
 
   const setDataMode = (mode: DataMode) => {

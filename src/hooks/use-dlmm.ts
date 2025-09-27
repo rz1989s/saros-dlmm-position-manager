@@ -44,7 +44,7 @@ export function useDLMM() {
 
 export function useUserPositions(enableRealtime: boolean = true) {
   const { client, publicKey, connected, handleError } = useDLMM()
-  const { dataMode, isMockDataMode, isRealDataMode } = useDataSource()
+  const { dataMode, isMockDataMode } = useDataSource()
 
   // Initialize with mock data by default to prevent empty state on first render
   const [positions, setPositions] = useState<DLMMPosition[]>(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { logger } from '@/lib/logger'
 
 export interface PerformanceOptions {

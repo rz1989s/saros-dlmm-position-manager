@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { TokenImage } from '@/components/ui/token-image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

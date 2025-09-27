@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -121,7 +121,7 @@ export function BacktestingDashboard() {
     return errors
   }
 
-  const fetchAvailablePools = async () => {
+  const fetchAvailablePools = useCallback(async () => {
     if (!client || !isEnabled) return
 
     setPoolsLoading(true)
@@ -163,7 +163,7 @@ export function BacktestingDashboard() {
     } finally {
       setPoolsLoading(false)
     }
-  }
+  }, [client, isEnabled])
 
   useEffect(() => {
     if (isEnabled) {
@@ -173,7 +173,7 @@ export function BacktestingDashboard() {
       // Fetch available pools
       fetchAvailablePools()
     }
-  }, [isEnabled, getBacktestHistory, client])
+  }, [isEnabled, getBacktestHistory, client, fetchAvailablePools])
 
   const handleStartBacktest = async () => {
     // Clear previous validation errors

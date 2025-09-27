@@ -17,7 +17,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { AnimatedNumber } from '@/components/animations/animated-number'
-import { StaggerList } from '@/components/animations/stagger-list'
 
 interface CompetitorFeature {
   feature: string
@@ -252,17 +251,6 @@ const getStatusScore = (status: string): number => {
   }
 }
 
-const getStatusText = (status: string): string => {
-  switch (status) {
-    case 'none': return 'Not Implemented'
-    case 'partial': return 'Partial Implementation'
-    case 'basic': return 'Basic Implementation'
-    case 'good': return 'Good Implementation'
-    case 'excellent': return 'Excellent Implementation'
-    case 'perfect': return 'Perfect Implementation'
-    default: return 'Unknown'
-  }
-}
 
 const getCategoryIcon = (category: string) => {
   switch (category) {

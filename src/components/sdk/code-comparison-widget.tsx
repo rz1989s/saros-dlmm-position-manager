@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Copy, CheckCircle2, X, Code, Zap, TrendingUp } from 'lucide-react'
+import { Copy, CheckCircle2, X, TrendingUp } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

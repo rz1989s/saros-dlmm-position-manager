@@ -629,10 +629,10 @@ export class BacktestEngine {
 
     if (activeBins.length === 0) return 0
 
-    // Total liquidity in active bins
-    const totalActiveLiquidity = activeBins.reduce((sum, bin) => {
-      return sum + parseFloat(bin.liquidityX) * currentPrice + parseFloat(bin.liquidityY)
-    }, 0)
+    // Total liquidity in active bins (for future use)
+    // const totalActiveLiquidity = activeBins.reduce((sum, bin) => {
+    //   return sum + parseFloat(bin.liquidityX) * currentPrice + parseFloat(bin.liquidityY)
+    // }, 0)
 
     // Assume this position represents some percentage of the pool's liquidity
     const poolShareEstimate = 0.001 + Math.random() * 0.01 // 0.1% to 1.1% of pool
@@ -647,7 +647,7 @@ export class BacktestEngine {
   private calculateImpermanentLoss(position: PositionSnapshot, currentPrice: number): number {
     // Get initial state (approximate from first bin)
     const firstBin = position.binDistribution[0]
-    const initialPrice = firstBin.binId // Simplified - using bin ID as initial price
+    // const initialPrice = firstBin.binId // Simplified - using bin ID as initial price
 
     // Calculate what the value would be if just holding the tokens
     const initialTokenX = position.binDistribution.reduce((sum, bin) =>

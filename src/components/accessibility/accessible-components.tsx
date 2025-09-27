@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, useEffect, useRef, useState, ReactNode } from 'react'
+import React, { forwardRef, useEffect, useState, ReactNode } from 'react'
 import { motion, MotionProps } from 'framer-motion'
 import { ChevronDown, ChevronUp, Info, AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'

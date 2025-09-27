@@ -9,13 +9,10 @@ import {
   Download,
   ExternalLink,
   Search,
-  Filter,
   ArrowLeft,
   Github,
   Sparkles,
-  Database,
-  TrendingUp,
-  BarChart3
+  Database
 } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

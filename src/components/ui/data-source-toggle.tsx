@@ -6,14 +6,10 @@ import { useWalletState } from '@/hooks/use-wallet-integration'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  TestTube,
   Globe,
   AlertTriangle,
-  Info,
   Loader2,
-  ShieldCheck,
-  Network,
-  Eye
+  ShieldCheck
 } from 'lucide-react'
 // Removed tooltip imports as component doesn't exist
 
