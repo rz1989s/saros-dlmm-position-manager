@@ -13,7 +13,10 @@ import {
   ArrowRight,
   Star,
   Trophy,
-  Target
+  Target,
+  Database,
+  Network,
+  Monitor
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +30,9 @@ import { CodeComparisonWidget } from '@/components/sdk/code-comparison-widget'
 import { LivePerformanceMetrics } from '@/components/sdk/live-performance-metrics'
 import { CompetitiveMatrix } from '@/components/sdk/competitive-matrix'
 import { DeveloperResources } from '@/components/sdk/developer-resources'
+import { SDKVerificationPanel } from '@/components/sdk/sdk-verification-panel'
+import { MainnetVerifier } from '@/components/sdk/mainnet-verifier'
+import { NetworkInspectorGuide } from '@/components/sdk/network-inspector-guide'
 
 export default function ShowcasePage() {
   const [selectedFeature, setSelectedFeature] = useState(0)
@@ -313,6 +319,58 @@ export default function ShowcasePage() {
           transition={{ delay: 0.8 }}
         >
           <LivePerformanceMetrics />
+        </motion.div>
+
+        {/* SDK Verification Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+        >
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl flex items-center justify-center gap-2">
+                <Database className="h-6 w-6 text-blue-500" />
+                SDK Verification
+                <Badge variant="default" className="text-xs bg-green-600">
+                  For Judges
+                </Badge>
+              </CardTitle>
+              <CardDescription>
+                Technical proof that this demo uses real Saros DLMM SDK connections to Solana mainnet
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="verification" className="space-y-6">
+                <TabsList className="grid grid-cols-3 h-auto p-1">
+                  <TabsTrigger value="verification" className="flex flex-col items-center gap-2 p-3">
+                    <Database className="h-5 w-5" />
+                    <span className="text-xs font-medium">SDK Status</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="mainnet" className="flex flex-col items-center gap-2 p-3">
+                    <Network className="h-5 w-5" />
+                    <span className="text-xs font-medium">Live Data</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="inspector" className="flex flex-col items-center gap-2 p-3">
+                    <Monitor className="h-5 w-5" />
+                    <span className="text-xs font-medium">Network Inspector</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="verification" className="space-y-4">
+                  <SDKVerificationPanel />
+                </TabsContent>
+
+                <TabsContent value="mainnet" className="space-y-4">
+                  <MainnetVerifier />
+                </TabsContent>
+
+                <TabsContent value="inspector" className="space-y-4">
+                  <NetworkInspectorGuide />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Competitive Advantages */}

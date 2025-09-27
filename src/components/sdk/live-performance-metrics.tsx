@@ -62,16 +62,24 @@ const generateRealTimeStats = (): RealTimeStats => ({
 
 export function LivePerformanceMetrics() {
   const [metrics, setMetrics] = useState<PerformanceMetrics[]>([])
-  const [realTimeStats, setRealTimeStats] = useState<RealTimeStats>(generateRealTimeStats())
+  const [realTimeStats, setRealTimeStats] = useState<RealTimeStats | null>(null)
   const [isConnected, setIsConnected] = useState(true)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    // Mark as client-side rendered
+    setIsClient(true)
+
+    // Initialize real-time stats only on client
+    setRealTimeStats(generateRealTimeStats())
+
     // Initialize with some historical data
     const initialData: PerformanceMetrics[] = []
+    const now = Date.now()
     for (let i = 29; i >= 0; i--) {
       initialData.push({
         ...generateMetrics(),
-        timestamp: Date.now() - (i * 30000) // 30 seconds apart
+        timestamp: now - (i * 30000) // 30 seconds apart
       })
     }
     setMetrics(initialData)
@@ -123,6 +131,31 @@ export function LivePerformanceMetrics() {
     })
   }
 
+  // Show loading state until client-side hydration is complete
+  if (!isClient || !realTimeStats) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Live Performance Metrics</h2>
+            <p className="text-muted-foreground">
+              Real-time SDK performance and optimization tracking
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-16 bg-muted animate-pulse rounded" />
+            <span className="text-xs text-muted-foreground">Loading...</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -146,7 +179,7 @@ export function LivePerformanceMetrics() {
             </Badge>
           )}
           <span className="text-xs text-muted-foreground">
-            Updated {formatTime(realTimeStats.lastUpdate)}
+            Updated {realTimeStats ? formatTime(realTimeStats.lastUpdate) : '--:--'}
           </span>
         </div>
       </div>
@@ -167,7 +200,7 @@ export function LivePerformanceMetrics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
-                <AnimatedNumber value={realTimeStats.totalRpcCallsSaved} />
+                <AnimatedNumber value={realTimeStats?.totalRpcCallsSaved ?? 0} />
               </div>
               <p className="text-xs text-muted-foreground">Total optimization</p>
             </CardContent>
@@ -188,9 +221,9 @@ export function LivePerformanceMetrics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                <AnimatedNumber value={realTimeStats.currentCacheHitRate} suffix="%" decimals={1} />
+                <AnimatedNumber value={realTimeStats?.currentCacheHitRate ?? 0} suffix="%" decimals={1} />
               </div>
-              <Progress value={realTimeStats.currentCacheHitRate} className="mt-2" />
+              <Progress value={realTimeStats?.currentCacheHitRate ?? 0} className="mt-2" />
             </CardContent>
           </Card>
         </motion.div>
@@ -212,7 +245,7 @@ export function LivePerformanceMetrics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
-                <AnimatedNumber value={realTimeStats.averageResponseTime} suffix="ms" />
+                <AnimatedNumber value={realTimeStats?.averageResponseTime ?? 0} suffix="ms" />
               </div>
               <p className="text-xs text-muted-foreground">Average response</p>
             </CardContent>
@@ -233,7 +266,7 @@ export function LivePerformanceMetrics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                <AnimatedNumber value={realTimeStats.uptime} suffix="%" decimals={2} />
+                <AnimatedNumber value={realTimeStats?.uptime ?? 0} suffix="%" decimals={2} />
               </div>
               <p className="text-xs text-muted-foreground">Reliability score</p>
             </CardContent>
@@ -373,7 +406,7 @@ export function LivePerformanceMetrics() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Active Users:</span>
-                    <span className="font-medium">{realTimeStats.activeUsers}</span>
+                    <span className="font-medium">{realTimeStats?.activeUsers ?? 0}</span>
                   </div>
                 </div>
               </div>
