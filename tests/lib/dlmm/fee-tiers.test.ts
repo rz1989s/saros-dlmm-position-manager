@@ -31,6 +31,12 @@ describe('FeeTierManager', () => {
   let mockPoolAddress: PublicKey
   let mockGetLbPair: jest.Mock
 
+  // Default mock response structure
+  const mockPairResponse = {
+    feeInfo: { baseFactor: 500 }, // 5 basis points
+    activeId: 8388608
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
     mockConnection = new Connection('http://localhost:8899')

@@ -479,7 +479,6 @@ describe('PositionMigrationManager', () => {
 
     it('should execute migration plan successfully', async () => {
       // Mock step execution to be faster
-      const originalExecuteStep = migrationManager.executeStep
       jest.spyOn(migrationManager, 'executeStep' as any).mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 10)) // 10ms instead of real execution
         return { success: true, transactionId: 'mock-tx-id' }
@@ -512,7 +511,7 @@ describe('PositionMigrationManager', () => {
 
     it('should handle step execution failure gracefully', async () => {
       // Mock step execution to simulate failure quickly
-      jest.spyOn(migrationManager, 'executeStep' as any).mockImplementation(async (step) => {
+      jest.spyOn(migrationManager, 'executeStep' as any).mockImplementation(async (step: any) => {
         await new Promise(resolve => setTimeout(resolve, 5)) // Fast execution
         if (step.id === 'failing-remove-step') {
           throw new Error('Simulated step failure')

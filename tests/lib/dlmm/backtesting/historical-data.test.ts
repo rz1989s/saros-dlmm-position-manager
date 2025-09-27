@@ -19,7 +19,6 @@ describe('HistoricalDataService', () => {
       cacheTTL: 1000 * 60 * 2, // 2 minutes for testing
       fallbackToMock: true,
       apiEndpoint: 'https://api.test.com',
-      maxDataPoints: 100, // Limit data points for memory efficiency
     })
 
     testPoolAddress = new PublicKey('11111111111111111111111111111112')
