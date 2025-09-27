@@ -1,3 +1,5 @@
+'use client'
+
 import { DashboardHeader } from '@/components/dashboard-header'
 import PositionsList from '@/components/positions-list'
 

@@ -9,6 +9,7 @@ import { WalletStatus } from '@/components/wallet-status'
 import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
 import { PositionCardSkeleton } from '@/components/ui/loading-states'
 import { StaggerList } from '@/components/animations/stagger-list'
+import { DataSourceToggle } from '@/components/ui/data-source-toggle'
 import { 
   RefreshCw,
   Plus,
@@ -241,6 +242,11 @@ const PositionsList = memo(function PositionsList({
                 <option value="inactive">Inactive Only</option>
               </select>
             </div>
+          </div>
+
+          {/* Data Source Toggle */}
+          <div className="border-t pt-4">
+            <DataSourceToggle />
           </div>
 
           {/* Loading State */}

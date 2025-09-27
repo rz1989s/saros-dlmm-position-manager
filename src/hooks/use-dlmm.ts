@@ -6,6 +6,8 @@ import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
 import { DLMMPosition, PoolInfo, BinInfo } from '@/lib/types'
 import { REFRESH_INTERVALS } from '@/lib/constants'
+import { useDataSource } from '@/contexts/data-source-context'
+import { generateMockPositions } from '@/lib/dlmm/mock-positions'
 
 // Enhanced DLMM hooks using improved SDK client with:
 // ✅ Proper TypeScript interfaces from SDK v1.4.0
@@ -42,6 +44,7 @@ export function useDLMM() {
 
 export function useUserPositions(enableRealtime: boolean = true) {
   const { client, publicKey, connected, handleError } = useDLMM()
+  const { dataMode, isMockDataMode, isRealDataMode } = useDataSource()
   const [positions, setPositions] = useState<DLMMPosition[]>([])
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -49,8 +52,30 @@ export function useUserPositions(enableRealtime: boolean = true) {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
   const fetchPositions = useCallback(async () => {
+    setLoading(true)
+    console.log(`🔄 useUserPositions: Fetching in ${dataMode} mode`)
+
+    if (isMockDataMode) {
+      console.log('🎭 Using mock positions data')
+
+      // Simulate loading time for better UX
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Generate mock positions
+      const mockPositions = generateMockPositions(publicKey || undefined)
+      console.log('✅ Generated', mockPositions.length, 'mock positions')
+
+      setPositions(mockPositions)
+      setLastUpdate(new Date())
+      setLoading(false)
+      return
+    }
+
+    // Real data mode - requires wallet connection
     if (!connected || !publicKey) {
+      console.log('⚠️ Real data mode requires wallet connection')
       setPositions([])
+      setLoading(false)
       return
     }
 
@@ -107,7 +132,7 @@ export function useUserPositions(enableRealtime: boolean = true) {
     } finally {
       setLoading(false)
     }
-  }, [client, publicKey, connected, handleError])
+  }, [client, publicKey, connected, handleError, dataMode, isMockDataMode])
 
   const refreshPositions = useCallback(async () => {
     setRefreshing(true)
