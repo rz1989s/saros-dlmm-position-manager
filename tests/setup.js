@@ -167,8 +167,63 @@ afterAll(() => {
   jest.useRealTimers()
 })
 
-// Global test cleanup
+// Memory management for heavy tests
+const activeTimers = new Set()
+const activeIntervals = new Set()
+
+// Override setInterval to track active intervals
+const originalSetInterval = global.setInterval
+global.setInterval = (...args) => {
+  const id = originalSetInterval(...args)
+  activeIntervals.add(id)
+  return id
+}
+
+// Override setTimeout to track active timeouts
+const originalSetTimeout = global.setTimeout
+global.setTimeout = (...args) => {
+  const id = originalSetTimeout(...args)
+  activeTimers.add(id)
+  return id
+}
+
+// Override clearInterval to track cleanup
+const originalClearInterval = global.clearInterval
+global.clearInterval = (id) => {
+  activeIntervals.delete(id)
+  return originalClearInterval(id)
+}
+
+// Override clearTimeout to track cleanup
+const originalClearTimeout = global.clearTimeout
+global.clearTimeout = (id) => {
+  activeTimers.delete(id)
+  return originalClearTimeout(id)
+}
+
+// Enhanced global test cleanup with memory management
 afterEach(() => {
+  // Clear all Jest mocks
   jest.clearAllMocks()
   jest.clearAllTimers()
+
+  // Clear all tracked timers and intervals
+  activeTimers.forEach(id => {
+    try { clearTimeout(id) } catch {}
+  })
+  activeIntervals.forEach(id => {
+    try { clearInterval(id) } catch {}
+  })
+  activeTimers.clear()
+  activeIntervals.clear()
+
+  // Force garbage collection if available (for Node.js)
+  if (global.gc && typeof global.gc === 'function') {
+    global.gc()
+  }
+
+  // Clear DOM if in JSDOM environment
+  if (global.document && typeof global.document.body?.innerHTML === 'string') {
+    global.document.body.innerHTML = ''
+  }
 })

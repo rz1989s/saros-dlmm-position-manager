@@ -1,6 +1,6 @@
 {
   "name": "saros-dlmm-position-manager",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,9 +12,9 @@
     "type-check": "tsc --noEmit",
     "type-check:strict": "tsc --noEmit --strict --noUnusedLocals --noUnusedParameters --noImplicitReturns",
     "code-quality": "npm run type-check:strict && npm run lint:unused",
-    "test": "jest --watchAll=false",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "NODE_OPTIONS='--max-old-space-size=4096 --expose-gc' jest --watchAll=false --runInBand",
+    "test:watch": "NODE_OPTIONS='--max-old-space-size=4096 --expose-gc' jest --watch --runInBand",
+    "test:coverage": "NODE_OPTIONS='--max-old-space-size=4096 --expose-gc' jest --coverage --runInBand"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

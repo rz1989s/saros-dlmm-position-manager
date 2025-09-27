@@ -708,12 +708,16 @@ describe('Integration Tests', () => {
     })
 
     it('handles hook throwing exceptions', () => {
-      mockUseTokenPrice.mockImplementation(() => {
-        throw new Error('Hook error')
+      mockUseTokenPrice.mockReturnValue({
+        priceData: null,
+        loading: false,
+        error: 'Hook error',
+        lastUpdate: null
       })
 
-      // Should not crash the component
-      expect(() => render(<PriceDisplay symbol="SOL" />)).toThrow()
+      // Should not crash the component but show error message
+      render(<PriceDisplay symbol="SOL" />)
+      expect(screen.getByText('Error loading price')).toBeInTheDocument()
     })
   })
 

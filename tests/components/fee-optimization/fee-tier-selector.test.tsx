@@ -15,7 +15,8 @@ jest.mock('@/hooks/use-fee-optimization', () => ({
 // Mock utilities
 jest.mock('@/lib/utils', () => ({
   formatCurrency: jest.fn((value) => `$${value.toFixed(2)}`),
-  formatPercentage: jest.fn((value) => `${(value * 100).toFixed(1)}%`)
+  formatPercentage: jest.fn((value) => `${(value * 100).toFixed(1)}%`),
+  cn: jest.fn((...classes) => classes.filter(Boolean).join(' '))
 }))
 
 // Mock framer-motion

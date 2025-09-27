@@ -57,7 +57,8 @@ export function BacktestingDashboard() {
 
   useEffect(() => {
     if (isEnabled) {
-      setBacktestHistory(getBacktestHistory())
+      const history = getBacktestHistory()
+      setBacktestHistory(history || [])
     }
   }, [isEnabled, getBacktestHistory])
 
@@ -314,7 +315,7 @@ export function BacktestingDashboard() {
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6">
-          {backtestHistory.length === 0 ? (
+          {!backtestHistory || backtestHistory.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center text-muted-foreground">
@@ -324,7 +325,7 @@ export function BacktestingDashboard() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {backtestHistory.map((backtest) => (
+              {(backtestHistory || []).map((backtest) => (
                 <BacktestHistoryCard key={backtest.config.id} backtest={backtest} />
               ))}
             </div>

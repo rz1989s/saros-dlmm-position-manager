@@ -659,13 +659,19 @@ describe('PositionMigrationManager', () => {
     })
 
     it('should calculate migration costs proportionally', async () => {
+      // Clear cache to ensure clean test
+      migrationManager.clearCache()
+
       const smallPosition = { ...mockPositions[0], liquidityAmount: '1000' }
       const largePosition = { ...mockPositions[0], liquidityAmount: '100000' }
 
+      // Analyze each position separately to avoid cache contamination
       const smallOpportunities = await migrationManager.analyzeMigrationOpportunities(
         [smallPosition],
         mockUserAddress
       )
+
+      migrationManager.clearCache() // Clear between tests
 
       const largeOpportunities = await migrationManager.analyzeMigrationOpportunities(
         [largePosition],
@@ -674,8 +680,8 @@ describe('PositionMigrationManager', () => {
 
       if (smallOpportunities.length > 0 && largeOpportunities.length > 0) {
         // Migration cost should be proportional to liquidity (0.5% of liquidity)
-        expect(largeOpportunities[0].migrationCost).toBeCloseTo(500, 1) // 100000 * 0.005
-        expect(smallOpportunities[0].migrationCost).toBeCloseTo(5, 1) // 1000 * 0.005
+        expect(largeOpportunities[0].migrationCost).toBeCloseTo(500, 1) // 100000 * 0.005 = 500
+        expect(smallOpportunities[0].migrationCost).toBeCloseTo(5, 1) // 1000 * 0.005 = 5
       }
     })
 
@@ -748,13 +754,19 @@ describe('PositionMigrationManager', () => {
     })
 
     it('should estimate slippage based on liquidity amount', async () => {
+      // Clear cache to ensure clean test
+      migrationManager.clearCache()
+
       const highLiquidityPosition = { ...mockPositions[0], liquidityAmount: '1000000' }
       const lowLiquidityPosition = { ...mockPositions[0], liquidityAmount: '100' }
 
+      // Analyze each position separately to avoid cache contamination
       const highLiqOpportunities = await migrationManager.analyzeMigrationOpportunities(
         [highLiquidityPosition],
         mockUserAddress
       )
+
+      migrationManager.clearCache() // Clear between tests
 
       const lowLiqOpportunities = await migrationManager.analyzeMigrationOpportunities(
         [lowLiquidityPosition],
@@ -764,8 +776,8 @@ describe('PositionMigrationManager', () => {
       // Higher liquidity should have proportionally higher migration costs
       if (highLiqOpportunities.length > 0 && lowLiqOpportunities.length > 0) {
         // Migration cost should be proportional to liquidity (0.5% of liquidity)
-        expect(highLiqOpportunities[0].migrationCost).toBeCloseTo(5000, 0) // 1000000 * 0.005
-        expect(lowLiqOpportunities[0].migrationCost).toBeCloseTo(0.5, 1) // 100 * 0.005
+        expect(highLiqOpportunities[0].migrationCost).toBeCloseTo(5000, 0) // 1000000 * 0.005 = 5000
+        expect(lowLiqOpportunities[0].migrationCost).toBeCloseTo(0.5, 1) // 100 * 0.005 = 0.5
       }
     })
   })

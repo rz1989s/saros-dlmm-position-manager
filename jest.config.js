@@ -16,9 +16,16 @@ const customJestConfig = {
   // Timeout configuration for Solana operations
   testTimeout: 30000, // 30 seconds for complex Solana operations
 
-  // Performance configuration
-  maxWorkers: '50%', // Prevent system overload
+  // Memory optimization configuration
+  maxWorkers: 2, // Reduced from 50% to prevent memory overload
+  workerIdleMemoryLimit: '512MB', // Limit worker memory usage
   clearMocks: true, // Clear mocks between tests for isolation
+  forceExit: true, // Force Jest to exit after all tests complete
+  detectOpenHandles: true, // Detect handles that prevent Jest from exiting cleanly
+
+  // Performance configuration for memory efficiency
+  cache: false, // Disable Jest cache to prevent memory accumulation
+  logHeapUsage: false, // Disable heap usage logging to reduce overhead
 
   // Module paths
   moduleNameMapper: {

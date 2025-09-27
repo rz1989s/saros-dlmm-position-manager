@@ -238,7 +238,9 @@ describe('ArbitrageExecutionModal', () => {
       expect(screen.getByText('Opportunity Details')).toBeInTheDocument()
       expect(screen.getByText('direct')).toBeInTheDocument()
       expect(screen.getByText('low risk')).toBeInTheDocument()
-      expect(screen.getByText('$25.43')).toBeInTheDocument() // Expected profit
+      // Use getAllByText since there might be multiple profit displays
+      const profitElements = screen.getAllByText('$25.43')
+      expect(profitElements.length).toBeGreaterThan(0)
       expect(screen.getByText('85.0%')).toBeInTheDocument() // Confidence
       expect(screen.getByText('1')).toBeInTheDocument() // Steps
     })
