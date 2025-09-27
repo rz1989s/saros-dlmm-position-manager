@@ -50,6 +50,7 @@ export function PnLTracker() {
   const { positions } = useUserPositions()
   const { isRealDataMode, isMockDataMode } = useDataSource()
 
+
   const [timeframe, setTimeframe] = useState<'24h' | '7d' | '30d' | '90d' | 'all'>('7d')
   const [pnlData, setPnlData] = useState<PnLData[]>([])
   const [positionsPnL, setPositionsPnL] = useState<PositionPnL[]>([])
@@ -316,7 +317,11 @@ export function PnLTracker() {
     }
   }
 
-  if (!isConnected) {
+  // More robust check: Only show "connect wallet" if we're explicitly in real data mode AND not connected
+  // This handles timing issues where isMockDataMode might not be properly set initially
+  const shouldShowConnectWallet = isRealDataMode && !isConnected
+
+  if (shouldShowConnectWallet) {
     return (
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-12">

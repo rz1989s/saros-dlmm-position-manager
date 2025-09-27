@@ -55,6 +55,7 @@ export function PortfolioOverview() {
   const { positions, refreshPositions } = useUserPositions()
   const { isRealDataMode, isMockDataMode } = useDataSource()
 
+
   const [portfolioData, setPortfolioData] = useState<PortfolioAllocation[]>([])
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics>({
     portfolioRisk: 'low',
@@ -74,8 +75,9 @@ export function PortfolioOverview() {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
+    // Generate data if connected OR if in mock mode (regardless of connection)
     if (isConnected || isMockDataMode) {
-      if (isRealDataMode) {
+      if (isRealDataMode && isConnected) {
         generateRealPortfolioData()
         calculateRealRiskMetrics()
         calculateRealPerformanceMetrics()
@@ -287,7 +289,11 @@ export function PortfolioOverview() {
   const totalPnL = portfolioData.reduce((sum, item) => sum + item.pnl, 0)
   const totalPnLPercentage = totalValue > 0 ? (totalPnL / totalValue) * 100 : 0
 
-  if (!isConnected) {
+  // More robust check: Only show "connect wallet" if we're explicitly in real data mode AND not connected
+  // This handles timing issues where isMockDataMode might not be properly set initially
+  const shouldShowConnectWallet = isRealDataMode && !isConnected
+
+  if (shouldShowConnectWallet) {
     return (
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-12">

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { safeLocalStorage } from '@/lib/utils/client-only'
 
 export type DataMode = 'mock' | 'real'
 
@@ -20,30 +21,43 @@ interface DataSourceProviderProps {
 const DATA_MODE_STORAGE_KEY = 'saros-data-mode'
 
 export function DataSourceProvider({ children }: DataSourceProviderProps) {
-  // Initialize from localStorage with fallback to mock
-  const [dataMode, setDataModeState] = useState<DataMode>('mock')
+  // Initialize to undefined to prevent hydration mismatch
+  const [dataMode, setDataModeState] = useState<DataMode | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   // Load from localStorage on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(DATA_MODE_STORAGE_KEY) as DataMode
-      if (stored === 'mock' || stored === 'real') {
-        setDataModeState(stored)
-      }
-    } catch (error) {
-      console.warn('Failed to load data mode from localStorage:', error)
+    const stored = safeLocalStorage.getItem(DATA_MODE_STORAGE_KEY) as DataMode | null
+    if (stored === 'mock' || stored === 'real') {
+      setDataModeState(stored)
+    } else {
+      setDataModeState('mock') // Default fallback
     }
+    setIsLoaded(true)
   }, [])
 
   const setDataMode = (mode: DataMode) => {
-    try {
-      localStorage.setItem(DATA_MODE_STORAGE_KEY, mode)
-      setDataModeState(mode)
-      console.log(`🔄 Data mode switched to: ${mode}`)
-    } catch (error) {
-      console.warn('Failed to save data mode to localStorage:', error)
-      setDataModeState(mode) // Still update state even if storage fails
+    const success = safeLocalStorage.setItem(DATA_MODE_STORAGE_KEY, mode)
+    if (!success) {
+      console.warn('Failed to save data mode to localStorage')
     }
+    setDataModeState(mode)
+    console.log(`🔄 Data mode switched to: ${mode}`)
+  }
+
+  // Return loading state if not yet loaded to prevent hydration mismatch
+  if (!isLoaded || dataMode === null) {
+    const loadingValue: DataSourceContextType = {
+      dataMode: 'mock', // Default during loading
+      setDataMode,
+      isRealDataMode: false,
+      isMockDataMode: true
+    }
+    return (
+      <DataSourceContext.Provider value={loadingValue}>
+        {children}
+      </DataSourceContext.Provider>
+    )
   }
 
   const value: DataSourceContextType = {

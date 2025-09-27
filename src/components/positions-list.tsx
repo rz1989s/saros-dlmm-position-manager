@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useUserPositions } from '@/hooks/use-dlmm'
 import { useWalletState } from '@/hooks/use-wallet-integration'
+import { useDataSource } from '@/contexts/data-source-context'
 import { DLMMPosition, PositionAnalytics } from '@/lib/types'
 import { calculatePositionAnalytics } from '@/lib/dlmm/utils'
 
@@ -37,33 +38,38 @@ const PositionsList = memo(function PositionsList({
   onClosePosition,
 }: PositionsListProps) {
   const { isConnected } = useWalletState()
+  const { isMockDataMode } = useDataSource()
   const { positions, loading, refreshing, refreshPositions } = useUserPositions()
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [analytics, setAnalytics] = useState<Map<string, PositionAnalytics>>(new Map())
   const [showAddLiquidity, setShowAddLiquidity] = useState(false)
 
-  // Calculate analytics for each position
+  // Calculate analytics for each position with stable values
   useEffect(() => {
     if (positions.length > 0) {
       const newAnalytics = new Map<string, PositionAnalytics>()
-      
+
       positions.forEach(position => {
-        // Mock data for current value and fees - in real app, this would come from API
-        const currentValue = Math.random() * 10000 + 1000
-        const initialValue = currentValue * (0.8 + Math.random() * 0.4) // Random initial value
-        const totalFeesEarned = Math.random() * 100 + 10
-        
+        // Generate stable mock data based on position ID to prevent hydration mismatches
+        const positionSeed = position.id.slice(-8) // Use last 8 chars as seed
+        const seedNumber = parseInt(positionSeed, 16) || 1 // Convert to number
+
+        // Create deterministic values based on position ID
+        const currentValue = (seedNumber % 10000) + 1000
+        const initialValue = currentValue * (0.8 + ((seedNumber % 100) / 250)) // Deterministic ratio
+        const totalFeesEarned = (seedNumber % 100) + 10
+
         const positionAnalytics = calculatePositionAnalytics(
           position,
           currentValue,
           initialValue,
           totalFeesEarned
         )
-        
+
         newAnalytics.set(position.id, positionAnalytics)
       })
-      
+
       setAnalytics(newAnalytics)
     }
   }, [positions])
@@ -126,7 +132,8 @@ const PositionsList = memo(function PositionsList({
     setShowAddLiquidity(false)
   }, [])
 
-  if (!isConnected) {
+  // Show wallet connection prompt only in real data mode when not connected
+  if (!isConnected && !isMockDataMode) {
     return (
       <div className="space-y-6">
         <Card className="border-dashed">

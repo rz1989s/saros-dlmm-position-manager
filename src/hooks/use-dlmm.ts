@@ -147,7 +147,8 @@ export function useUserPositions(enableRealtime: boolean = true) {
 
   // Set up real-time polling
   useEffect(() => {
-    if (enableRealtime && connected && publicKey) {
+    // Enable polling for mock data mode OR when wallet is connected for real data
+    if (enableRealtime && (isMockDataMode || (connected && publicKey))) {
       intervalRef.current = setInterval(() => {
         if (!refreshing) {
           fetchPositions()
@@ -169,7 +170,7 @@ export function useUserPositions(enableRealtime: boolean = true) {
 
     // Return undefined for the else case to satisfy TS7030
     return undefined
-  }, [enableRealtime, connected, publicKey, refreshing, fetchPositions])
+  }, [enableRealtime, connected, publicKey, refreshing, fetchPositions, isMockDataMode])
 
   // Cleanup on unmount
   useEffect(() => {

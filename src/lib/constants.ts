@@ -11,6 +11,7 @@ export const RPC_ENDPOINTS = {
   ]
 };
 
+
 // RPC Configuration for rate limiting and retries
 export const RPC_CONFIG = {
   maxRetries: 5,

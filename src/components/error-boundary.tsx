@@ -110,8 +110,17 @@ export class ErrorBoundary extends Component<Props, State> {
   private getErrorSeverity(error: Error) {
     const message = error.message.toLowerCase()
 
-    if (message.includes('network') || message.includes('fetch')) {
+    if (message.includes('network') || message.includes('fetch') || message.includes('rpc')) {
       return 'network'
+    }
+    if (message.includes('403') || message.includes('forbidden')) {
+      return 'rpc-forbidden'
+    }
+    if (message.includes('401') || message.includes('unauthorized')) {
+      return 'rpc-unauthorized'
+    }
+    if (message.includes('rate limit') || message.includes('429')) {
+      return 'rate-limit'
     }
     if (message.includes('permission') || message.includes('unauthorized')) {
       return 'permission'
@@ -121,6 +130,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
     if (message.includes('chunk') || message.includes('loading')) {
       return 'loading'
+    }
+    if (message.includes('manifest') || message.includes('service worker')) {
+      return 'pwa'
     }
 
     return 'unknown'

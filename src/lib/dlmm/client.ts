@@ -128,9 +128,11 @@ export class DLMMClient {
       // Check cache first
       const cached = this.pairCache.get(poolId)
       if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
-        logger.info('✅ Pair loaded from cache:', poolId)
+        logger.cache.hit(poolId, 'pair')
         return cached.pair
       }
+
+      logger.cache.miss(poolId, 'pair')
 
       console.log('🔄 Loading pair from SDK:', poolId)
 
@@ -151,6 +153,7 @@ export class DLMMClient {
 
       // Cache the pair data
       this.pairCache.set(poolId, { pair, timestamp: Date.now() })
+      logger.cache.set(poolId, 'pair', this.cacheDuration)
 
       return pair
     } catch (error) {
@@ -201,9 +204,11 @@ export class DLMMClient {
       // Check cache first
       const cached = this.positionCache.get(cacheKey)
       if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
-        logger.info('✅ Positions loaded from cache for user:', userId)
+        logger.cache.hit(cacheKey, 'positions')
         return cached.positions
       }
+
+      logger.cache.miss(cacheKey, 'positions')
 
       console.log('🔄 Loading positions from SDK for user:', userId)
 
@@ -241,6 +246,7 @@ export class DLMMClient {
         positions: transformedPositions,
         timestamp: Date.now()
       })
+      logger.cache.set(cacheKey, 'positions', this.cacheDuration)
 
       return transformedPositions
     } catch (error) {
