@@ -163,7 +163,7 @@ export function BacktestingDashboard() {
     } finally {
       setPoolsLoading(false)
     }
-  }, [client, isEnabled])
+  }, [client, isEnabled, selectedPool])
 
   useEffect(() => {
     if (isEnabled) {
