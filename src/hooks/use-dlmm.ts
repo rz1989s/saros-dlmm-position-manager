@@ -45,7 +45,12 @@ export function useDLMM() {
 export function useUserPositions(enableRealtime: boolean = true) {
   const { client, publicKey, connected, handleError } = useDLMM()
   const { dataMode, isMockDataMode, isRealDataMode } = useDataSource()
-  const [positions, setPositions] = useState<DLMMPosition[]>([])
+
+  // Initialize with mock data by default to prevent empty state on first render
+  const [positions, setPositions] = useState<DLMMPosition[]>(() => {
+    // Always start with mock data to avoid empty state during hydration
+    return generateMockPositions()
+  })
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -58,10 +63,7 @@ export function useUserPositions(enableRealtime: boolean = true) {
     if (isMockDataMode) {
       console.log('🎭 Using mock positions data')
 
-      // Simulate loading time for better UX
-      await new Promise(resolve => setTimeout(resolve, 300))
-
-      // Generate mock positions
+      // Generate mock positions immediately - no delay for first render
       const mockPositions = generateMockPositions(publicKey || undefined)
       console.log('✅ Generated', mockPositions.length, 'mock positions')
 

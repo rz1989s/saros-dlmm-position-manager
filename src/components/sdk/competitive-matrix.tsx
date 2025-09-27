@@ -470,52 +470,60 @@ export function CompetitiveMatrix({ className }: CompetitiveMatrixProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  <StaggerList variant="slideUp" staggerDelay={0.05}>
-                    {COMPETITIVE_FEATURES.map((feature, index) => (
-                      <tr key={feature.feature} className="border-b hover:bg-muted/50">
-                        <td className="p-3">
-                          <div>
-                            <div className="font-medium">{feature.feature}</div>
-                            <div className="text-sm text-muted-foreground">{feature.description}</div>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            {getStatusIcon(feature.basic)}
-                            <span className="text-xs text-muted-foreground">
-                              {getStatusScore(feature.basic)}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            {getStatusIcon(feature.advanced)}
-                            <span className="text-xs text-muted-foreground">
-                              {getStatusScore(feature.advanced)}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            {getStatusIcon(feature.yourSolution)}
-                            <span className="text-xs text-purple-600 font-medium">
-                              {getStatusScore(feature.yourSolution)}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-3 text-center">
-                          <Badge
-                            variant={feature.impact === 'critical' ? 'destructive' :
-                                   feature.impact === 'high' ? 'default' :
-                                   feature.impact === 'medium' ? 'secondary' : 'outline'}
-                            className="text-xs"
-                          >
-                            {feature.impact}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </StaggerList>
+                  {COMPETITIVE_FEATURES.map((feature, index) => (
+                    <motion.tr
+                      key={feature.feature}
+                      className="border-b hover:bg-muted/50"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: index * 0.05,
+                        duration: 0.3,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }}
+                    >
+                      <td className="p-3">
+                        <div>
+                          <div className="font-medium">{feature.feature}</div>
+                          <div className="text-sm text-muted-foreground">{feature.description}</div>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {getStatusIcon(feature.basic)}
+                          <span className="text-xs text-muted-foreground">
+                            {getStatusScore(feature.basic)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {getStatusIcon(feature.advanced)}
+                          <span className="text-xs text-muted-foreground">
+                            {getStatusScore(feature.advanced)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          {getStatusIcon(feature.yourSolution)}
+                          <span className="text-xs text-purple-600 font-medium">
+                            {getStatusScore(feature.yourSolution)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge
+                          variant={feature.impact === 'critical' ? 'destructive' :
+                                 feature.impact === 'high' ? 'default' :
+                                 feature.impact === 'medium' ? 'secondary' : 'outline'}
+                          className="text-xs"
+                        >
+                          {feature.impact}
+                        </Badge>
+                      </td>
+                    </motion.tr>
+                  ))}
                 </tbody>
               </table>
             </div>

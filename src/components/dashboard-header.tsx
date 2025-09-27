@@ -2,15 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { BarChart3, Home, TrendingUp, Trophy, TestTube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ClientOnlyWalletButton } from '@/components/ui/client-only-wallet-button'
 
 export function DashboardHeader() {
   const pathname = usePathname()
 
   const navigation = [
-    { name: 'Positions', href: '/', icon: Home, active: pathname === '/' },
+    { name: 'Positions', href: '/positions', icon: Home, active: pathname === '/positions' },
     { name: 'Analytics', href: '/analytics', icon: BarChart3, active: pathname === '/analytics' },
     { name: 'Strategies', href: '/strategies', icon: TrendingUp, active: pathname === '/strategies' },
     { name: 'Backtesting', href: '/backtesting', icon: TestTube, active: pathname === '/backtesting' },
@@ -36,7 +36,7 @@ export function DashboardHeader() {
           </div>
           
           <div className="order-1 sm:order-2 w-full sm:w-auto">
-            <WalletMultiButton className="!bg-saros-primary hover:!bg-saros-secondary transition-colors !w-full sm:!w-auto !text-sm sm:!text-base" />
+            <ClientOnlyWalletButton className="!bg-saros-primary hover:!bg-saros-secondary transition-colors !w-full sm:!w-auto !text-sm sm:!text-base" />
           </div>
         </div>
       </div>

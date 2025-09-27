@@ -21,19 +21,17 @@ interface DataSourceProviderProps {
 const DATA_MODE_STORAGE_KEY = 'saros-data-mode'
 
 export function DataSourceProvider({ children }: DataSourceProviderProps) {
-  // Initialize to undefined to prevent hydration mismatch
-  const [dataMode, setDataModeState] = useState<DataMode | null>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
+  // Initialize with default to prevent hydration mismatch
+  const [dataMode, setDataModeState] = useState<DataMode>('mock')
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (client-side only)
   useEffect(() => {
     const stored = safeLocalStorage.getItem(DATA_MODE_STORAGE_KEY) as DataMode | null
     if (stored === 'mock' || stored === 'real') {
       setDataModeState(stored)
-    } else {
-      setDataModeState('mock') // Default fallback
     }
-    setIsLoaded(true)
+    setIsHydrated(true)
   }, [])
 
   const setDataMode = (mode: DataMode) => {
@@ -45,21 +43,7 @@ export function DataSourceProvider({ children }: DataSourceProviderProps) {
     console.log(`🔄 Data mode switched to: ${mode}`)
   }
 
-  // Return loading state if not yet loaded to prevent hydration mismatch
-  if (!isLoaded || dataMode === null) {
-    const loadingValue: DataSourceContextType = {
-      dataMode: 'mock', // Default during loading
-      setDataMode,
-      isRealDataMode: false,
-      isMockDataMode: true
-    }
-    return (
-      <DataSourceContext.Provider value={loadingValue}>
-        {children}
-      </DataSourceContext.Provider>
-    )
-  }
-
+  // Always return consistent value to prevent hydration mismatch
   const value: DataSourceContextType = {
     dataMode,
     setDataMode,

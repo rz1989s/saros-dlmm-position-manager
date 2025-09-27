@@ -76,6 +76,55 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS loaded synchronously */
+            :root {
+              --saros-primary: #6366f1;
+              --saros-secondary: #8b5cf6;
+              --saros-accent: #06b6d4;
+            }
+            .gradient-text {
+              background: linear-gradient(to right, var(--saros-primary), var(--saros-secondary), var(--saros-accent));
+              background-clip: text;
+              -webkit-background-clip: text;
+              color: transparent;
+              -webkit-text-fill-color: transparent;
+            }
+            .pulse-dot {
+              display: inline-flex;
+              height: 0.5rem;
+              width: 0.5rem;
+              border-radius: 9999px;
+              background-color: var(--saros-accent);
+              animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            /* Critical layout for immediate rendering */
+            .container {
+              width: 100%;
+              margin-left: auto;
+              margin-right: auto;
+              max-width: 1200px;
+            }
+            .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+              margin-top: 1.5rem;
+            }
+            .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+              margin-top: 2rem;
+            }
+            .px-4 { padding-left: 1rem; padding-right: 1rem; }
+            .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+            @media (min-width: 640px) {
+              .sm\\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+              .sm\\:py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+              .sm\\:space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 2rem; }
+            }
+            @media (min-width: 1024px) {
+              .lg\\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+              .lg\\:py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+            }
+          `
+        }} />
       </head>
       <body className={inter.className}>
         <SkipLinks

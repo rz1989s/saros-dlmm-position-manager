@@ -24,6 +24,11 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /* Saros brand colors as CSS variables */
+    --saros-primary: #6366f1;
+    --saros-secondary: #8b5cf6;
+    --saros-accent: #06b6d4;
   }
 
   .dark {
@@ -46,6 +51,11 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Saros brand colors remain the same in dark mode */
+    --saros-primary: #6366f1;
+    --saros-secondary: #8b5cf6;
+    --saros-accent: #06b6d4;
   }
 }
 
@@ -256,7 +266,7 @@
 
 /* Custom styles for DLMM components */
 .bin-active {
-  @apply bg-gradient-to-r from-saros-primary to-saros-secondary;
+  background: linear-gradient(to right, var(--saros-primary), var(--saros-secondary));
 }
 
 .bin-inactive {
@@ -272,9 +282,18 @@
 }
 
 .pulse-dot {
-  @apply inline-flex h-2 w-2 rounded-full bg-saros-accent animate-pulse;
+  display: inline-flex;
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--saros-accent);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .gradient-text {
-  @apply bg-gradient-to-r from-saros-primary via-saros-secondary to-saros-accent bg-clip-text text-transparent;
+  background: linear-gradient(to right, var(--saros-primary), var(--saros-secondary), var(--saros-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }

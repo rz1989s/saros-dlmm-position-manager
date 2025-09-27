@@ -20,6 +20,20 @@ const nextConfig = {
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 86400, // 24 hours
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        port: '',
+        pathname: '/solana-labs/token-list/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.jup.ag',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
 
   webpack: (config, { dev, isServer }) => {

@@ -96,9 +96,14 @@ export function CollapsibleSection({
   titleLevel = 3
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-  const contentId = useRef(generateId('collapsible-content')).current
-  const buttonId = useRef(generateId('collapsible-button')).current
+  const [contentId, setContentId] = useState<string>('')
+  const [buttonId, setButtonId] = useState<string>('')
   const { isFocusVisible, onFocus: onNativeFocus, onBlur: onNativeBlur } = useFocusVisible()
+
+  useEffect(() => {
+    setContentId(generateId('collapsible-content'))
+    setButtonId(generateId('collapsible-button'))
+  }, [])
 
   const onFocus = (e: React.FocusEvent) => onNativeFocus(e.nativeEvent)
   const onBlur = (e: React.FocusEvent) => onNativeBlur(e.nativeEvent)
@@ -117,6 +122,40 @@ export function CollapsibleSection({
       ENTER: handleToggle,
       SPACE: handleToggle
     })
+  }
+
+  // Only render when IDs are available to prevent hydration mismatch
+  if (!contentId || !buttonId) {
+    return (
+      <div className={cn('border rounded-lg', className)}>
+        <HeadingTag className="m-0">
+          <button
+            className={cn(
+              'w-full flex items-center justify-between p-4 text-left',
+              'hover:bg-muted/50 focus:bg-muted/50 transition-colors',
+              'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
+            )}
+            onClick={handleToggle}
+            onKeyDown={handleKeyDown}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          >
+            <span className="font-semibold">{title}</span>
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+        </HeadingTag>
+
+        {isOpen && (
+          <div className="p-4 border-t">
+            {children}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -232,7 +271,33 @@ export function ProgressIndicator({
   className = ''
 }: ProgressIndicatorProps) {
   const percentage = Math.round((value / max) * 100)
-  const progressId = useRef(generateId('progress')).current
+  const [progressId, setProgressId] = useState<string>('')
+
+  useEffect(() => {
+    setProgressId(generateId('progress'))
+  }, [])
+
+  // Only render when progressId is available to prevent hydration mismatch
+  if (!progressId) {
+    return (
+      <div className={cn('space-y-2', className)}>
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-medium">{label}</span>
+          {showValue && (
+            <span className="text-sm text-muted-foreground" aria-hidden="true">
+              {percentage}%
+            </span>
+          )}
+        </div>
+        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-300"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -483,9 +548,51 @@ export function AccessibleFormField({
   required = false,
   className = ''
 }: AccessibleFormFieldProps) {
-  const fieldId = useRef(generateId('field')).current
-  const errorId = useRef(generateId('error')).current
-  const descriptionId = useRef(generateId('description')).current
+  const [fieldId, setFieldId] = useState<string>('')
+  const [errorId, setErrorId] = useState<string>('')
+  const [descriptionId, setDescriptionId] = useState<string>('')
+
+  useEffect(() => {
+    setFieldId(generateId('field'))
+    setErrorId(generateId('error'))
+    setDescriptionId(generateId('description'))
+  }, [])
+
+  // Only render with full accessibility when IDs are available to prevent hydration mismatch
+  if (!fieldId || !errorId || !descriptionId) {
+    return (
+      <div className={cn('space-y-2', className)}>
+        <label className="text-sm font-medium flex items-center gap-1">
+          {label}
+          {required && (
+            <span className="text-destructive" aria-label="required">
+              *
+            </span>
+          )}
+        </label>
+
+        {description && (
+          <p className="text-sm text-muted-foreground">
+            {description}
+          </p>
+        )}
+
+        <div className="relative">
+          {children}
+        </div>
+
+        {error && (
+          <p
+            className="text-sm text-destructive flex items-center gap-1"
+            role="alert"
+          >
+            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            {error}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className={cn('space-y-2', className)}>

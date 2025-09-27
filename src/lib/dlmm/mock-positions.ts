@@ -116,7 +116,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         symbol: 'MNGO',
         name: 'Mango',
         decimals: 6,
-        logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac/logo.png',
+        logoURI: undefined,
         price: 0.025,
       },
       tokenY: {

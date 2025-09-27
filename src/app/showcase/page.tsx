@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import Link from 'next/link'
 import {
   Smartphone,
   Zap,
@@ -16,7 +17,8 @@ import {
   Target,
   Database,
   Network,
-  Monitor
+  Monitor,
+  Home
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -175,11 +177,19 @@ export default function ShowcasePage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4"
         >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Trophy className="h-8 w-8 text-yellow-500" />
-            <Badge variant="secondary" className="text-lg px-4 py-1">
-              Competition Showcase
-            </Badge>
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="gap-2 hover:bg-blue-50">
+                <Home className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Trophy className="h-8 w-8 text-yellow-500" />
+              <Badge variant="secondary" className="text-lg px-4 py-1">
+                Competition Showcase
+              </Badge>
+            </div>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -518,7 +528,7 @@ export default function ShowcasePage() {
                   <Smartphone className="h-5 w-5" />
                   Try the PWA
                 </Button>
-                <Button variant="outline" size="lg" className="gap-2 text-white border-white hover:bg-white hover:text-blue-600">
+                <Button variant="outline" size="lg" className="gap-2 bg-white/10 text-white border-white hover:bg-white hover:text-blue-600">
                   <BarChart3 className="h-5 w-5" />
                   View Analytics
                   <ArrowRight className="h-4 w-4" />
