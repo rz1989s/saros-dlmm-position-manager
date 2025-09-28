@@ -311,9 +311,9 @@ export function SDKHeroShowcase() {
 
           <AchievementCard
             icon={Gauge}
-            title="Cache Hit Rate"
-            value={`${sdkStats.cacheHitRate}%`}
-            subtitle="Intelligent caching"
+            title="Performance Gain"
+            value={`${sdkStats.performanceImprovement}x`}
+            subtitle="Real optimizations"
             color="green"
             isHighlighted={true}
           />

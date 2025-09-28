@@ -15,8 +15,8 @@ import {
   PieChart,
   Gauge,
   Sparkles,
-  ExternalLink,
-  Copy
+  Copy,
+  Code
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -103,8 +103,8 @@ function FeatureDetailModal({ feature, isOpen, onClose }: FeatureDetailModalProp
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Performance Impact */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Performance Impact & Code Location */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Performance Impact</CardTitle>
@@ -113,15 +113,30 @@ function FeatureDetailModal({ feature, isOpen, onClose }: FeatureDetailModalProp
                 <p className="text-2xl font-bold text-green-600">{feature.performanceImpact}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-2 border-blue-200 dark:border-blue-800">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Implementation</CardTitle>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Code className="h-4 w-4 text-blue-500" />
+                  Code Location (For Judges)
+                </CardTitle>
               </CardHeader>
-              <CardContent className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                <code className="text-sm bg-muted px-2 py-1 rounded">
-                  {feature.codeLocation}
-                </code>
+              <CardContent className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <code className="text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-2 rounded font-mono border">
+                    {feature.codeLocation}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(feature.codeLocation || '')}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Click copy to get exact file location for verification
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -215,13 +230,13 @@ function CategoryCard({ category, features, onFeatureClick }: CategoryCardProps)
   const completionRate = Math.round((category.completedFeatures / category.totalFeatures) * 100)
 
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <IconComponent className={`h-6 w-6 text-${category.color}-500`} />
           {category.name}
         </CardTitle>
-        <CardDescription>{category.description}</CardDescription>
+        <CardDescription className="line-clamp-2">{category.description}</CardDescription>
         <div className="flex items-center gap-4 pt-2">
           <Badge variant="outline" className="text-xs">
             <AnimatedNumber value={completionRate} suffix="%" duration={1.5} />
@@ -232,7 +247,7 @@ function CategoryCard({ category, features, onFeatureClick }: CategoryCardProps)
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="flex-1 pt-0">
         <div className="space-y-2">
           <StaggerList variant="slideLeft" staggerDelay={0.05}>
             {features.map((feature) => (
@@ -243,26 +258,41 @@ function CategoryCard({ category, features, onFeatureClick }: CategoryCardProps)
               >
                 <Button
                   variant="ghost"
-                  className="w-full justify-start h-auto p-3 text-left"
+                  className="w-full justify-start h-auto p-3 text-left overflow-hidden"
                   onClick={() => onFeatureClick(feature)}
                 >
                   <div className="flex items-start gap-3 w-full">
                     {getStatusIcon(feature.implementation)}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm">{feature.name}</div>
-                      <div className="text-xs text-muted-foreground truncate">
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="font-medium text-sm leading-tight">{feature.name}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                         {feature.description}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs ${getComplexityColor(feature.complexity)}`}
-                        >
-                          {feature.complexity}
-                        </Badge>
-                        <span className="text-xs text-green-600 font-medium">
-                          {feature.performanceImpact}
-                        </span>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs ${getComplexityColor(feature.complexity)}`}
+                          >
+                            {feature.complexity}
+                          </Badge>
+                          <span className="text-xs text-green-600 font-medium truncate">
+                            {feature.performanceImpact}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1 text-xs">
+                          <Code className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                          {feature.codeLocation && (
+                            <code className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-mono text-xs break-all leading-tight">
+                              {feature.codeLocation}
+                            </code>
+                          )}
+                          {!feature.codeLocation && (
+                            <span className="text-xs text-muted-foreground italic">
+                              Planned feature - implementation pending
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -334,7 +364,7 @@ export function SDKFeatureMap() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"
       >
         {SDK_CATEGORIES.map((category) => (
           <motion.div

@@ -173,7 +173,7 @@ function FeatureDetailModal({ feature, isOpen, onClose }: {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => copyToClipboard(feature.codeLocation)}
+                  onClick={() => copyToClipboard(feature.codeLocation || '')}
                 >
                   <Copy className="h-3 w-3" />
                 </Button>
