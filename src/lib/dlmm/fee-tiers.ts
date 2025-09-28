@@ -358,7 +358,7 @@ export class FeeTierManager {
   /**
    * Get current fee tier from pool information
    */
-  private getCurrentFeeTier(baseFactor: number): FeeTier {
+  getCurrentFeeTier(baseFactor: number): FeeTier {
     // Convert base factor to basis points (this is simplified)
     const estimatedBps = baseFactor / 100
 
