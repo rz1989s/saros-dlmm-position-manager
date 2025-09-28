@@ -5,32 +5,20 @@ import { motion } from 'framer-motion'
 import {
   CheckCircle2,
   AlertTriangle,
-  Wifi,
-  WifiOff,
   Globe,
   Package,
   Activity,
-  Clock,
-  Zap,
   Database,
   Network,
   Code
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { AnimatedNumber } from '@/components/animations/animated-number'
 import { dlmmClient } from '@/lib/dlmm/client'
-import { connectionManager } from '@/lib/connection-manager'
+import { sdkTracker, formatTimeAgo } from '@/lib/sdk-tracker'
 
-interface SDKCallLog {
-  id: string
-  method: string
-  timestamp: number
-  duration: number
-  success: boolean
-  endpoint: string
-}
+import type { SDKCall, SDKMetrics } from '@/lib/sdk-tracker'
 
 interface VerificationStatus {
   sdkConnected: boolean
@@ -38,9 +26,8 @@ interface VerificationStatus {
   networkLatency: number
   blockHeight: number
   sdkVersion: string
-  totalCalls: number
-  lastCallTime: number
-  recentCalls: SDKCallLog[]
+  sdkMetrics: SDKMetrics
+  recentCalls: SDKCall[]
 }
 
 export function SDKVerificationPanel() {
@@ -66,33 +53,9 @@ export function SDKVerificationPanel() {
         const blockHeight = await connection.getBlockHeight()
         const networkLatency = Date.now() - startTime
 
-        // Mock recent SDK calls (in real implementation, this would come from call interceptor)
-        const recentCalls: SDKCallLog[] = [
-          {
-            id: '1',
-            method: 'getAllLbPairs()',
-            timestamp: Date.now() - 5000,
-            duration: 245,
-            success: true,
-            endpoint: rpcEndpoint
-          },
-          {
-            id: '2',
-            method: 'getUserPositions()',
-            timestamp: Date.now() - 12000,
-            duration: 189,
-            success: true,
-            endpoint: rpcEndpoint
-          },
-          {
-            id: '3',
-            method: 'getLbPair()',
-            timestamp: Date.now() - 18000,
-            duration: 156,
-            success: true,
-            endpoint: rpcEndpoint
-          }
-        ]
+        // Get real SDK call data from tracker
+        const sdkMetrics = sdkTracker.getMetrics()
+        const recentCalls = sdkTracker.getRecentCalls(5)
 
         setStatus({
           sdkConnected: true,
@@ -100,8 +63,7 @@ export function SDKVerificationPanel() {
           networkLatency,
           blockHeight,
           sdkVersion,
-          totalCalls: 47 + Math.floor(Math.random() * 10), // Simulated total
-          lastCallTime: Date.now() - 3000,
+          sdkMetrics,
           recentCalls
         })
 
@@ -114,8 +76,14 @@ export function SDKVerificationPanel() {
           networkLatency: 0,
           blockHeight: 0,
           sdkVersion: '1.4.0',
-          totalCalls: 0,
-          lastCallTime: 0,
+          sdkMetrics: {
+            totalCalls: 0,
+            successfulCalls: 0,
+            failedCalls: 0,
+            averageLatency: 0,
+            lastCallTime: 0,
+            sessionStartTime: Date.now()
+          },
           recentCalls: []
         })
         setLastUpdate(Date.now())
@@ -132,11 +100,39 @@ export function SDKVerificationPanel() {
   }, [])
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour12: false,
-      minute: '2-digit',
-      second: '2-digit'
-    })
+    const now = new Date()
+    const date = new Date(timestamp)
+
+    // If same day, show time with timezone, otherwise show date + time
+    const isToday = date.toDateString() === now.toDateString()
+
+    if (isToday) {
+      // Use browser's local timezone automatically
+      const timeStr = date.toLocaleTimeString(undefined, {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+
+      // Get timezone offset for display
+      const offsetMinutes = date.getTimezoneOffset()
+      const offsetHours = Math.abs(Math.floor(offsetMinutes / 60))
+      const offsetMins = Math.abs(offsetMinutes % 60)
+      const offsetSign = offsetMinutes <= 0 ? '+' : '-'
+      const timezoneStr = `UTC${offsetSign}${offsetHours}${offsetMins > 0 ? ':' + offsetMins.toString().padStart(2, '0') : ''}`
+
+      return `${timeStr} (${timezoneStr})`
+    } else {
+      return date.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZoneName: 'short'
+      })
+    }
   }
 
   const formatDuration = (ms: number) => {
@@ -262,13 +258,23 @@ export function SDKVerificationPanel() {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total SDK Calls:</span>
                   <span className="font-medium">
-                    <AnimatedNumber value={status.totalCalls} />
+                    <AnimatedNumber value={status.sdkMetrics.totalCalls} />
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Success Rate:</span>
+                  <span className="font-medium text-green-600">
+                    {status.sdkMetrics.totalCalls > 0
+                      ? Math.round((status.sdkMetrics.successfulCalls / status.sdkMetrics.totalCalls) * 100)
+                      : 100}%
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Last Activity:</span>
                   <span className="font-medium">
-                    {Math.floor((Date.now() - status.lastCallTime) / 1000)}s ago
+                    {status.sdkMetrics.lastCallTime > 0
+                      ? formatTimeAgo(status.sdkMetrics.lastCallTime)
+                      : 'No calls yet'}
                   </span>
                 </div>
               </div>
@@ -320,25 +326,31 @@ export function SDKVerificationPanel() {
               Recent SDK Calls
             </h4>
             <div className="space-y-2">
-              {status.recentCalls.map((call) => (
-                <div
-                  key={call.id}
-                  className="flex items-center justify-between p-2 rounded border text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    {call.success ? (
-                      <CheckCircle2 className="h-3 w-3 text-green-500" />
-                    ) : (
-                      <AlertTriangle className="h-3 w-3 text-red-500" />
-                    )}
-                    <span className="font-mono text-xs">{call.method}</span>
+              {status.recentCalls.length > 0 ? (
+                status.recentCalls.map((call) => (
+                  <div
+                    key={call.id}
+                    className="flex items-center justify-between p-2 rounded border text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      {call.success ? (
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-3 w-3 text-red-500" />
+                      )}
+                      <span className="font-mono text-xs">{call.method}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{formatDuration(call.duration)}</span>
+                      <span>{formatTimeAgo(call.timestamp)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{formatDuration(call.duration)}</span>
-                    <span>{formatTime(call.timestamp)}</span>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center text-sm text-muted-foreground py-4">
+                  No SDK calls recorded yet. Interact with the app to see live SDK activity.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </motion.div>
@@ -357,15 +369,16 @@ export function SDKVerificationPanel() {
             <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
               <p>• Open DevTools (F12) → Network tab</p>
               <p>• Look for requests to: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">helius-rpc.com</code></p>
-              <p>• See live SDK method calls in real-time</p>
+              <p>• See live SDK method calls tracked above in real-time</p>
               <p>• Block height updates prove mainnet connectivity</p>
+              <p>• Interact with the app to see live SDK tracking in action</p>
             </div>
           </div>
         </motion.div>
 
         {/* Last Updated */}
         <div className="text-xs text-muted-foreground text-center border-t pt-3">
-          Last verified: {formatTime(lastUpdate)} • Next check in {15 - Math.floor((Date.now() - lastUpdate) / 1000)}s
+          Last verified: {formatTime(lastUpdate)} • Next check in {Math.max(0, 15 - Math.floor((Date.now() - lastUpdate) / 1000))}s
         </div>
       </CardContent>
     </Card>

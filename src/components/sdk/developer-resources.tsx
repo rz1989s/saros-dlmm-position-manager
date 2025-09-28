@@ -4,18 +4,14 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Book,
-  Code,
   Download,
-  ExternalLink,
   Github,
-  FileText,
   Play,
   Copy,
   CheckCircle2,
   ArrowRight,
   Lightbulb,
   Zap,
-  Target,
   Rocket,
   Users,
   MessageCircle
@@ -382,7 +378,7 @@ const CODE_SNIPPETS: CodeSnippet[] = [
 
 export function DeveloperResources() {
   const [selectedPath, setSelectedPath] = useState<LearningPath>(LEARNING_PATHS[0])
-  const [currentStep, setCurrentStep] = useState(0)
+  const [currentStep] = useState(0)
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null)
   const { toast } = useToast()
 

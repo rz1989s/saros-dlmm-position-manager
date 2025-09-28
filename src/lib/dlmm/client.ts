@@ -23,6 +23,7 @@ import {
 import { SOLANA_NETWORK } from '@/lib/constants'
 import { connectionManager } from '@/lib/connection-manager'
 import { logger } from '@/lib/logger'
+import { sdkTracker } from '@/lib/sdk-tracker'
 import type {
   PoolMetrics,
   PoolAnalyticsData,
@@ -85,9 +86,15 @@ export class DLMMClient {
     try {
       // logger.debug('🔍 Fetching all pools with enhanced SDK integration...')
 
-      const poolAddresses = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.fetchPoolAddresses()
-      })
+      const poolAddresses = await sdkTracker.trackSDKCall(
+        'fetchPoolAddresses()',
+        connectionManager.getCurrentConnection().rpcEndpoint,
+        async () => {
+          return await connectionManager.makeRpcCall(async () => {
+            return await this.liquidityBookServices.fetchPoolAddresses()
+          })
+        }
+      )
 
       if (!poolAddresses || poolAddresses.length === 0) {
         console.log('⚠️ No pools found from SDK, using fallback pool addresses')
@@ -136,9 +143,16 @@ export class DLMMClient {
 
       console.log('🔄 Loading pair from SDK:', poolId)
 
-      const pair = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getPairAccount(poolAddress)
-      })
+      const pair = await sdkTracker.trackSDKCall(
+        'getPairAccount()',
+        connectionManager.getCurrentConnection().rpcEndpoint,
+        async () => {
+          return await connectionManager.makeRpcCall(async () => {
+            return await this.liquidityBookServices.getPairAccount(poolAddress)
+          })
+        },
+        { poolAddress: poolAddress.toString() }
+      )
 
       if (!pair) {
         console.warn('⚠️ No pair data found for:', poolId)
@@ -221,14 +235,79 @@ export class DLMMClient {
           pair: pairAddress
         }
 
-        positions = await connectionManager.makeRpcCall(async () => {
-          return await this.liquidityBookServices.getUserPositions(userPositionsParams)
-        })
+        positions = await sdkTracker.trackSDKCall(
+          'getUserPositions()',
+          connectionManager.getCurrentConnection().rpcEndpoint,
+          async () => {
+            return await connectionManager.makeRpcCall(async () => {
+              return await this.liquidityBookServices.getUserPositions(userPositionsParams)
+            })
+          },
+          { userAddress: userAddress.toString(), pairAddress: pairAddress?.toString() }
+        )
       } else {
-        // Get positions for all pairs (would need to iterate through pairs)
-        console.log('⚠️ Getting positions for all pairs - this may be slow')
-        // For now, return empty array - would need to implement multi-pair logic
-        positions = []
+        // Get positions for all pairs by iterating through available pairs
+        console.log('🔄 Getting positions for all pairs - fetching available pairs first')
+
+        try {
+          // Get all available pool addresses first
+          const poolAddresses = await sdkTracker.trackSDKCall(
+            'fetchPoolAddresses()',
+            connectionManager.getCurrentConnection().rpcEndpoint,
+            async () => {
+              return await connectionManager.makeRpcCall(async () => {
+                return await this.liquidityBookServices.fetchPoolAddresses()
+              })
+            }
+          )
+
+          console.log(`📊 Found ${poolAddresses?.length || 0} pool addresses, checking for user positions...`)
+
+          const allPositions: PositionInfo[] = []
+
+          if (poolAddresses && poolAddresses.length > 0) {
+            // Check first few pairs (limit to avoid too many calls)
+            const addressesToCheck = poolAddresses.slice(0, 10)
+
+            for (const address of addressesToCheck) {
+              try {
+                // Convert to PublicKey if it's a string
+                const pairAddress = typeof address === 'string' ? new PublicKey(address) : address
+
+                const userPositionsParams: UserPositionsParams = {
+                  payer: userAddress,
+                  pair: pairAddress
+                }
+
+                const pairPositions = await sdkTracker.trackSDKCall(
+                  `getUserPositions(${pairAddress.toString().slice(0, 8)}...)`,
+                  connectionManager.getCurrentConnection().rpcEndpoint,
+                  async () => {
+                    return await connectionManager.makeRpcCall(async () => {
+                      return await this.liquidityBookServices.getUserPositions(userPositionsParams)
+                    })
+                  },
+                  { userAddress: userAddress.toString(), pairAddress: pairAddress.toString() }
+                )
+
+                if (pairPositions && pairPositions.length > 0) {
+                  allPositions.push(...pairPositions)
+                  console.log(`✅ Found ${pairPositions.length} positions in pair ${pairAddress.toString().slice(0, 8)}...`)
+                }
+              } catch (error) {
+                console.warn(`⚠️ Error checking positions for pair:`, error)
+                // Continue to next pair
+              }
+            }
+          }
+
+          positions = allPositions
+          console.log(`📊 Total positions found: ${positions.length}`)
+
+        } catch (error) {
+          console.error('❌ Error fetching positions across pairs:', error)
+          positions = []
+        }
       }
 
       logger.info('✅ Loaded', positions.length, 'positions for user:', userId)
@@ -274,9 +353,16 @@ export class DLMMClient {
         payer: userAddress
       }
 
-      const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinArrayInfo(binArrayParams)
-      })
+      const result = await sdkTracker.trackSDKCall(
+        'getBinArrayInfo()',
+        connectionManager.getCurrentConnection().rpcEndpoint,
+        async () => {
+          return await connectionManager.makeRpcCall(async () => {
+            return await this.liquidityBookServices.getBinArrayInfo(binArrayParams)
+          })
+        },
+        { pairAddress: pairAddress.toString() }
+      )
 
       console.log('✅ Bin array info retrieved successfully')
       return result
@@ -306,9 +392,16 @@ export class DLMMClient {
         payer: userAddress
       }
 
-      const result = await connectionManager.makeRpcCall(async () => {
-        return await this.liquidityBookServices.getBinsReserveInformation(reserveParams)
-      })
+      const result = await sdkTracker.trackSDKCall(
+        'getBinsReserveInformation()',
+        connectionManager.getCurrentConnection().rpcEndpoint,
+        async () => {
+          return await connectionManager.makeRpcCall(async () => {
+            return await this.liquidityBookServices.getBinsReserveInformation(reserveParams)
+          })
+        },
+        { pairAddress: pairAddress.toString() }
+      )
 
       console.log('✅ Bin reserves retrieved successfully')
       return Array.isArray(result) ? result : [result]

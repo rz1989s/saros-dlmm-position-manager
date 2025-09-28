@@ -136,11 +136,12 @@ export function DataSourceToggle({
             </span>
           </div>
           <div className="text-xs text-muted-foreground space-y-1 pl-2 border-l-2 border-green-200 dark:border-green-800">
-            <p><strong>For Judges:</strong> This demo uses REAL Saros SDK connections to Solana mainnet</p>
-            <p>• Portfolio data is curated for impressive demonstration (~$42k portfolio)</p>
-            <p>• All SDK calls are real and can be verified in DevTools Network tab</p>
-            <p>• Mainnet connectivity is proven via live pool data and RPC calls</p>
-            <p>• Check the SDK Verification section below for technical proof</p>
+            <p><strong>For Judges:</strong> This demo combines REAL SDK connections with curated demo data</p>
+            <p>• <strong>Real:</strong> All pool data, prices, and SDK calls are live from mainnet</p>
+            <p>• <strong>Mock:</strong> Portfolio positions are curated for demonstration (~$42k portfolio)</p>
+            <p>• <strong>Verify:</strong> SDK calls tracked in real-time in SDK Verification section</p>
+            <p>• <strong>Network:</strong> All RPC calls go to live Solana mainnet (helius-rpc.com)</p>
+            <p>• Switch to &ldquo;Live Wallet&rdquo; mode to see your actual positions instead</p>
           </div>
         </div>
       )
@@ -160,14 +161,14 @@ export function DataSourceToggle({
             mode="mock"
             label="SDK Demo"
             icon={ShieldCheck}
-            description="RECOMMENDED: Real SDK + Curated portfolio for judges. Best of both worlds - proves SDK works with impressive demo data."
+            description="RECOMMENDED: Real mainnet SDK calls + Curated portfolio data. Perfect for judges - proves SDK functionality with impressive demo data."
             recommended={true}
           />
           <RadioButton
             mode="real"
             label="Live Wallet"
             icon={Globe}
-            description="Your actual wallet positions from mainnet. Requires wallet connection. May show empty portfolio."
+            description="Your actual wallet positions from mainnet. Requires wallet connection. Shows real positions (may be empty if you have no DLMM positions)."
           />
         </div>
       </div>

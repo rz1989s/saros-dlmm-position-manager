@@ -646,8 +646,7 @@ export class BacktestEngine {
    */
   private calculateImpermanentLoss(position: PositionSnapshot, currentPrice: number): number {
     // Get initial state (approximate from first bin)
-    const firstBin = position.binDistribution[0]
-    // const initialPrice = firstBin.binId // Simplified - using bin ID as initial price
+    // const initialPrice = position.binDistribution[0]?.binId // Simplified - using bin ID as initial price
 
     // Calculate what the value would be if just holding the tokens
     const initialTokenX = position.binDistribution.reduce((sum, bin) =>

@@ -18,7 +18,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AnimatedNumber } from '@/components/animations/animated-number'
-import { dlmmClient } from '@/lib/dlmm/client'
 
 interface MainnetPoolData {
   poolAddress: string

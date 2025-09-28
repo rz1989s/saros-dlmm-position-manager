@@ -12,7 +12,6 @@ import {
   ChevronDown,
   AlertCircle,
   Info,
-  ExternalLink,
   Eye,
   RefreshCw,
   Globe
