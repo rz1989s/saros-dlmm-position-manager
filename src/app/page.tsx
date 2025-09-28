@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   Globe,
   TestTube,
-  CheckCircle2,
   Star,
   Award,
   Sparkles,
