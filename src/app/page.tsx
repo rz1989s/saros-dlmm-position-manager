@@ -21,8 +21,7 @@ import {
   Award,
   Sparkles,
   Database,
-  TrendingUp,
-  Gauge
+  TrendingUp
 } from 'lucide-react'
 import { ClientOnlyWalletButton } from '@/components/ui/client-only-wallet-button'
 import { AnimatedNumber } from '@/components/animations/animated-number'

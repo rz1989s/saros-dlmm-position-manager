@@ -4,12 +4,10 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
-  Filter,
   ChevronRight,
   CheckCircle2,
   Clock,
   AlertCircle,
-  ExternalLink,
   Copy,
   Database,
   TrendingUp,
@@ -414,7 +412,6 @@ function CategoryCard({ category, isExpanded, onToggle }: {
 export function SDKFeatureExplorer() {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [filterComplexity, setFilterComplexity] = useState<string>('all')
   const sdkStats = getSDKStats()
 
   const filteredCategories = useMemo(() => {

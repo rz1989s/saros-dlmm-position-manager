@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Shield,
   CheckCircle2,
@@ -16,17 +16,9 @@ import {
   Database,
   Target,
   Award,
-  FileText,
-  Monitor,
-  Network,
-  Settings,
-  BarChart3,
   TrendingUp,
-  Gauge,
-  AlertCircle,
   CheckSquare,
   Calendar,
-  MapPin,
   Github
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -139,7 +131,6 @@ const MetricCard = ({
   trend?: 'up' | 'down' | 'neutral'
   color?: string
 }) => {
-  const trendColor = trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'
 
   return (
     <Card className="relative overflow-hidden">
@@ -399,7 +390,7 @@ export function JudgeVerificationDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {SDK_CATEGORIES.map((category, index) => (
+                    {SDK_CATEGORIES.map((category) => (
                       <div key={category.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full bg-${category.color}-500`} />
