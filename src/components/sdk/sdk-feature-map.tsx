@@ -229,26 +229,88 @@ function CategoryCard({ category, features, onFeatureClick }: CategoryCardProps)
   const IconComponent = iconMap[category.icon as keyof typeof iconMap]
   const completionRate = Math.round((category.completedFeatures / category.totalFeatures) * 100)
 
+  // Get completed features for detailed view
+  const completedFeatures = features.filter(f => f.implementation === 'completed')
+  const partialFeatures = features.filter(f => f.implementation === 'partial')
+
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col border-2 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <IconComponent className={`h-6 w-6 text-${category.color}-500`} />
-          {category.name}
-        </CardTitle>
-        <CardDescription className="line-clamp-2">{category.description}</CardDescription>
-        <div className="flex items-center gap-4 pt-2">
-          <Badge variant="outline" className="text-xs">
+        {/* Category Header with Icon and Progress */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <IconComponent className={`h-6 w-6 text-${category.color}-500`} />
+            <CardTitle className="text-lg">{category.name}</CardTitle>
+          </div>
+          <Badge variant="outline" className="text-lg px-3 py-1 font-bold">
             <AnimatedNumber value={completionRate} suffix="%" duration={1.5} />
           </Badge>
-          <span className="text-xs text-muted-foreground">
+        </div>
+
+        <CardDescription className="line-clamp-2 mb-3">{category.description}</CardDescription>
+
+        {/* Feature Count Breakdown */}
+        <div className="flex items-center gap-3 text-sm">
+          <span className="font-medium text-muted-foreground">
             {category.completedFeatures}/{category.totalFeatures} features
           </span>
         </div>
+
+        {/* Completed Features Summary */}
+        {completedFeatures.length > 0 && (
+          <div className="space-y-2 mt-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                Implemented Features
+              </span>
+            </div>
+            <div className="space-y-1">
+              {completedFeatures.slice(0, 3).map((feature) => (
+                <div key={feature.id} className="text-xs text-green-600 dark:text-green-400 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="flex-1">{feature.name}</span>
+                  <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                    {feature.complexity}
+                  </Badge>
+                </div>
+              ))}
+              {completedFeatures.length > 3 && (
+                <div className="text-xs text-green-600 dark:text-green-400 italic">
+                  +{completedFeatures.length - 3} more implemented
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Partial Features Summary */}
+        {partialFeatures.length > 0 && (
+          <div className="space-y-2 mt-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                Partial Implementation
+              </span>
+            </div>
+            <div className="space-y-1">
+              {partialFeatures.map((feature) => (
+                <div key={feature.id} className="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                  <span className="flex-1">{feature.name}</span>
+                  <Badge className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">
+                    {feature.complexity}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="flex-1 pt-0">
         <div className="space-y-2">
+          <div className="text-sm font-medium text-muted-foreground mb-3">All Features:</div>
           <StaggerList variant="slideLeft" staggerDelay={0.05}>
             {features.map((feature) => (
               <motion.div
