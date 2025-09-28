@@ -6,7 +6,7 @@
 // ✅ Enhanced error handling and fallbacks
 // ✅ Data source context integration (mock/real data)
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from '@/lib/dlmm/client'
 import { useDataSource } from '@/contexts/data-source-context'
@@ -17,7 +17,8 @@ import type {
   FeeDistribution,
   LiquidityConcentration,
   PoolHistoricalPerformance,
-  PoolListItem
+  PoolListItem,
+  DLMMPosition
 } from '@/lib/types'
 
 interface UsePoolAnalyticsResult {
@@ -463,6 +464,273 @@ export function usePoolHistoricalPerformance(poolAddress?: PublicKey | string): 
 
   return {
     historicalPerformance: analyticsData?.historicalPerformance || null,
+    loading,
+    error
+  }
+}
+
+// ============================================================================
+// ADVANCED ANALYTICS HOOKS
+// ============================================================================
+
+import type {
+  AdvancedPositionAnalytics,
+  PortfolioAnalytics
+} from '@/lib/analytics/position-analytics'
+import { advancedAnalyticsEngine } from '@/lib/analytics/position-analytics'
+
+/**
+ * Hook for advanced position analytics with IL tracking, risk assessment, and performance attribution
+ */
+export function useAdvancedPositionAnalytics(
+  position?: DLMMPosition,
+  enableRealtime: boolean = true
+): {
+  advancedAnalytics: AdvancedPositionAnalytics | null
+  loading: boolean
+  error: string | null
+  refreshAnalytics: () => Promise<void>
+  lastUpdate: Date | null
+} {
+  const { isRealDataMode } = useDataSource()
+  const [advancedAnalytics, setAdvancedAnalytics] = useState<AdvancedPositionAnalytics | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+
+  const fetchAdvancedAnalytics = useCallback(async () => {
+    if (!position) {
+      setAdvancedAnalytics(null)
+      setError(null)
+      return
+    }
+
+    try {
+      setError(null)
+      console.log('🚀 Fetching advanced position analytics for:', position.poolAddress.toString())
+
+      // Get pool data for the position
+      const poolData = await dlmmClient.getPoolAnalytics(position.poolAddress, isRealDataMode)
+
+      // Generate mock historical prices for demo
+      const historicalPrices = {
+        tokenX: Array.from({ length: 30 }, (_) => position.tokenX.price * (1 + (Math.random() - 0.5) * 0.1)),
+        tokenY: Array.from({ length: 30 }, (_) => position.tokenY.price * (1 + (Math.random() - 0.5) * 0.1)),
+        timestamps: Array.from({ length: 30 }, (_, i) => new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000))
+      }
+
+      // Calculate advanced analytics
+      const analytics = await advancedAnalyticsEngine.calculateAdvancedAnalytics(
+        position,
+        poolData,
+        historicalPrices
+      )
+
+      console.log('✅ Advanced analytics calculated:', {
+        impermanentLoss: analytics.impermanentLoss.percentage.toFixed(2) + '%',
+        riskScore: analytics.riskMetrics.overallRiskScore.toFixed(1),
+        efficiency: analytics.healthMetrics.efficiency.toFixed(1) + '%'
+      })
+
+      setAdvancedAnalytics(analytics)
+      setLastUpdate(new Date())
+    } catch (error) {
+      console.error('❌ Error fetching advanced analytics:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      setAdvancedAnalytics(null)
+    }
+  }, [position, isRealDataMode])
+
+  const refreshAnalytics = useCallback(async () => {
+    if (!position) return
+    setLoading(true)
+    try {
+      await fetchAdvancedAnalytics()
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchAdvancedAnalytics, position])
+
+  // Initial fetch
+  useEffect(() => {
+    if (position) {
+      setLoading(true)
+      fetchAdvancedAnalytics().finally(() => setLoading(false))
+    }
+  }, [position?.poolAddress.toString(), fetchAdvancedAnalytics])
+
+  // Real-time polling
+  useEffect(() => {
+    if (enableRealtime && position && !loading) {
+      const interval = setInterval(() => {
+        fetchAdvancedAnalytics()
+      }, REFRESH_INTERVALS.analytics)
+
+      return () => clearInterval(interval)
+    }
+    return undefined
+  }, [enableRealtime, position, loading, fetchAdvancedAnalytics])
+
+  return {
+    advancedAnalytics,
+    loading,
+    error,
+    refreshAnalytics,
+    lastUpdate
+  }
+}
+
+/**
+ * Hook for portfolio-level analytics across multiple positions
+ */
+export function usePortfolioAnalytics(
+  positions: DLMMPosition[] = [],
+  enableRealtime: boolean = true
+): {
+  portfolioAnalytics: PortfolioAnalytics | null
+  loading: boolean
+  error: string | null
+  refreshAnalytics: () => Promise<void>
+  lastUpdate: Date | null
+} {
+  const { isRealDataMode } = useDataSource()
+  const [portfolioAnalytics, setPortfolioAnalytics] = useState<PortfolioAnalytics | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+
+  const fetchPortfolioAnalytics = useCallback(async () => {
+    if (positions.length === 0) {
+      setPortfolioAnalytics(null)
+      setError(null)
+      return
+    }
+
+    try {
+      setError(null)
+      console.log('🚀 Fetching portfolio analytics for', positions.length, 'positions')
+
+      // Get pool data for all positions
+      const poolDataMap = new Map<string, PoolAnalyticsData>()
+      await Promise.all(
+        positions.map(async (position) => {
+          try {
+            const poolData = await dlmmClient.getPoolAnalytics(position.poolAddress, isRealDataMode)
+            poolDataMap.set(position.poolAddress.toString(), poolData)
+          } catch (error) {
+            console.warn('Failed to get pool data for', position.poolAddress.toString(), error)
+          }
+        })
+      )
+
+      // Calculate portfolio analytics
+      const analytics = await advancedAnalyticsEngine.calculatePortfolioAnalytics(positions, poolDataMap)
+
+      console.log('✅ Portfolio analytics calculated:', {
+        totalValue: analytics.totalValue.toFixed(2),
+        totalPnL: analytics.totalPnL.toFixed(2),
+        diversificationScore: analytics.portfolioRisk.diversificationScore.toFixed(1),
+        overallRisk: analytics.portfolioRisk.overallRisk.toFixed(1)
+      })
+
+      setPortfolioAnalytics(analytics)
+      setLastUpdate(new Date())
+    } catch (error) {
+      console.error('❌ Error fetching portfolio analytics:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      setPortfolioAnalytics(null)
+    }
+  }, [positions, isRealDataMode])
+
+  const refreshAnalytics = useCallback(async () => {
+    if (positions.length === 0) return
+    setLoading(true)
+    try {
+      await fetchPortfolioAnalytics()
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchPortfolioAnalytics, positions.length])
+
+  // Initial fetch
+  useEffect(() => {
+    if (positions.length > 0) {
+      setLoading(true)
+      fetchPortfolioAnalytics().finally(() => setLoading(false))
+    }
+  }, [positions.length, fetchPortfolioAnalytics])
+
+  // Real-time polling
+  useEffect(() => {
+    if (enableRealtime && positions.length > 0 && !loading) {
+      const interval = setInterval(() => {
+        fetchPortfolioAnalytics()
+      }, REFRESH_INTERVALS.analytics)
+
+      return () => clearInterval(interval)
+    }
+    return undefined
+  }, [enableRealtime, positions.length, loading, fetchPortfolioAnalytics])
+
+  return {
+    portfolioAnalytics,
+    loading,
+    error,
+    refreshAnalytics,
+    lastUpdate
+  }
+}
+
+/**
+ * Hook for position health metrics and optimization suggestions
+ */
+export function usePositionHealth(position?: DLMMPosition): {
+  healthMetrics: AdvancedPositionAnalytics['healthMetrics'] | null
+  riskMetrics: AdvancedPositionAnalytics['riskMetrics'] | null
+  recommendations: string[]
+  loading: boolean
+  error: string | null
+} {
+  const { advancedAnalytics, loading, error } = useAdvancedPositionAnalytics(position, false)
+
+  const recommendations = useMemo(() => {
+    if (!advancedAnalytics) return []
+
+    const recs: string[] = []
+    const { healthMetrics, riskMetrics } = advancedAnalytics
+
+    // Health-based recommendations
+    if (healthMetrics.efficiency < 50) {
+      recs.push('Consider rebalancing position to improve bin efficiency')
+    }
+    if (healthMetrics.rebalanceUrgency > 70) {
+      recs.push('Position urgently needs rebalancing due to price movement')
+    }
+    if (healthMetrics.feeOptimization < 60) {
+      recs.push('Fee collection could be optimized with better range positioning')
+    }
+    if (healthMetrics.liquidityUtilization < 40) {
+      recs.push('Most liquidity is inactive - consider narrowing price range')
+    }
+
+    // Risk-based recommendations
+    if (riskMetrics.overallRiskScore > 80) {
+      recs.push('High risk position - consider reducing exposure or diversifying')
+    }
+    if (riskMetrics.volatilityScore > 70) {
+      recs.push('High volatility detected - consider wider ranges or reduced position size')
+    }
+    if (riskMetrics.concentrationRisk > 60) {
+      recs.push('Position is highly concentrated - consider spreading across more bins')
+    }
+
+    return recs
+  }, [advancedAnalytics])
+
+  return {
+    healthMetrics: advancedAnalytics?.healthMetrics || null,
+    riskMetrics: advancedAnalytics?.riskMetrics || null,
+    recommendations,
     loading,
     error
   }

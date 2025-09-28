@@ -1,6 +1,6 @@
 {
   "name": "saros-dlmm-position-manager",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -17,6 +17,7 @@
     "test:coverage": "NODE_OPTIONS='--max-old-space-size=4096 --expose-gc' jest --coverage --runInBand"
   },
   "dependencies": {
+    "@pythnetwork/hermes-client": "^2.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-label": "^2.1.7",
@@ -34,6 +35,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.39",
     "@solana/wallet-adapter-wallets": "^0.19.37",
     "@solana/web3.js": "^1.98.4",
+    "@switchboard-xyz/on-demand": "^2.16.3",
     "@types/node": "^20.11.17",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",

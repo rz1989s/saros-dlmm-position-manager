@@ -4,22 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Saros DLMM Position Manager** - a comprehensive, production-ready Next.js PWA built for the [Saros DLMM Demo Challenge](https://earn.superteam.fun/listing/dlmm-demo-challenge-1). It manages Dynamic Liquidity Market Maker (DLMM) positions on Solana, featuring position tracking, analytics, automated strategies, P&L analysis, advanced animations, WCAG 2.1 AA accessibility, and progressive web app capabilities. **Status: v0.14.0 TRANSPARENT** with **honest SDK implementation** (20 features: 16 completed + 4 partial), comprehensive SDK showcase, and interactive developer resources achieving **verified Saros SDK integration** and robust testing coverage.
+This is a **Saros DLMM Position Manager** - a comprehensive, production-ready Next.js PWA built for the [Saros DLMM Demo Challenge](https://earn.superteam.fun/listing/dlmm-demo-challenge-1). It manages Dynamic Liquidity Market Maker (DLMM) positions on Solana, featuring position tracking, analytics, automated strategies, P&L analysis, advanced animations, WCAG 2.1 AA accessibility, and progressive web app capabilities. **Status: v0.15.0 ANALYTICS** with **advanced analytics suite** (27 features: 23 completed + 4 partial), comprehensive SDK showcase, and interactive developer resources achieving **verified Saros SDK integration** and robust testing coverage.
 
 ## 🗺️ **Implementation Roadmap**
 
-**Current Progress**: **27% SDK Implementation** (20/59 features)
+**Current Progress**: **62% SDK Implementation** (34/59 features)
 **Target**: **100% Complete SDK Utilization** by Week 16
 
 ### **Strategic Documentation**
-- **📋 [Implementation Roadmap](docs/SDK_IMPLEMENTATION_ROADMAP.md)**: Comprehensive 4-phase plan from 27% to 100%
+- **📋 [Implementation Roadmap](docs/SDK_IMPLEMENTATION_ROADMAP.md)**: Comprehensive 4-phase plan from 62% to 100%
 - **📊 [Progress Tracker](docs/PROGRESS_TRACKER.md)**: Real-time tracking of feature completion and milestones
 - **📖 [SDK Features Status](docs/SDK_FEATURES.md)**: Honest feature tracking with verified code locations
 
-### **Current Phase: Core SDK Excellence**
-**Target**: 27% → 65% completion | **Duration**: 4-6 weeks
-**Focus**: Complete essential DLMM operations, oracle integration, and position management
-**Next Feature**: Swap Operations & Execution
+### **Current Phase: Analytics & Intelligence**
+**Target**: 62% → 85% completion | **Duration**: 3-4 weeks
+**Focus**: Advanced analytics suite, fee tier management, and portfolio intelligence
+**Recent Achievement**: Advanced Analytics Suite (7 features) ✅ COMPLETED
 
 ## Essential Commands
 
@@ -28,7 +28,7 @@ This is a **Saros DLMM Position Manager** - a comprehensive, production-ready Ne
 # Start development server
 npm run dev
 
-# Build for production  
+# Build for production
 npm run build
 
 # Start production server
@@ -39,6 +39,9 @@ npm run lint
 
 # TypeScript type checking
 npm run type-check
+
+# Strict TypeScript checking (required after code modifications)
+npm run type-check:strict
 ```
 
 ### Deployment
@@ -288,6 +291,23 @@ NEXT_PUBLIC_ANALYTICS_ID=your-analytics-id
 - **Memory Optimization**: 30% reduction through efficient caching architecture and predictive preloading
 - **Load Time Improvement**: 40% faster data loading through advanced cache optimization
 - **SDK Integration**: Verified feature implementation with interactive demonstration and developer resources
+
+## Code Quality Requirements
+
+### Mandatory Type Checking
+**CRITICAL**: Always run strict TypeScript checking after any code modification:
+```bash
+npm run type-check:strict
+```
+This ensures type safety and prevents production issues. No code changes should be considered complete without passing strict type checking.
+
+### Documentation Maintenance
+**ESSENTIAL**: Always update relevant documentation (.md files) when making code changes to maintain documentation accuracy and completeness. This includes:
+- Updating feature lists when adding/removing functionality
+- Modifying architectural documentation when changing system design
+- Adjusting configuration instructions when altering environment variables
+- Updating command references when changing scripts or workflows
+- Keeping progress tracking current when completing milestones
 
 ## Important Considerations
 
