@@ -10,32 +10,24 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
   ResponsiveContainer,
-  Tooltip,
-  Legend,
-  ScatterChart,
-  Scatter
+  Tooltip
 } from 'recharts'
 import {
   Activity,
   AlertCircle,
   CheckCircle,
-  Clock,
-  Eye,
-  EyeOff,
   Pause,
   Play,
   RefreshCw,
   TrendingDown,
   TrendingUp,
-  Wifi,
-  WifiOff,
   Zap,
   Globe,
   Shield,
@@ -48,8 +40,7 @@ import {
 } from '@/lib/oracle/switchboard-integration'
 import {
   priceFeedManager,
-  type UnifiedPriceData,
-  type CrossValidationResult
+  type UnifiedPriceData
 } from '@/lib/oracle/price-feed-manager'
 
 // ============================================================================

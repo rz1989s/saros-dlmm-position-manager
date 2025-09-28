@@ -17,6 +17,22 @@ export interface DLMMPosition {
   isActive: boolean
 }
 
+// Extended interface for portfolio analysis with calculated properties
+export interface EnhancedDLMMPosition extends DLMMPosition {
+  publicKey: PublicKey
+  pair: PublicKey
+  currentValue: number
+  initialValue: number
+  pnl: number
+  pnlPercent: number
+  realizedPnl?: number
+  unrealizedPnl?: number
+  feeEarnings?: number
+  impermanentLoss?: number
+  bins?: BinInfo[]
+  updatedAt: Date
+}
+
 export interface TokenInfo {
   address: PublicKey
   symbol: string
