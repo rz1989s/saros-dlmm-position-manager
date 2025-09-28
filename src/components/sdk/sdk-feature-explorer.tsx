@@ -291,7 +291,7 @@ function FeatureCard({ feature, index }: { feature: SDKFeature; index: number })
               <div className="flex items-center gap-2">
                 {getStatusIcon(feature.implementation)}
                 <span className="text-xs font-mono text-gray-500">
-                  {SDK_FEATURES.findIndex(f => f.id === feature.id) + 1}/69
+                  {SDK_FEATURES.findIndex(f => f.id === feature.id) + 1}/{SDK_FEATURES.length}
                 </span>
               </div>
               <Badge className={getComplexityColor(feature.complexity)}>
@@ -457,7 +457,7 @@ export function SDKFeatureExplorer() {
           </div>
 
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
-            All <span className="text-blue-600 dark:text-blue-400">69 SDK Features</span>
+            All <span className="text-blue-600 dark:text-blue-400">{sdkStats.totalFeatures} SDK Features</span>
           </h2>
 
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">

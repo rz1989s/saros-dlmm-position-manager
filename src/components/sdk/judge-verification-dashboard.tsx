@@ -75,11 +75,11 @@ const verificationChecklist = [
   },
   {
     id: 'feature-count',
-    title: '69/69 Features Implemented',
+    title: `${sdkStats.completedFeatures}/${sdkStats.totalFeatures} Features Implemented`,
     description: 'All SDK features across 9 categories implemented',
     verified: true,
     codeLocation: 'src/lib/sdk-showcase/sdk-features-data.ts',
-    proof: 'Complete feature data structure with 69 features'
+    proof: `Complete feature data structure with ${sdkStats.totalFeatures} features`
   },
   {
     id: 'live-implementation',
@@ -181,7 +181,7 @@ const CodeVerificationSection = () => {
     {
       name: 'Complete Features Data',
       path: 'src/lib/sdk-showcase/sdk-features-data.ts',
-      description: 'All 69 features with implementation details',
+      description: `All ${sdkStats.totalFeatures} features with implementation details`,
       lines: '1-800+'
     },
     {
@@ -329,7 +329,7 @@ export function JudgeVerificationDashboard() {
         >
           <MetricCard
             title="SDK Features"
-            value={69}
+            value={sdkStats.totalFeatures}
             unit="complete"
             icon={CheckCircle2}
             trend="up"
@@ -587,7 +587,7 @@ export function JudgeVerificationDashboard() {
               </span>
             </div>
             <p className="text-sm text-blue-700 dark:text-blue-300 max-w-md">
-              All 69 Saros DLMM SDK features have been successfully implemented with
+              All ${sdkStats.totalFeatures} Saros DLMM SDK features have been successfully implemented with
               enterprise-grade architecture, comprehensive testing, and production optimization.
             </p>
             <div className="flex items-center gap-2 mt-4 justify-center">

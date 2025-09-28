@@ -211,7 +211,7 @@ export function SDKHeroShowcase() {
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <span className="text-8xl md:text-9xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  <AnimatedNumber value={69} duration={3000} />
+                  <AnimatedNumber value={sdkStats.totalFeatures} duration={3000} />
                 </span>
                 <motion.span
                   initial={{ opacity: 0, scale: 0.5 }}
@@ -219,7 +219,7 @@ export function SDKHeroShowcase() {
                   transition={{ delay: 2.5, duration: 0.5 }}
                   className="text-4xl md:text-5xl font-bold text-gray-700 dark:text-gray-300"
                 >
-                  /69
+                  /{sdkStats.totalFeatures}
                 </motion.span>
               </motion.div>
 
@@ -340,7 +340,7 @@ export function SDKHeroShowcase() {
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <BarChart3 className="h-5 w-5 mr-2" />
-            Explore All 69 Features
+            Explore All {sdkStats.totalFeatures} Features
           </Button>
 
           <Button

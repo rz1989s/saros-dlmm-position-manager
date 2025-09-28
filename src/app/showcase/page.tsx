@@ -27,8 +27,10 @@ import { SDKVerificationPanel } from '@/components/sdk/sdk-verification-panel'
 import { MainnetVerifier } from '@/components/sdk/mainnet-verifier'
 import { NetworkInspectorGuide } from '@/components/sdk/network-inspector-guide'
 import { JudgeVerificationChecklist } from '@/components/sdk/judge-verification-checklist'
+import { getSDKStats } from '@/lib/sdk-showcase/sdk-features-data'
 
 export default function ShowcasePage() {
+  const sdkStats = getSDKStats()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -106,7 +108,7 @@ export default function ShowcasePage() {
               <div className="flex items-center justify-center gap-4 pt-4">
                 <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800">
                   <CheckCircle className="h-4 w-4" />
-                  20+ Real Implementations
+                  {sdkStats.completedFeatures} Real Implementations
                 </Badge>
                 <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-800">
                   <Zap className="h-4 w-4" />

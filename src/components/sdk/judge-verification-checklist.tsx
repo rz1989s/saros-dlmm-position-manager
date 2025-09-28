@@ -133,7 +133,7 @@ export function JudgeVerificationChecklist() {
     {
       id: 69,
       title: "Complete SDK Integration Verification",
-      description: "All 69 Saros DLMM SDK features successfully implemented",
+      description: `All ${stats.totalFeatures} Saros DLMM SDK features covered (${stats.completedFeatures} completed, ${stats.partialFeatures} partial, ${stats.plannedFeatures} planned)`,
       codeLocation: "Entire codebase demonstrates 100% SDK utilization",
       verificationMethod: "Review all above items - every feature uses real SDK",
       status: 'completed',
@@ -255,7 +255,7 @@ export function JudgeVerificationChecklist() {
             </Badge>
           </CardTitle>
           <CardDescription>
-            Complete numbered checklist of all 69 Saros DLMM SDK features with code locations and verification methods
+            Complete numbered checklist of all {stats.totalFeatures} Saros DLMM SDK features with code locations and verification methods
           </CardDescription>
         </CardHeader>
         <CardContent>
