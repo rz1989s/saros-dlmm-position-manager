@@ -6,6 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a **Saros DLMM Position Manager** - a comprehensive, production-ready Next.js PWA built for the [Saros DLMM Demo Challenge](https://earn.superteam.fun/listing/dlmm-demo-challenge-1). It manages Dynamic Liquidity Market Maker (DLMM) positions on Solana, featuring position tracking, analytics, automated strategies, P&L analysis, advanced animations, WCAG 2.1 AA accessibility, and progressive web app capabilities. **Status: v0.14.0 TRANSPARENT** with **honest SDK implementation** (20 features: 16 completed + 4 partial), comprehensive SDK showcase, and interactive developer resources achieving **verified Saros SDK integration** and robust testing coverage.
 
+## 🗺️ **Implementation Roadmap**
+
+**Current Progress**: **27% SDK Implementation** (20/59 features)
+**Target**: **100% Complete SDK Utilization** by Week 16
+
+### **Strategic Documentation**
+- **📋 [Implementation Roadmap](docs/SDK_IMPLEMENTATION_ROADMAP.md)**: Comprehensive 4-phase plan from 27% to 100%
+- **📊 [Progress Tracker](docs/PROGRESS_TRACKER.md)**: Real-time tracking of feature completion and milestones
+- **📖 [SDK Features Status](docs/SDK_FEATURES.md)**: Honest feature tracking with verified code locations
+
+### **Current Phase: Core SDK Excellence**
+**Target**: 27% → 65% completion | **Duration**: 4-6 weeks
+**Focus**: Complete essential DLMM operations, oracle integration, and position management
+**Next Feature**: Swap Operations & Execution
+
 ## Essential Commands
 
 ### Development
