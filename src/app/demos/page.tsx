@@ -23,7 +23,10 @@ import {
   Search,
   RotateCcw,
   Gauge,
-  AlertTriangle
+  AlertTriangle,
+  Wrench,
+  Brain,
+  Dice1
 } from 'lucide-react'
 
 interface Demo {
@@ -189,6 +192,42 @@ const PHASE_2_DEMOS: Demo[] = [
     complexity: 'advanced',
     sdkFeatures: [23, 24],
     icon: ArrowUpDown
+  },
+  {
+    id: 'custom-fee-tiers',
+    title: 'Custom Fee Tier Creation',
+    description: 'Design and validate custom fee tiers with template system, market simulation, and backtesting integration',
+    path: '/demos/custom-fee-tiers',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [22, 25],
+    icon: Wrench
+  },
+  {
+    id: 'market-fee-analysis',
+    title: 'Market-based Fee Recommendations',
+    description: 'AI-powered competitive analysis with intelligent fee recommendations, market intelligence, and strategic positioning insights',
+    path: '/demos/market-fee-analysis',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [25, 26],
+    icon: Brain
+  },
+  {
+    id: 'fee-simulation',
+    title: 'Fee Simulation Engine',
+    description: 'Monte Carlo analysis and scenario testing for optimal fee strategies with comprehensive statistical analysis',
+    path: '/demos/fee-simulation',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [41],
+    icon: Dice1
   },
   {
     id: 'correlation-analysis',
