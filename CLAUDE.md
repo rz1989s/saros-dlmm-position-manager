@@ -15,6 +15,8 @@ This is a **Saros DLMM Position Manager** - a comprehensive, production-ready Ne
 - **📋 [Implementation Roadmap](docs/SDK_IMPLEMENTATION_ROADMAP.md)**: Comprehensive 4-phase plan from 84% to 100%
 - **📊 [Progress Tracker](docs/PROGRESS_TRACKER.md)**: Real-time tracking of feature completion and milestones
 - **📖 [SDK Features Status](docs/SDK_FEATURES.md)**: Honest feature tracking with verified code locations
+- **🎯 [Demo Implementation Plan](docs/DEMO_IMPLEMENTATION_PLAN.md)**: 10-week roadmap for 100% demo coverage with Feature Identification System
+- **📈 [Demo Progress Tracker](docs/DEMO_PROGRESS_TRACKER.md)**: Real-time tracking of demo development and judge verification readiness
 
 ### **Current Phase: Performance & Optimization**
 **Target**: 84% → 95% completion | **Duration**: 2-3 weeks
