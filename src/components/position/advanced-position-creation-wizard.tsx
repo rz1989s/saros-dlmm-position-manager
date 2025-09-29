@@ -52,7 +52,7 @@ export function AdvancedPositionCreationWizard({
   pairAddress,
   onSuccess
 }: AdvancedPositionCreationWizardProps) {
-  const { sendTransaction, publicKey, isSubmitting } = useWalletIntegration()
+  const { sendTransaction, publicKey } = useWalletIntegration()
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('strategy')

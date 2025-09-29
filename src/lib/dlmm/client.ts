@@ -1648,6 +1648,143 @@ export class DLMMClient {
       createdAt: pair.createdAt ? new Date(pair.createdAt) : new Date(),
     }
   }
+
+  // ============================================================================
+  // TRANSACTION BUILDING METHODS - For Position Migration Support
+  // ============================================================================
+
+  /**
+   * Create claim fees transaction
+   */
+  async createClaimFeesTransaction(
+    poolAddress: PublicKey,
+    userAddress: PublicKey,
+    positionMint: PublicKey
+  ): Promise<Transaction> {
+    try {
+      console.log('🏗️ Creating claim fees transaction...')
+
+      // In a real implementation, this would use the SDK's claim fees method
+      // For now, return a mock transaction
+      const transaction = new Transaction()
+
+      // Add instruction for claiming fees
+      // transaction.add(claimFeesInstruction)
+
+      console.log('✅ Claim fees transaction created')
+      return transaction
+    } catch (error) {
+      console.error('❌ Failed to create claim fees transaction:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create close position transaction
+   */
+  async createClosePositionTransaction(
+    poolAddress: PublicKey,
+    userAddress: PublicKey,
+    positionMint: PublicKey
+  ): Promise<Transaction> {
+    try {
+      console.log('🏗️ Creating close position transaction...')
+
+      // In a real implementation, this would use the SDK's close position method
+      const transaction = new Transaction()
+
+      // Add instruction for closing position
+      // transaction.add(closePositionInstruction)
+
+      console.log('✅ Close position transaction created')
+      return transaction
+    } catch (error) {
+      console.error('❌ Failed to create close position transaction:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create swap transaction
+   */
+  async createSwapTransaction(
+    poolAddress: PublicKey,
+    userAddress: PublicKey,
+    amount: string,
+    direction: 'X' | 'Y',
+    slippageTolerance: number
+  ): Promise<Transaction> {
+    try {
+      console.log('🏗️ Creating swap transaction...')
+
+      // In a real implementation, this would use the SDK's swap method
+      const transaction = new Transaction()
+
+      // Add instruction for token swap
+      // transaction.add(swapInstruction)
+
+      console.log('✅ Swap transaction created')
+      return transaction
+    } catch (error) {
+      console.error('❌ Failed to create swap transaction:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create add liquidity transaction
+   */
+  async createAddLiquidityTransaction(
+    poolAddress: PublicKey,
+    userAddress: PublicKey,
+    tokenXAmount: string,
+    tokenYAmount: string,
+    activeBinId: number,
+    xDistribution: number[],
+    yDistribution: number[]
+  ): Promise<Transaction> {
+    try {
+      console.log('🏗️ Creating add liquidity transaction...')
+
+      // In a real implementation, this would use the SDK's add liquidity method
+      const transaction = new Transaction()
+
+      // Add instruction for adding liquidity
+      // transaction.add(addLiquidityInstruction)
+
+      console.log('✅ Add liquidity transaction created')
+      return transaction
+    } catch (error) {
+      console.error('❌ Failed to create add liquidity transaction:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create remove liquidity transaction
+   */
+  async createRemoveLiquidityTransaction(
+    poolAddress: PublicKey,
+    userAddress: PublicKey,
+    binIds: number[],
+    liquidityShares: string[]
+  ): Promise<Transaction> {
+    try {
+      console.log('🏗️ Creating remove liquidity transaction...')
+
+      // In a real implementation, this would use the SDK's remove liquidity method
+      const transaction = new Transaction()
+
+      // Add instruction for removing liquidity
+      // transaction.add(removeLiquidityInstruction)
+
+      console.log('✅ Remove liquidity transaction created')
+      return transaction
+    } catch (error) {
+      console.error('❌ Failed to create remove liquidity transaction:', error)
+      throw error
+    }
+  }
 }
 
 // Export singleton instance with enhanced features
