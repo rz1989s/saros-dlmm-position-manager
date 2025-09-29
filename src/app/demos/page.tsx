@@ -20,7 +20,10 @@ import {
   CheckCircle,
   Clock,
   PlayCircle,
-  Search
+  Search,
+  RotateCcw,
+  Gauge,
+  AlertTriangle
 } from 'lucide-react'
 
 interface Demo {
@@ -42,7 +45,7 @@ const PHASE_1_DEMOS: Demo[] = [
     title: 'Swap Operations Demo',
     description: 'Interactive demonstration of DLMM swap operations with real-time pricing and slippage analysis',
     path: '/demos/swap-operations',
-    status: 'planned',
+    status: 'live',
     category: 'core',
     priority: 'high',
     complexity: 'intermediate',
@@ -54,7 +57,7 @@ const PHASE_1_DEMOS: Demo[] = [
     title: 'Advanced Position Creation',
     description: 'Comprehensive position creation wizard with bin selection and liquidity distribution strategies',
     path: '/demos/position-creation',
-    status: 'planned',
+    status: 'live',
     category: 'core',
     priority: 'high',
     complexity: 'intermediate',
@@ -66,7 +69,7 @@ const PHASE_1_DEMOS: Demo[] = [
     title: 'Pyth Network Integration',
     description: 'Real-time price feeds from Pyth Network with confidence intervals and data validation',
     path: '/demos/pyth-integration',
-    status: 'planned',
+    status: 'live',
     category: 'oracle',
     priority: 'high',
     complexity: 'intermediate',
@@ -78,7 +81,7 @@ const PHASE_1_DEMOS: Demo[] = [
     title: 'Price Confidence System',
     description: 'Oracle price confidence scoring and reliability assessment for trading decisions',
     path: '/demos/price-confidence',
-    status: 'planned',
+    status: 'live',
     category: 'oracle',
     priority: 'medium',
     complexity: 'basic',
@@ -90,7 +93,7 @@ const PHASE_1_DEMOS: Demo[] = [
     title: 'Oracle Fallback Mechanisms',
     description: 'Multi-provider oracle system with automatic fallback and error recovery',
     path: '/demos/oracle-fallback',
-    status: 'planned',
+    status: 'live',
     category: 'oracle',
     priority: 'medium',
     complexity: 'intermediate',
@@ -126,6 +129,105 @@ const EXISTING_DEMOS: Demo[] = [
   }
 ]
 
+const PHASE_2_DEMOS: Demo[] = [
+  {
+    id: 'rebalancing',
+    title: 'Advanced Rebalancing System',
+    description: 'Smart rebalancing strategies with cost-benefit analysis and execution simulation for optimal position management',
+    path: '/demos/rebalancing',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [11, 12, 13],
+    icon: RotateCcw
+  },
+  {
+    id: 'performance-monitoring',
+    title: 'Position Performance Monitoring',
+    description: 'Real-time position health scoring, performance alerts, and trend analysis with actionable insights',
+    path: '/demos/performance-monitoring',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [14, 15, 16],
+    icon: Gauge
+  },
+  {
+    id: 'risk-assessment',
+    title: 'Risk Assessment Engine',
+    description: 'Portfolio risk scoring with impermanent loss prediction, stress testing, and risk mitigation strategies',
+    path: '/demos/risk-assessment',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [17, 18, 19],
+    icon: AlertTriangle
+  },
+  {
+    id: 'fee-optimization',
+    title: 'Dynamic Fee Optimization',
+    description: 'Intelligent fee tier analysis with market-based optimization engine and competitive intelligence',
+    path: '/demos/fee-optimization',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [20, 21, 22],
+    icon: Zap
+  },
+  {
+    id: 'fee-migration',
+    title: 'Fee Tier Migration Analysis',
+    description: 'Advanced fee tier migration analysis with cost-benefit calculations and step-by-step execution plans',
+    path: '/demos/fee-migration',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [23, 24],
+    icon: ArrowUpDown
+  },
+  {
+    id: 'correlation-analysis',
+    title: 'Cross-Position Correlation',
+    description: 'Portfolio correlation matrix analysis with risk decomposition and diversification recommendations',
+    path: '/demos/correlation-analysis',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [32],
+    icon: BarChart3
+  },
+  {
+    id: 'market-analysis',
+    title: 'Market Analysis Dashboard',
+    description: 'Comprehensive market intelligence with real-time analytics, trend analysis, and risk assessment',
+    path: '/demos/market-analysis',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [33],
+    icon: TrendingUp
+  },
+  {
+    id: 'performance-benchmarking',
+    title: 'Performance Benchmarking',
+    description: 'Comprehensive performance analysis with risk-adjusted returns and benchmarking against market indices',
+    path: '/demos/performance-benchmarking',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [34],
+    icon: Shield
+  }
+]
+
 const categoryColors = {
   core: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   oracle: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
@@ -149,7 +251,7 @@ export default function DemosPage() {
   const [filter, setFilter] = useState<'all' | 'core' | 'oracle' | 'analytics' | 'advanced'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'beta' | 'planned'>('all')
 
-  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS]
+  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS]
 
   const filteredDemos = allDemos.filter(demo => {
     if (filter !== 'all' && demo.category !== filter) return false

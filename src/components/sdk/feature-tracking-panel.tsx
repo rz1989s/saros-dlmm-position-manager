@@ -25,7 +25,7 @@ interface FeatureTrackingPanelProps {
 export function FeatureTrackingPanel({ className }: FeatureTrackingPanelProps) {
   const { isJudgeMode, visibleFeatures } = useJudgeMode()
   const [isExpanded, setIsExpanded] = useState(false)
-  const [currentPage, setCurrentPage] = useState('/')
+  const [_currentPage, setCurrentPage] = useState('/')
 
   // Track current page for context
   useEffect(() => {
