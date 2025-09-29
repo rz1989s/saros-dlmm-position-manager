@@ -2,18 +2,13 @@
 // Complete position creation system with strategic liquidity distribution
 // Bismillah - implementing advanced position creation for Phase 1
 
-import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
 import {
-  LiquidityBookServices,
   type Pair,
-  type Distribution,
-  type AddLiquidityIntoPositionParams
+  type Distribution
 } from '@saros-finance/dlmm-sdk'
 import { dlmmClient } from './client'
-import { swapOperations } from './swap-operations'
-import { connectionManager } from '@/lib/connection-manager'
 import { logger } from '@/lib/logger'
-import { sdkTracker } from '@/lib/sdk-tracker'
 
 // ============================================================================
 // ADVANCED POSITION CREATION INTERFACES
@@ -142,10 +137,10 @@ export const POSITION_STRATEGIES: Record<string, PositionStrategy> = {
 // ============================================================================
 
 export class AdvancedPositionCreation {
-  private liquidityBookServices: LiquidityBookServices
+  // private liquidityBookServices: LiquidityBookServices
 
   constructor() {
-    this.liquidityBookServices = dlmmClient.getLiquidityBookServices()
+    // this.liquidityBookServices = dlmmClient.getLiquidityBookServices()
     logger.init('🏗️ AdvancedPositionCreation: Initialized with strategic position creation')
   }
 
@@ -163,9 +158,9 @@ export class AdvancedPositionCreation {
       strategy,
       totalCapital,
       tokenXRatio,
-      priceRange,
-      riskParams
+      priceRange
     } = params
+    // riskParams available on params for future risk management
 
     console.log('🏗️ AdvancedPositionCreation.createAdvancedPosition: Starting advanced position creation...')
     console.log('  Strategy:', strategy.name)
@@ -345,11 +340,10 @@ export class AdvancedPositionCreation {
     lowerBinId: number,
     upperBinId: number,
     centerBinId: number,
-    totalCapital: number,
+    _totalCapital: number,
     tokenXRatio: number
   ): Distribution[] {
     const distribution: Distribution[] = []
-    const totalBins = upperBinId - lowerBinId + 1
     const centerWeight = 0.4 // 40% in center bins
     const sideWeight = (1 - centerWeight) / 2 // 30% each side
 
@@ -392,7 +386,7 @@ export class AdvancedPositionCreation {
     lowerBinId: number,
     upperBinId: number,
     centerBinId: number,
-    totalCapital: number,
+    _totalCapital: number,
     tokenXRatio: number
   ): Distribution[] {
     const distribution: Distribution[] = []
@@ -422,7 +416,7 @@ export class AdvancedPositionCreation {
     lowerBinId: number,
     upperBinId: number,
     centerBinId: number,
-    totalCapital: number,
+    _totalCapital: number,
     tokenXRatio: number
   ): Distribution[] {
     const distribution: Distribution[] = []
@@ -458,7 +452,7 @@ export class AdvancedPositionCreation {
     lowerBinId: number,
     upperBinId: number,
     centerBinId: number,
-    totalCapital: number,
+    _totalCapital: number,
     tokenXRatio: number
   ): Distribution[] {
     const distribution: Distribution[] = []
@@ -498,7 +492,7 @@ export class AdvancedPositionCreation {
     lowerBinId: number,
     upperBinId: number,
     centerBinId: number,
-    totalCapital: number,
+    _totalCapital: number,
     tokenXRatio: number
   ): Distribution[] {
     const distribution: Distribution[] = []
@@ -532,7 +526,7 @@ export class AdvancedPositionCreation {
   ): Promise<PositionProjection> {
     console.log('📊 AdvancedPositionCreation.calculatePositionProjection: Calculating projections...')
 
-    const currentPrice = this.getCurrentPrice(pair)
+    // const currentPrice = this.getCurrentPrice(pair)
     const tokenXPrice = 152.45 // Mock - should come from price feeds
     const tokenYPrice = 1.0    // Mock - should come from price feeds
 
@@ -543,7 +537,7 @@ export class AdvancedPositionCreation {
     const tokenYAmount = totalTokenYValue / tokenYPrice
 
     // Calculate bin distribution
-    const binDistribution = distribution.map((dist, index) => ({
+    const binDistribution = distribution.map((dist) => ({
       binId: (pair.activeId || 0) + dist.relativeBinId,
       price: this.binIdToPrice((pair.activeId || 0) + dist.relativeBinId, pair.binStep || 50),
       liquidityX: tokenXAmount * dist.distributionX,
@@ -632,9 +626,9 @@ export class AdvancedPositionCreation {
    * Build position creation transaction
    */
   private async buildPositionTransaction(
-    pairAddress: PublicKey,
-    userAddress: PublicKey,
-    distribution: Distribution[],
+    _pairAddress: PublicKey,
+    _userAddress: PublicKey,
+    _distribution: Distribution[],
     capitalRequirement: PositionProjection['capitalRequirement']
   ): Promise<{
     positionMint: PublicKey
@@ -745,7 +739,7 @@ export class AdvancedPositionCreation {
   /**
    * Get current price from pair data
    */
-  private getCurrentPrice(pair: Pair): number {
+  private getCurrentPrice(_pair: Pair): number {
     // Mock implementation - in real app this would extract actual price from pair
     return 152.45 // SOL/USDC price
   }

@@ -1,7 +1,7 @@
 import { logger } from '../logger'
 import { getCacheOrchestrator } from '../cache/unified-cache-orchestrator'
 import { getNetworkOptimizer } from './network-optimization'
-import { getMemoryOptimizer } from './memory-optimization'
+// import { getMemoryOptimizer } from './memory-optimization'  // Reserved for future memory optimizations
 
 // ============================================================================
 // RESPONSE TIME OPTIMIZATION TYPES
@@ -141,7 +141,7 @@ export class ResponseTimeOptimizer {
   private config: ResponseTimeConfig
   private cache = getCacheOrchestrator()
   private networkOptimizer = getNetworkOptimizer()
-  private memoryOptimizer = getMemoryOptimizer()
+  // private memoryOptimizer = getMemoryOptimizer()  // Reserved for future memory optimizations
 
   // Performance tracking
   private requestProfiles = new Map<string, RequestProfile>()
@@ -173,7 +173,7 @@ export class ResponseTimeOptimizer {
   }
 
   // Optimization strategies
-  private optimizationStrategies = new Map<string, (profile: RequestProfile) => Promise<OptimizationApplied[]>>()
+  // private optimizationStrategies = new Map<string, (profile: RequestProfile) => Promise<OptimizationApplied[]>>()  // Reserved for advanced optimization strategies
 
   constructor(config?: Partial<ResponseTimeConfig>) {
     this.config = {
@@ -439,7 +439,7 @@ export class ResponseTimeOptimizer {
   }
 
   private async planPriorityOptimization(
-    profile: RequestProfile,
+    _profile: RequestProfile,
     priority?: RequestPriority['level']
   ): Promise<OptimizationApplied | null> {
     if (priority && priority !== 'normal') {
@@ -613,7 +613,7 @@ export class ResponseTimeOptimizer {
     params: any,
     config: ProgressiveLoadingConfig
   ): Promise<StreamingResponse<T>> {
-    const chunks = this.createProgressiveChunks(method, params, config)
+    // const chunks = this.createProgressiveChunks(method, params, config)  // Reserved for chunked loading
     let receivedSize = 0
     let totalSize = 0
 
@@ -628,7 +628,7 @@ export class ResponseTimeOptimizer {
     totalSize = this.estimateResponseSize(method, params)
 
     return {
-      data: priorityResult,
+      data: priorityResult as any as T,
       isPartial: true,
       isComplete: false,
       progress: receivedSize / totalSize,
@@ -640,26 +640,27 @@ export class ResponseTimeOptimizer {
     }
   }
 
-  private createProgressiveChunks(
-    method: string,
-    params: any,
-    config: ProgressiveLoadingConfig
-  ): any[] {
-    // Create logical chunks based on data structure
-    const chunks: any[] = []
+  // Reserved for future chunked progressive loading
+  // private createProgressiveChunks(
+  //   method: string,
+  //   params: any,
+  //   config: ProgressiveLoadingConfig
+  // ): any[] {
+  //   // Create logical chunks based on data structure
+  //   const chunks: any[] = []
 
-    if (config.enableChunking) {
-      for (let i = 0; i < config.maxChunks; i++) {
-        chunks.push({
-          index: i,
-          method,
-          params: { ...params, chunk: i, chunkSize: config.chunkSize }
-        })
-      }
-    }
+  //   if (config.enableChunking) {
+  //     for (let i = 0; i < config.maxChunks; i++) {
+  //       chunks.push({
+  //         index: i,
+  //         method,
+  //         params: { ...params, chunk: i, chunkSize: config.chunkSize }
+  //       })
+  //     }
+  //   }
 
-    return chunks
-  }
+  //   return chunks
+  // }
 
   private async loadPriorityFields<T>(
     method: string,
@@ -810,7 +811,7 @@ export class ResponseTimeOptimizer {
     return `prefetch:${this.createCacheKey(method, params)}`
   }
 
-  private estimateResponseSize(method: string, params: any): number {
+  private estimateResponseSize(method: string, _params: any): number {
     // Rough estimates based on method
     const sizeEstimates = {
       getPositions: 5000,
@@ -833,7 +834,7 @@ export class ResponseTimeOptimizer {
     return remaining / avgSpeed
   }
 
-  private async executeBasicRequest<T>(method: string, params: any): Promise<T> {
+  private async executeBasicRequest<T>(_method: string, _params: any): Promise<T> {
     // Fallback to basic execution
     // This would typically call the original DLMM client methods
     throw new Error('Basic request execution not implemented')

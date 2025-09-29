@@ -586,7 +586,8 @@ export class MarketFeeRecommendationEngine {
   private readonly competitiveAnalyzer = new CompetitiveIntelligenceAnalyzer()
   private readonly recommendationEngine = new IntelligentRecommendationEngine()
 
-  constructor(private connection: Connection) {
+  // @ts-ignore TS6138
+  constructor(private _connection: Connection) {
     logger.init('📊 MarketFeeRecommendationEngine: Advanced market analysis system initialized')
     this.startMarketMonitoring()
   }
@@ -983,7 +984,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeVolatility(poolAddress: PublicKey, metrics: PoolMetrics): Promise<VolatilityAnalysis> {
+  private async analyzeVolatility(_poolAddress: PublicKey, metrics: PoolMetrics): Promise<VolatilityAnalysis> {
     // Simplified volatility analysis
     const current = Math.abs(metrics.priceChange24h) / 100
 
@@ -1020,7 +1021,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeVolume(poolAddress: PublicKey, metrics: PoolMetrics): Promise<VolumeAnalysis> {
+  private async analyzeVolume(_poolAddress: PublicKey, metrics: PoolMetrics): Promise<VolumeAnalysis> {
     const current24h = parseFloat(metrics.volume24h)
 
     const historical: HistoricalVolume = {
@@ -1101,7 +1102,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeLiquidity(poolAddress: PublicKey, metrics: PoolMetrics): Promise<LiquidityAnalysis> {
+  private async analyzeLiquidity(_poolAddress: PublicKey, metrics: PoolMetrics): Promise<LiquidityAnalysis> {
     const totalLiquidity = parseFloat(metrics.tvl)
 
     const depth: LiquidityDepth = {
@@ -1164,7 +1165,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeTrends(poolAddress: PublicKey, metrics: PoolMetrics): Promise<TrendAnalysis> {
+  private async analyzeTrends(_poolAddress: PublicKey, metrics: PoolMetrics): Promise<TrendAnalysis> {
     const direction = metrics.priceChange24h > 2 ? 'up' : metrics.priceChange24h < -2 ? 'down' : 'sideways'
 
     const shortTerm: TrendMetrics = {
@@ -1216,7 +1217,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeSentiment(poolAddress: PublicKey): Promise<MarketSentiment> {
+  private async analyzeSentiment(_poolAddress: PublicKey): Promise<MarketSentiment> {
     // Simplified sentiment analysis
     const overallScore = Math.random() * 2 - 1 // -1 to 1
 
@@ -1256,7 +1257,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeMarketCycle(poolAddress: PublicKey): Promise<MarketCycle> {
+  private async analyzeMarketCycle(_poolAddress: PublicKey): Promise<MarketCycle> {
     // Simplified market cycle analysis
     const phases = ['accumulation', 'markup', 'distribution', 'markdown'] as const
     const currentPhase = phases[Math.floor(Math.random() * phases.length)]
@@ -1276,7 +1277,7 @@ class AdvancedMarketAnalyzer {
     }
   }
 
-  private async analyzeCrossMarketCorrelations(poolAddress: PublicKey): Promise<CrossMarketCorrelations> {
+  private async analyzeCrossMarketCorrelations(_poolAddress: PublicKey): Promise<CrossMarketCorrelations> {
     // Simplified correlation analysis
     return {
       btcCorrelation: Math.random() * 0.8 + 0.1,
@@ -1319,7 +1320,7 @@ class CompetitiveIntelligenceAnalyzer {
     }
   }
 
-  private async identifyCompetitors(poolAddress: PublicKey): Promise<CompetitorProfile[]> {
+  private async identifyCompetitors(_poolAddress: PublicKey): Promise<CompetitorProfile[]> {
     // Simplified competitor identification
     const mockCompetitors: CompetitorProfile[] = [
       {
@@ -1371,7 +1372,7 @@ class CompetitiveIntelligenceAnalyzer {
     return avgMarketShare > 0.4 ? 'high' : avgMarketShare > 0.2 ? 'medium' : 'low'
   }
 
-  private async identifyOpportunities(competitors: CompetitorProfile[]): Promise<OpportunityRating[]> {
+  private async identifyOpportunities(_competitors: CompetitorProfile[]): Promise<OpportunityRating[]> {
     return [
       {
         opportunity: 'Fee optimization',
@@ -1471,7 +1472,7 @@ class IntelligentRecommendationEngine {
     marketConditions: MarketConditions,
     competitiveAnalysis: CompetitiveAnalysis,
     userSettings: FeeOptimizationSettings,
-    position?: DLMMPosition
+    _position?: DLMMPosition
   ): Promise<MarketFeeRecommendation> {
     try {
       // Analyze optimal fee tier based on market conditions
@@ -1611,7 +1612,7 @@ class IntelligentRecommendationEngine {
 
   private generateRecommendationDetails(
     marketConditions: MarketConditions,
-    competitiveAnalysis: CompetitiveAnalysis,
+    _competitiveAnalysis: CompetitiveAnalysis,
     recommendedTier: FeeTier
   ): RecommendationDetails {
     const action: 'adopt' | 'modify' | 'monitor' | 'avoid' = 'adopt'
@@ -1689,8 +1690,8 @@ class IntelligentRecommendationEngine {
 
   private calculateConfidenceMetrics(
     marketConditions: MarketConditions,
-    competitiveAnalysis: CompetitiveAnalysis,
-    recommendation: RecommendationDetails
+    _competitiveAnalysis: CompetitiveAnalysis,
+    _recommendation: RecommendationDetails
   ): ConfidenceMetrics {
     // Calculate various confidence factors
     const dataQuality = 0.8 // Assume good data quality
@@ -1775,8 +1776,8 @@ class IntelligentRecommendationEngine {
   }
 
   private createImplementationGuidance(
-    recommendedTier: FeeTier,
-    recommendation: RecommendationDetails
+    _recommendedTier: FeeTier,
+    _recommendation: RecommendationDetails
   ): ImplementationGuidance {
     const phases: ImplementationPhase[] = [
       {
@@ -1871,7 +1872,7 @@ class IntelligentRecommendationEngine {
   }
 
   private createMonitoringPlan(
-    recommendedTier: FeeTier,
+    _recommendedTier: FeeTier,
     marketConditions: MarketConditions
   ): MonitoringPlan {
     const metrics: MonitoringMetric[] = [

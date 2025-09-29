@@ -5,14 +5,12 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
 import { multiPositionAnalysisEngine } from './multi-position-analysis'
-import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
 import type {
   DLMMPosition,
+  EnhancedDLMMPosition,
   PositionAnalytics,
-  RebalancingStrategy,
-  TokenInfo,
   PoolMetrics
-} from '@/lib/types'
+} from '../types'
 
 // ============================================================================
 // OPTIMIZATION TYPES
@@ -105,6 +103,15 @@ export interface OptimizationResult {
   sensitivityAnalysis: SensitivityAnalysis
   scenarios: ScenarioAnalysis
   implementation: ImplementationPlan
+  recommendations?: string[]
+  rebalancing?: {
+    required: boolean
+    urgency: string
+  }
+  optimization?: {
+    status: string
+    quality: number
+  }
 }
 
 export interface PortfolioWeight {
@@ -115,6 +122,8 @@ export interface PortfolioWeight {
   targetWeight: number
   weightChange: number
   rationale: string
+  weight?: number
+  riskContribution?: number
 }
 
 export interface RebalancingAction {
@@ -139,6 +148,9 @@ export interface OptimizationMetrics {
   diversificationImprovement: number
   liquidityImprovement: number
   convergenceScore: number
+  objective?: number
+  status?: string
+  totalValue?: number
 }
 
 export interface SensitivityAnalysis {
@@ -238,7 +250,7 @@ export class PortfolioOptimizationEngine {
   private readonly cacheDuration = 600000 // 10 minutes
   private readonly maxHistoryLength = 100
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     console.log('🎯 PortfolioOptimizationEngine: Advanced portfolio optimization initialized')
   }
 
@@ -269,7 +281,7 @@ export class PortfolioOptimizationEngine {
       // Step 1: Gather market data and analytics
       const marketData = await this.gatherMarketData(positions)
       const crossPositionAnalysis = await multiPositionAnalysisEngine.analyzeMultiplePositions(
-        positions,
+        positions as EnhancedDLMMPosition[],
         analytics,
         userAddress,
         forceRefresh
@@ -429,9 +441,9 @@ export class PortfolioOptimizationEngine {
    */
   private async buildOptimizationModel(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[],
+    _analytics: PositionAnalytics[],
     marketData: MarketData,
-    crossPositionAnalysis: any,
+    _crossPositionAnalysis: any,
     config: PortfolioOptimizationConfig
   ): Promise<OptimizationModel> {
     console.log('🏗️ Building optimization model...')
@@ -567,7 +579,7 @@ export class PortfolioOptimizationEngine {
    * Calculate optimization metrics
    */
   private calculateOptimizationMetrics(
-    positions: DLMMPosition[],
+    _positions: DLMMPosition[],
     optimalWeights: PortfolioWeight[],
     crossPositionAnalysis: any
   ): OptimizationMetrics {
@@ -603,7 +615,7 @@ export class PortfolioOptimizationEngine {
    * Perform sensitivity analysis
    */
   private async performSensitivityAnalysis(
-    model: OptimizationModel,
+    _model: OptimizationModel,
     optimalWeights: PortfolioWeight[],
     config: PortfolioOptimizationConfig
   ): Promise<SensitivityAnalysis> {
@@ -657,7 +669,7 @@ export class PortfolioOptimizationEngine {
    */
   private async runScenarioAnalysis(
     model: OptimizationModel,
-    config: PortfolioOptimizationConfig
+    _config: PortfolioOptimizationConfig
   ): Promise<ScenarioAnalysis> {
     console.log('🎭 Running scenario analysis...')
 
@@ -666,7 +678,7 @@ export class PortfolioOptimizationEngine {
       probability: 0.6,
       expectedReturn: 0.12,
       expectedRisk: 0.18,
-      optimalWeights: model.positions.reduce((acc, p, i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
+      optimalWeights: model.positions.reduce((acc, p, _i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
     }
 
     // Bull case
@@ -674,7 +686,7 @@ export class PortfolioOptimizationEngine {
       probability: 0.2,
       expectedReturn: 0.25,
       expectedRisk: 0.22,
-      optimalWeights: model.positions.reduce((acc, p, i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
+      optimalWeights: model.positions.reduce((acc, p, _i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
     }
 
     // Bear case
@@ -682,7 +694,7 @@ export class PortfolioOptimizationEngine {
       probability: 0.2,
       expectedReturn: -0.05,
       expectedRisk: 0.3,
-      optimalWeights: model.positions.reduce((acc, p, i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
+      optimalWeights: model.positions.reduce((acc, p, _i) => ({ ...acc, [p.id]: 1 / model.positions.length }), {})
     }
 
     // Custom scenarios
@@ -801,7 +813,7 @@ export class PortfolioOptimizationEngine {
   // OPTIMIZATION ALGORITHMS
   // ============================================================================
 
-  private maximizeReturn(returns: number[], constraints: any): number[] {
+  private maximizeReturn(returns: number[], _constraints: any): number[] {
     // Simple return maximization - allocate to highest returning assets
     const indexedReturns = returns.map((ret, idx) => ({ return: ret, index: idx }))
     indexedReturns.sort((a, b) => b.return - a.return)
@@ -812,13 +824,13 @@ export class PortfolioOptimizationEngine {
     return weights
   }
 
-  private minimizeRisk(covarianceMatrix: number[][], constraints: any): number[] {
+  private minimizeRisk(covarianceMatrix: number[][], _constraints: any): number[] {
     // Minimum variance portfolio - equal weights for simplicity
     const n = covarianceMatrix.length
     return new Array(n).fill(1 / n)
   }
 
-  private maximizeSharpe(returns: number[], covarianceMatrix: number[][], constraints: any): number[] {
+  private maximizeSharpe(returns: number[], _covarianceMatrix: number[][], _constraints: any): number[] {
     // Simplified Sharpe ratio maximization
     const riskFreeRate = 0.05 // 5% risk-free rate
     const excessReturns = returns.map(r => r - riskFreeRate)
@@ -833,7 +845,7 @@ export class PortfolioOptimizationEngine {
     return excessReturns.map(r => Math.max(0, r) / totalExcessReturn)
   }
 
-  private maximizeYield(positions: DLMMPosition[], returns: number[], constraints: any): number[] {
+  private maximizeYield(positions: DLMMPosition[], returns: number[], _constraints: any): number[] {
     // Yield maximization - focus on fee-generating positions
     const yields = positions.map((pos, idx) => {
       const feeYield = (parseFloat(pos.feesEarned.tokenX) + parseFloat(pos.feesEarned.tokenY)) / parseFloat(pos.liquidityAmount)
@@ -925,7 +937,7 @@ export class PortfolioOptimizationEngine {
     return matrix
   }
 
-  private buildConstraints(positions: DLMMPosition[], config: PortfolioOptimizationConfig): any {
+  private buildConstraints(_positions: DLMMPosition[], config: PortfolioOptimizationConfig): any {
     return {
       minAllocation: config.constraints.minAllocation,
       maxAllocation: config.constraints.maxAllocation,
@@ -953,7 +965,7 @@ export class PortfolioOptimizationEngine {
     return totalValue > 0 ? positionValue / totalValue : 0
   }
 
-  private generateWeightRationale(weightChange: number, position: DLMMPosition, config: PortfolioOptimizationConfig): string {
+  private generateWeightRationale(weightChange: number, _position: DLMMPosition, config: PortfolioOptimizationConfig): string {
     if (Math.abs(weightChange) < 0.01) return 'Optimal allocation maintained'
 
     if (weightChange > 0) {
@@ -967,7 +979,7 @@ export class PortfolioOptimizationEngine {
     return positions.reduce((sum, p) => sum + parseFloat(p.liquidityAmount) * (p.tokenX.price + p.tokenY.price) / 2, 0)
   }
 
-  private determinePriority(absoluteChange: number, config: PortfolioOptimizationConfig): 'high' | 'medium' | 'low' {
+  private determinePriority(absoluteChange: number, _config: PortfolioOptimizationConfig): 'high' | 'medium' | 'low' {
     if (absoluteChange > 0.1) return 'high'
     if (absoluteChange > 0.05) return 'medium'
     return 'low'
@@ -977,17 +989,17 @@ export class PortfolioOptimizationEngine {
     return absoluteChange * totalValue * 0.003 // 0.3% transaction cost
   }
 
-  private estimateActionBenefit(weight: PortfolioWeight, config: PortfolioOptimizationConfig): number {
+  private estimateActionBenefit(weight: PortfolioWeight, _config: PortfolioOptimizationConfig): number {
     return Math.abs(weight.weightChange) * 0.05 // 5% benefit estimate
   }
 
-  private determineActionTiming(absoluteChange: number, config: PortfolioOptimizationConfig): 'immediate' | 'next_cycle' | 'opportunistic' {
+  private determineActionTiming(absoluteChange: number, _config: PortfolioOptimizationConfig): 'immediate' | 'next_cycle' | 'opportunistic' {
     if (absoluteChange > 0.1) return 'immediate'
     if (absoluteChange > 0.05) return 'next_cycle'
     return 'opportunistic'
   }
 
-  private generateActionConditions(weight: PortfolioWeight, config: PortfolioOptimizationConfig): string[] {
+  private generateActionConditions(weight: PortfolioWeight, _config: PortfolioOptimizationConfig): string[] {
     const conditions = []
 
     if (Math.abs(weight.weightChange) > 0.1) {
@@ -1007,7 +1019,7 @@ export class PortfolioOptimizationEngine {
     }, 0)
   }
 
-  private calculateExpectedRisk(weights: PortfolioWeight[], crossPositionAnalysis: any): number {
+  private calculateExpectedRisk(weights: PortfolioWeight[], _crossPositionAnalysis: any): number {
     // Simplified risk calculation
     return weights.reduce((sum, weight) => sum + weight.targetWeight * weight.targetWeight * 0.04, 0) // 20% base risk
   }
@@ -1030,15 +1042,15 @@ export class PortfolioOptimizationEngine {
     return (1 - maxWeight) * 100 // Lower max weight = better diversification
   }
 
-  private calculateLiquidityImprovement(weights: PortfolioWeight[]): number {
+  private calculateLiquidityImprovement(_weights: PortfolioWeight[]): number {
     return 75 // Simplified
   }
 
-  private calculateConvergenceScore(weights: PortfolioWeight[]): number {
+  private calculateConvergenceScore(_weights: PortfolioWeight[]): number {
     return 85 // Simplified
   }
 
-  private calculateRobustnessScore(parameterSensitivity: ParameterSensitivity[], stressTests: StressTest[]): number {
+  private calculateRobustnessScore(_parameterSensitivity: ParameterSensitivity[], _stressTests: StressTest[]): number {
     return 80 // Simplified
   }
 

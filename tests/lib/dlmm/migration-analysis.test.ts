@@ -3,8 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import { Pair } from '@saros-finance/dlmm-sdk';
 import {
   MigrationImpactAnalyzer,
-  MigrationAnalysisConfig,
-  ImpactAnalysisResult
+  MigrationImpactAnalysis
 } from '../../../src/lib/dlmm/migration-analysis';
 import { DLMMPosition } from '../../../src/lib/types';
 

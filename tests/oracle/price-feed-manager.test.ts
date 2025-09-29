@@ -3,12 +3,8 @@
 // Bismillah - ensuring robust feed management through comprehensive testing
 
 import {
-  priceFeedManager,
   PriceFeedManager,
-  type UnifiedPriceData,
-  type PriceFeedStatus,
   type PriceFeedConfig,
-  type FeedManagerStats,
   DEFAULT_FEED_CONFIGS
 } from '@/lib/oracle/price-feed-manager'
 
@@ -91,21 +87,6 @@ describe('PriceFeedManager', () => {
   // ============================================================================
 
   describe('Price Retrieval', () => {
-    const createMockPythPrice = () => ({
-      symbol: 'SOL',
-      price: 100,
-      confidence: 0.8,
-      staleness: 10,
-      source: 'pyth',
-      aggregated: false,
-      qualityScore: 85,
-      timestamp: new Date(),
-      metadata: {
-        sources: ['pyth'],
-        warnings: [],
-        actions: []
-      }
-    })
 
     const createMockQualityReport = () => ({
       symbol: 'SOL',

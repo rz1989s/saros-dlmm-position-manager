@@ -4,7 +4,7 @@
 
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { FeeTier, FeeOptimizationSettings } from '../types'
+import { FeeTier } from '../types'
 import { feeTierManager } from './fee-tiers'
 
 export interface SimulationScenario {
@@ -175,7 +175,7 @@ export class FeeSimulationEngine {
   private readonly cacheDuration = 600000 // 10 minutes for simulation results
 
   // Predefined market scenarios for comprehensive testing
-  private readonly standardScenarios: SimulationScenario[] = [
+  private readonly _standardScenarios: SimulationScenario[] = [
     {
       id: 'bull-market-low-vol',
       name: 'Bull Market - Low Volatility',
@@ -350,8 +350,15 @@ export class FeeSimulationEngine {
     }
   ]
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     console.log('🎯 FeeSimulationEngine: Initialized with advanced simulation capabilities')
+  }
+
+  /**
+   * Get predefined standard market scenarios for simulation
+   */
+  getStandardScenarios(): SimulationScenario[] {
+    return this._standardScenarios
   }
 
   /**
@@ -787,7 +794,7 @@ export class FeeSimulationEngine {
    */
   private calculatePerformanceMetrics(
     dailyResults: DailySimulationResult[],
-    monteCarloPaths: MonteCarloPath[]
+    _monteCarloPaths: MonteCarloPath[]
   ): SimulationResult['performance'] {
     const initialValue = dailyResults[0]?.totalValue || 100000
     const finalValue = dailyResults[dailyResults.length - 1]?.totalValue || initialValue
@@ -837,7 +844,7 @@ export class FeeSimulationEngine {
    */
   private calculateFeeMetrics(
     dailyResults: DailySimulationResult[],
-    feeTier: FeeTier
+    _feeTier: FeeTier
   ): SimulationResult['feeMetrics'] {
     const totalFeesCollected = dailyResults.reduce((sum, result) => sum + result.feesCollected, 0)
     const avgDailyFees = totalFeesCollected / dailyResults.length
@@ -945,7 +952,7 @@ export class FeeSimulationEngine {
     return dailyExpectedReturn + z * dailyVolatility
   }
 
-  private generateDailyVolume(volumePatterns: SimulationScenario['volumePatterns'], day: number): number {
+  private generateDailyVolume(volumePatterns: SimulationScenario['volumePatterns'], _day: number): number {
     const baseVolume = volumePatterns.baseVolume
 
     // Add randomness and spikes
@@ -973,7 +980,7 @@ export class FeeSimulationEngine {
       'high': 0.8,
       'extreme': 1.0
     }
-    return volatilityMap[volatility] || 0.5
+    return volatilityMap[volatility as keyof typeof volatilityMap] || 0.5
   }
 
   private calculateVolatility(returns: number[]): number {
@@ -991,7 +998,7 @@ export class FeeSimulationEngine {
       'high': 0.6,
       'extreme': 0.9
     }
-    return riskMap[volatility] || 0.3
+    return riskMap[volatility as keyof typeof riskMap] || 0.3
   }
 
   /**
@@ -1024,7 +1031,7 @@ export class FeeSimulationEngine {
   private calculateBacktestPerformance(
     historicalData: any[],
     feeTier: FeeTier,
-    configuration: BacktestConfiguration
+    _configuration: BacktestConfiguration
   ): any {
     // Simplified backtest calculation
     console.log(`📈 Calculating backtest performance for ${feeTier.name}`)
@@ -1060,7 +1067,7 @@ export class FeeSimulationEngine {
    * Stress testing methods
    */
   private async calculateStressImpact(
-    poolAddress: PublicKey,
+    _poolAddress: PublicKey,
     feeTier: FeeTier,
     scenario: StressTestScenario
   ): Promise<StressTestResult['impact']> {
@@ -1086,8 +1093,8 @@ export class FeeSimulationEngine {
 
   private generateRiskMitigation(
     impact: StressTestResult['impact'],
-    feeTier: FeeTier,
-    scenario: StressTestScenario
+    _feeTier: FeeTier,
+    _scenario: StressTestScenario
   ): StressTestResult['riskMitigation'] {
     const suggestedActions: string[] = []
     const alternativeStrategies: FeeTier[] = []
@@ -1154,7 +1161,7 @@ export class FeeSimulationEngine {
 
   private extractKeyFindings(
     results: SimulationResult[],
-    backtestResults?: BacktestResult[],
+    _backtestResults?: BacktestResult[],
     stressTestResults?: StressTestResult[]
   ): string[] {
     const findings: string[] = []

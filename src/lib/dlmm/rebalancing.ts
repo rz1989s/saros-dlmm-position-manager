@@ -1,7 +1,7 @@
 import { PublicKey, Transaction } from '@solana/web3.js'
 import { dlmmClient } from './client'
 import { dlmmOperations } from './operations'
-import { DLMMPosition, TokenInfo } from '@/lib/types'
+import { DLMMPosition } from '@/lib/types'
 import { calculateBinRange } from './utils'
 
 // ============================================================================

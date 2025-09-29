@@ -3,9 +3,8 @@
 // Bismillah - implementing comprehensive Switchboard oracle integration
 
 import * as sb from '@switchboard-xyz/on-demand'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { logger } from '@/lib/logger'
-import { connectionManager } from '@/lib/connection-manager'
 
 // ============================================================================
 // SWITCHBOARD INTEGRATION INTERFACES
@@ -138,22 +137,18 @@ export const DEFAULT_SURGE_CONFIG: SurgeStreamingConfig = {
 
 export class SwitchboardIntegration {
   private surge: sb.Surge | null = null
-  private connection: Connection
   private feedConfigs = new Map<string, SwitchboardFeedConfig>()
   private priceCache = new Map<string, SwitchboardPriceData>()
   private stats: SwitchboardSystemStats
   private streamingCallbacks = new Map<string, (data: SwitchboardPriceData) => void>()
   private isStreaming = false
-  private reconnectAttempts = 0
   private cacheTTL = 10000 // 10 seconds cache TTL
-  private streamingConfig: SurgeStreamingConfig
 
   constructor(
-    connection?: Connection,
-    streamingConfig: SurgeStreamingConfig = DEFAULT_SURGE_CONFIG
+    _connection?: Connection,
+    _streamingConfig: SurgeStreamingConfig = DEFAULT_SURGE_CONFIG
   ) {
-    this.connection = connection || connectionManager.getCurrentConnection()
-    this.streamingConfig = streamingConfig
+    // Connection and streaming config stored for future Surge initialization
     this.stats = {
       totalRequests: 0,
       cacheHitRate: 0,

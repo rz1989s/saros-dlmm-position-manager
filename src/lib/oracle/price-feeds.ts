@@ -310,7 +310,7 @@ export class OraclePriceFeeds {
 
     return {
       ...priceData,
-      prediction,
+      prediction: prediction as any,
       cacheMetrics
     }
   }
@@ -318,7 +318,7 @@ export class OraclePriceFeeds {
   /**
    * Generate ML-powered price prediction
    */
-  private async generatePricePrediction(symbol: string, currentPrice: number): Promise<PricePrediction['prediction']> {
+  private async generatePricePrediction(symbol: string, currentPrice: number): Promise<PricePrediction | undefined> {
     try {
       const model = this.predictionModels.get(symbol)
       if (!model) {
@@ -335,11 +335,19 @@ export class OraclePriceFeeds {
       const confidence = Math.max(0.1, 1 - volatility * 2) // Higher volatility = lower confidence
 
       return {
-        nextPrice,
+        symbol,
+        currentPrice,
+        predictedPrice: nextPrice,
         confidence,
         timeHorizon,
         volatility,
-        trend
+        trend,
+        factors: {
+          historical: 0.25,
+          volume: 0.25,
+          market: 0.25,
+          technical: 0.25
+        }
       }
     } catch (error) {
       console.error(`❌ Error generating prediction for ${symbol}:`, error)
@@ -350,7 +358,7 @@ export class OraclePriceFeeds {
   /**
    * Predict price change based on historical patterns
    */
-  private predictPriceChange(symbol: string, volatility: number, trend: string): number {
+  private predictPriceChange(_symbol: string, volatility: number, trend: string): number {
     // Simplified prediction algorithm
     const baseChange = 0.001 // 0.1% base change
     let trendMultiplier = 1
@@ -465,7 +473,7 @@ export class OraclePriceFeeds {
         confidence: Math.max(0.8, 1 - confidencePercent), // Convert to 0-1 confidence
         timestamp: new Date(Number(priceData.price.publish_time) * 1000),
         source: 'pyth',
-        prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined)
+        prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined) as any
       }
     } catch (error) {
       console.error(`❌ Failed to fetch Pyth price for ${symbol}:`, error)
@@ -527,7 +535,7 @@ export class OraclePriceFeeds {
           confidence,
           timestamp: new Date(fallbackData.latestResult.timestamp || Date.now()),
           source: 'switchboard',
-          prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined)
+          prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined) as any
         }
       }
 
@@ -549,7 +557,7 @@ export class OraclePriceFeeds {
         confidence,
         timestamp: new Date(data.result.timestamp || Date.now()),
         source: 'switchboard',
-        prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined)
+        prediction: await this.generatePricePrediction(symbol, price).catch(() => undefined) as any
       }
     } catch (error) {
       console.error(`❌ Failed to fetch Switchboard price for ${symbol}:`, error)
@@ -787,7 +795,7 @@ export class OraclePriceFeeds {
   /**
    * Update cache metrics after request
    */
-  private updateCacheMetrics(symbol: string, startTime: number, cacheHit: boolean): void {
+  private updateCacheMetrics(symbol: string, startTime: number, _cacheHit: boolean): void {
     const latency = Date.now() - startTime
 
     // Update access history with latency
@@ -1092,7 +1100,7 @@ export class OraclePriceFeeds {
     const prediction = await this.generatePricePrediction(priceData.symbol, priceData.price)
     return {
       ...priceData,
-      prediction
+      prediction: prediction as any
     }
   }
 
@@ -1275,7 +1283,7 @@ export class OraclePriceFeeds {
    */
   private calculateCacheMetrics(symbol: string): PriceData['cacheMetrics'] {
     const history = this.accessHistory.get(symbol) || []
-    const cached = this.priceCache.get(`price-${symbol}`)
+    // const cached = this.priceCache.get(`price-${symbol}`) // For future cache metrics
 
     if (history.length === 0) {
       return {

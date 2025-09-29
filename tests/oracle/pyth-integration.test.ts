@@ -2,7 +2,7 @@
 // Tests for Pyth Network integration, streaming, and error handling
 // Bismillah - ensuring robust Pyth integration through comprehensive testing
 
-import { pythIntegration, type PythPriceData, type PriceConfidenceMetrics } from '@/lib/oracle/pyth-integration'
+import { pythIntegration, type PythPriceData } from '@/lib/oracle/pyth-integration'
 
 // Mock the Hermes client
 jest.mock('@pythnetwork/hermes-client', () => ({

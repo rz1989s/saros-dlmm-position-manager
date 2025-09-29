@@ -90,7 +90,7 @@ export class StrategyManager {
   private activeStrategies: Map<string, StrategyConfig> = new Map()
   private activeFeeStrategies: Map<string, FeeCollectionStrategy> = new Map()
   private executionHistory: StrategyExecution[] = []
-  private feeCollectionHistory: StrategyExecution[] = []
+  // private feeCollectionHistory: StrategyExecution[] = [] // Reserved for future fee analytics
   private performanceMetrics = new Map<string, {
     totalFeesCollected: number
     totalGasSpent: number
@@ -940,7 +940,7 @@ export class StrategyManager {
    * Execute single fee collection
    */
   private async executeSingleFeeCollection(
-    userAddress: PublicKey,
+    _userAddress: PublicKey,
     opportunity: FeeCollectionOpportunity
   ): Promise<StrategyExecution> {
     const execution: StrategyExecution = {
@@ -981,7 +981,7 @@ export class StrategyManager {
    * Execute batch fee collection
    */
   private async executeBatchFeeCollection(
-    userAddress: PublicKey,
+    _userAddress: PublicKey,
     batch: {
       positionIds: string[]
       totalFees: number
@@ -1027,7 +1027,7 @@ export class StrategyManager {
    * Execute compound fee collection with reinvestment
    */
   private async executeCompoundFeeCollection(
-    userAddress: PublicKey,
+    _userAddress: PublicKey,
     opportunity: FeeCollectionOpportunity
   ): Promise<StrategyExecution> {
     const execution: StrategyExecution = {

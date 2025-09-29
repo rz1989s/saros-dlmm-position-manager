@@ -3,9 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import { Pair } from '@saros-finance/dlmm-sdk';
 import {
   MigrationRiskAssessment,
-  RiskAssessmentConfig,
-  RiskFactor,
-  RiskMetrics
+  RiskAssessmentConfig
 } from '../../../src/lib/dlmm/migration-risk-assessment';
 import { DLMMPosition } from '../../../src/lib/types';
 
@@ -34,43 +32,38 @@ describe('MigrationRiskAssessment', () => {
 
     mockPosition = {
       id: 'test-position-1',
-      owner: new PublicKey('11111111111111111111111111111111'),
-      pool: new PublicKey('22222222222222222222222222222222'),
+      poolAddress: new PublicKey('22222222222222222222222222222222'),
+      userAddress: new PublicKey('11111111111111111111111111111111'),
+      activeBin: 1000,
+      liquidityAmount: '10000',
+      feesEarned: {
+        tokenX: '5',
+        tokenY: '60'
+      },
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+      isActive: true,
       tokenX: {
-        mint: new PublicKey('33333333333333333333333333333333'),
+        address: new PublicKey('33333333333333333333333333333333'),
         symbol: 'SOL',
         name: 'Solana',
         decimals: 9,
+        price: 100,
         logoURI: 'https://example.com/sol.png'
       },
       tokenY: {
-        mint: new PublicKey('44444444444444444444444444444444'),
+        address: new PublicKey('44444444444444444444444444444444'),
         symbol: 'USDC',
         name: 'USD Coin',
         decimals: 6,
+        price: 1,
         logoURI: 'https://example.com/usdc.png'
       },
-      lowerPrice: 100,
-      upperPrice: 150,
       bins: [],
-      totalLiquidity: 10000,
-      totalValue: 15000,
-      tokenXAmount: 100,
-      tokenYAmount: 12000,
-      fees: {
-        tokenX: 5,
-        tokenY: 60,
-        total: 65
-      },
-      pnl: {
-        unrealized: 500,
-        realized: 0,
-        total: 500,
-        percentage: 3.33
-      },
-      status: 'active',
-      createdAt: new Date(),
-      lastUpdated: new Date()
+      currentValue: 15000,
+      initialValue: 14500,
+      pnl: 500,
+      pnlPercent: 3.33
     };
 
     mockSourcePool = {
@@ -81,7 +74,7 @@ describe('MigrationRiskAssessment', () => {
       activeId: 1000,
       reserveX: '1000000000',
       reserveY: '1000000000'
-    } as Pair;
+    } as unknown as Pair;
 
     mockTargetPool = {
       publicKey: new PublicKey('66666666666666666666666666666666'),
@@ -91,7 +84,7 @@ describe('MigrationRiskAssessment', () => {
       activeId: 2000,
       reserveX: '2000000000',
       reserveY: '2000000000'
-    } as Pair;
+    } as unknown as Pair;
   });
 
   describe('Constructor', () => {

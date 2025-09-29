@@ -4,14 +4,15 @@
 
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { multiPositionAnalysisEngine } from './multi-position-analysis'
-import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
+// Note: Reserved for future diversification enhancements
+// import { multiPositionAnalysisEngine } from './multi-position-analysis'
+// import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
 import type {
   DLMMPosition,
   PositionAnalytics,
-  DiversificationAnalysis,
-  TokenInfo,
-  PoolMetrics
+  DiversificationAnalysis
+  // TokenInfo,
+  // PoolMetrics - reserved for future diversification enhancements
 } from '@/lib/types'
 
 // ============================================================================
@@ -499,7 +500,7 @@ export class DiversificationAnalysisEngine {
   private readonly cacheDuration = 600000 // 10 minutes
   private readonly industryBenchmarks = new Map<string, number>()
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     console.log('📊 DiversificationAnalysisEngine: Comprehensive diversification analysis initialized')
     this.initializeIndustryBenchmarks()
   }
@@ -738,7 +739,7 @@ export class DiversificationAnalysisEngine {
    */
   private async analyzeConcentration(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<ConcentrationAnalysis> {
     console.log('🎯 Analyzing concentration...')
 
@@ -819,7 +820,7 @@ export class DiversificationAnalysisEngine {
    */
   private async analyzeRiskDiversification(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<RiskDiversification> {
     console.log('⚠️ Analyzing risk diversification...')
 
@@ -904,8 +905,8 @@ export class DiversificationAnalysisEngine {
    * Analyze strategic diversification
    */
   private async analyzeStrategicDiversification(
-    positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _positions: DLMMPosition[],
+    _analytics: PositionAnalytics[]
   ): Promise<StrategicDiversification> {
     console.log('🎯 Analyzing strategic diversification...')
 
@@ -931,7 +932,7 @@ export class DiversificationAnalysisEngine {
   /**
    * Perform benchmark comparison
    */
-  private async performBenchmarkComparison(positions: DLMMPosition[]): Promise<DiversificationBenchmark> {
+  private async performBenchmarkComparison(_positions: DLMMPosition[]): Promise<DiversificationBenchmark> {
     console.log('📊 Performing benchmark comparison...')
 
     const benchmarkComparisons: BenchmarkComparison[] = [
@@ -989,8 +990,8 @@ export class DiversificationAnalysisEngine {
    */
   private async generateImprovementPlan(
     basicAnalysis: DiversificationAnalysis,
-    dimensionalAnalysis: DimensionalDiversification,
-    concentrationAnalysis: ConcentrationAnalysis,
+    _dimensionalAnalysis: DimensionalDiversification,
+    _concentrationAnalysis: ConcentrationAnalysis,
     correlationAnalysis: CorrelationDiversification
   ): Promise<DiversificationImprovementPlan> {
     console.log('📈 Generating improvement plan...')
@@ -1116,7 +1117,7 @@ export class DiversificationAnalysisEngine {
    * Setup diversification monitoring
    */
   private setupDiversificationMonitoring(
-    positions: DLMMPosition[],
+    _positions: DLMMPosition[],
     analysis: DiversificationAnalysis
   ): DiversificationMonitoring {
     const kpis: DiversificationKPI[] = [
@@ -1482,7 +1483,7 @@ export class DiversificationAnalysisEngine {
     return risks
   }
 
-  private calculateOptimalConcentration(metrics: ConcentrationMetric[]): OptimalConcentration {
+  private calculateOptimalConcentration(_metrics: ConcentrationMetric[]): OptimalConcentration {
     return {
       category: 'overall',
       currentConcentration: 0.4,
@@ -1492,7 +1493,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private createDeconcentrationPlan(risks: ConcentrationRisk[], positions: DLMMPosition[]): DeconcentrationPlan {
+  private createDeconcentrationPlan(_risks: ConcentrationRisk[], _positions: DLMMPosition[]): DeconcentrationPlan {
     const steps: DeconcentrationStep[] = [
       {
         stepNumber: 1,
@@ -1512,7 +1513,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private async calculateCorrelationMetrics(positions: DLMMPosition[]): Promise<CorrelationMetric[]> {
+  private async calculateCorrelationMetrics(_positions: DLMMPosition[]): Promise<CorrelationMetric[]> {
     // Simplified correlation metrics
     return [
       { metricType: 'average', value: 0.4, threshold: 0.6, status: 'acceptable' },
@@ -1536,7 +1537,7 @@ export class DiversificationAnalysisEngine {
 
   private createCorrelationOptimizationPlan(
     metrics: CorrelationMetric[],
-    clusters: CorrelationCluster[]
+    _clusters: CorrelationCluster[]
   ): CorrelationOptimizationPlan {
     const currentCorrelation = metrics.find(m => m.metricType === 'average')?.value || 0.5
 
@@ -1558,12 +1559,12 @@ export class DiversificationAnalysisEngine {
 
   private calculateRiskBalance(riskDimensions: RiskDimension[]): RiskBalance {
     const imbalances: RiskImbalance[] = riskDimensions
-      .filter(dim => Math.abs(dim.currentExposure - dim.optimization.optimalExposure) > 5)
+      .filter(dim => Math.abs(dim.optimization.currentExposure - dim.optimization.optimalExposure) > 5)
       .map(dim => ({
         riskType: dim.riskType,
-        currentWeight: dim.currentExposure,
+        currentWeight: dim.optimization.currentExposure,
         optimalWeight: dim.optimization.optimalExposure,
-        adjustmentNeeded: dim.optimization.optimalExposure - dim.currentExposure
+        adjustmentNeeded: dim.optimization.optimalExposure - dim.optimization.currentExposure
       }))
 
     const balanceScore = 100 - imbalances.reduce((sum, imb) => sum + Math.abs(imb.adjustmentNeeded), 0)
@@ -1577,7 +1578,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private async performStressTestDiversification(positions: DLMMPosition[]): Promise<StressTestDiversification[]> {
+  private async performStressTestDiversification(_positions: DLMMPosition[]): Promise<StressTestDiversification[]> {
     return [
       {
         scenario: 'Market Crash',
@@ -1594,7 +1595,7 @@ export class DiversificationAnalysisEngine {
     ]
   }
 
-  private performTailRiskAnalysis(positions: DLMMPosition[]): TailRiskAnalysis {
+  private performTailRiskAnalysis(_positions: DLMMPosition[]): TailRiskAnalysis {
     return {
       tailDependency: 0.3,
       extremeEventCorrelation: 0.6,
@@ -1603,7 +1604,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private analyzeMaturityDiversification(positions: DLMMPosition[]): MaturityDiversification {
+  private analyzeMaturityDiversification(_positions: DLMMPosition[]): MaturityDiversification {
     const maturityBuckets: MaturityBucket[] = [
       { bucket: 'Short (<30d)', weight: 0.3, averageMaturity: 15, risk: 0.1 },
       { bucket: 'Medium (30-90d)', weight: 0.5, averageMaturity: 60, risk: 0.15 },
@@ -1622,7 +1623,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private performSeasonalAnalysis(positions: DLMMPosition[]): SeasonalAnalysis {
+  private performSeasonalAnalysis(_positions: DLMMPosition[]): SeasonalAnalysis {
     return {
       seasonalPatterns: [
         { season: 'Q1', historicalPerformance: 0.08, volatility: 0.15, correlation: 0.6 },
@@ -1636,7 +1637,7 @@ export class DiversificationAnalysisEngine {
     }
   }
 
-  private analyzeCyclicalDiversification(positions: DLMMPosition[]): CyclicalDiversification {
+  private analyzeCyclicalDiversification(_positions: DLMMPosition[]): CyclicalDiversification {
     const marketCycles: CycleExposure[] = [
       { cycle: 'early', exposure: 0.2, performance: 0.15, optimal: 0.25 },
       { cycle: 'mid', exposure: 0.4, performance: 0.12, optimal: 0.35 },
@@ -1671,7 +1672,7 @@ export class DiversificationAnalysisEngine {
   }
 
   private calculateStrategyBalance(strategies: StrategyBreakdown[]): StrategyBalance {
-    const totalAllocation = strategies.reduce((sum, s) => sum + s.allocation, 0)
+    // const totalAllocation = strategies.reduce((sum, s) => sum + s.allocation, 0)
     const targetAllocation = 1 / strategies.length // Equal weight target
 
     const imbalances: StrategyImbalance[] = strategies

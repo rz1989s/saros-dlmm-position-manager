@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { EnhancedDLMMPosition } from '../types';
 
 export interface RiskMetrics {
   overallRiskScore: number; // 0-100 (0 = low risk, 100 = extreme risk)
@@ -77,8 +77,6 @@ export interface HistoricalRiskData {
 }
 
 export class RiskAssessmentEngine {
-  private positions: DLMMPosition[] = [];
-  private priceHistory: Map<string, number[]> = new Map();
   private riskThresholds = {
     highRisk: 70,
     mediumRisk: 40,
@@ -99,24 +97,31 @@ export class RiskAssessmentEngine {
   }
 
   /**
+   * Calculate total portfolio value
+   */
+  private calculateTotalValue(positions: EnhancedDLMMPosition[]): number {
+    return positions.reduce((total, position) => {
+      return total + (position.currentValue || 0);
+    }, 0);
+  }
+
+  /**
    * Assess overall portfolio risk
    */
   public async assessPortfolioRisk(
-    positions: DLMMPosition[],
+    positions: EnhancedDLMMPosition[],
     marketData?: Map<string, any>
   ): Promise<PortfolioRiskAssessment> {
     try {
-      this.positions = positions;
-
       if (positions.length === 0) {
         return this.getEmptyRiskAssessment();
       }
 
       const totalValue = this.calculateTotalValue(positions);
       const riskFactors = await this.calculateRiskFactors(positions, marketData);
-      const riskMetrics = this.calculateRiskMetrics(riskFactors, positions);
+      const riskMetrics = this.calculateRiskMetrics(riskFactors);
       const ilAnalysis = await this.analyzeImpermanentLoss(positions);
-      const recommendations = this.generateRecommendations(riskMetrics, positions);
+      const recommendations = this.generateRecommendations(riskMetrics);
       const alerts = this.generateRiskAlerts(riskMetrics, ilAnalysis);
 
       const diversificationScore = this.calculateDiversificationScore(positions);
@@ -147,7 +152,7 @@ export class RiskAssessmentEngine {
    * Calculate risk factors for positions
    */
   private async calculateRiskFactors(
-    positions: DLMMPosition[],
+    positions: EnhancedDLMMPosition[],
     marketData?: Map<string, any>
   ): Promise<RiskFactors> {
     const priceVolatility = await this.calculatePriceVolatility(positions);
@@ -155,7 +160,7 @@ export class RiskAssessmentEngine {
     const positionSize = this.calculateAveragePositionSize(positions);
     const timeInPosition = this.calculateAverageTimeInPosition(positions);
     const marketConditions = this.assessMarketConditions(marketData);
-    const correlationFactor = await this.calculateCorrelationFactor(positions);
+    const correlationFactor = await this.calculateCorrelationFactor();
     const concentrationLevel = this.calculateConcentrationLevel(positions);
 
     return {
@@ -173,8 +178,7 @@ export class RiskAssessmentEngine {
    * Calculate overall risk metrics
    */
   private calculateRiskMetrics(
-    factors: RiskFactors,
-    positions: DLMMPosition[]
+    factors: RiskFactors
   ): RiskMetrics {
     // Weighted risk scoring algorithm
     const volatilityRisk = Math.min(factors.priceVolatility * 100, 100);
@@ -214,7 +218,7 @@ export class RiskAssessmentEngine {
    * Analyze impermanent loss for all positions
    */
   private async analyzeImpermanentLoss(
-    positions: DLMMPosition[]
+    positions: EnhancedDLMMPosition[]
   ): Promise<ImpermanentLossAnalysis> {
     let totalCurrentIL = 0;
     let totalValue = 0;
@@ -226,16 +230,16 @@ export class RiskAssessmentEngine {
     };
 
     for (const position of positions) {
-      const positionIL = this.calculatePositionIL(position);
-      const positionValue = (position as any).totalValue || 0;
+      const positionIL = this.calculatePositionIL();
+      const positionValue = position.currentValue || 0;
 
       totalCurrentIL += positionIL * positionValue;
       totalValue += positionValue;
 
       // Predict future IL based on historical volatility
       const volatility = await this.getTokenPairVolatility(
-        position.tokenX.address,
-        position.tokenY.address
+        position.tokenX.address.toString(),
+        position.tokenY.address.toString()
       );
 
       ilPredictions.oneDay += this.predictIL(volatility, 1) * positionValue;
@@ -274,8 +278,7 @@ export class RiskAssessmentEngine {
    * Generate risk-based recommendations
    */
   private generateRecommendations(
-    metrics: RiskMetrics,
-    positions: DLMMPosition[]
+    metrics: RiskMetrics
   ): RiskRecommendation[] {
     const recommendations: RiskRecommendation[] = [];
 
@@ -403,7 +406,7 @@ export class RiskAssessmentEngine {
   /**
    * Calculate price volatility for positions
    */
-  private async calculatePriceVolatility(positions: DLMMPosition[]): Promise<number> {
+  private async calculatePriceVolatility(positions: EnhancedDLMMPosition[]): Promise<number> {
     if (positions.length === 0) return 0;
 
     let totalVolatility = 0;
@@ -412,8 +415,8 @@ export class RiskAssessmentEngine {
     for (const position of positions) {
       try {
         const volatility = await this.getTokenPairVolatility(
-          position.tokenX.address,
-          position.tokenY.address
+          position.tokenX.address.toString(),
+          position.tokenY.address.toString()
         );
         totalVolatility += volatility;
         validPositions++;
@@ -428,31 +431,31 @@ export class RiskAssessmentEngine {
   /**
    * Calculate liquidity depth
    */
-  private calculateLiquidityDepth(positions: DLMMPosition[]): number {
+  private calculateLiquidityDepth(positions: EnhancedDLMMPosition[]): number {
     return positions.reduce((total, position) => {
-      return total + ((position as any).totalValue || 0);
+      return total + (position.currentValue || 0);
     }, 0);
   }
 
   /**
    * Calculate average position size
    */
-  private calculateAveragePositionSize(positions: DLMMPosition[]): number {
+  private calculateAveragePositionSize(positions: EnhancedDLMMPosition[]): number {
     if (positions.length === 0) return 0;
 
-    const totalValue = positions.reduce((sum, pos) => sum + (pos.totalValue || 0), 0);
+    const totalValue = positions.reduce((sum, pos) => sum + (pos.currentValue || 0), 0);
     return totalValue / positions.length;
   }
 
   /**
    * Calculate average time in position
    */
-  private calculateAverageTimeInPosition(positions: DLMMPosition[]): number {
+  private calculateAverageTimeInPosition(positions: EnhancedDLMMPosition[]): number {
     if (positions.length === 0) return 0;
 
     const now = Date.now();
     const totalDays = positions.reduce((sum, position) => {
-      const createdAt = (position as any).createdAt ? new Date((position as any).createdAt).getTime() : now;
+      const createdAt = position.createdAt ? new Date(position.createdAt).getTime() : now;
       const days = (now - createdAt) / (1000 * 60 * 60 * 24);
       return sum + Math.max(days, 0);
     }, 0);
@@ -474,7 +477,7 @@ export class RiskAssessmentEngine {
   /**
    * Calculate correlation factor between token pairs
    */
-  private async calculateCorrelationFactor(positions: DLMMPosition[]): Promise<number> {
+  private async calculateCorrelationFactor(): Promise<number> {
     // Simplified correlation calculation
     // In a real implementation, would calculate actual price correlations
     return 0.3; // Default moderate correlation
@@ -483,17 +486,17 @@ export class RiskAssessmentEngine {
   /**
    * Calculate portfolio concentration level
    */
-  private calculateConcentrationLevel(positions: DLMMPosition[]): number {
+  private calculateConcentrationLevel(positions: EnhancedDLMMPosition[]): number {
     if (positions.length === 0) return 0;
 
-    const totalValue = positions.reduce((sum, pos) => sum + (pos.totalValue || 0), 0);
+    const totalValue = positions.reduce((sum, pos) => sum + (pos.currentValue || 0), 0);
 
     if (totalValue === 0) return 0;
 
     // Calculate Herfindahl-Hirschman Index (HHI) for concentration
     let hhi = 0;
     for (const position of positions) {
-      const weight = ((position as any).totalValue || 0) / totalValue;
+      const weight = (position.currentValue || 0) / totalValue;
       hhi += weight * weight;
     }
 
@@ -504,8 +507,8 @@ export class RiskAssessmentEngine {
   /**
    * Helper methods
    */
-  private getMarketRiskScore(conditions: string): number {
-    const riskMap = {
+  private getMarketRiskScore(conditions: 'bull' | 'bear' | 'sideways' | 'volatile'): number {
+    const riskMap: Record<'bull' | 'bear' | 'sideways' | 'volatile', number> = {
       'bull': 30,
       'bear': 70,
       'sideways': 40,
@@ -530,13 +533,13 @@ export class RiskAssessmentEngine {
     return Math.min(baseRisk + correlationAdjustment, 100);
   }
 
-  private calculatePositionIL(position: DLMMPosition): number {
+  private calculatePositionIL(): number {
     // Simplified IL calculation
     // Would need current prices vs entry prices for accurate calculation
     return Math.random() * 5; // Placeholder: 0-5% IL
   }
 
-  private async getTokenPairVolatility(tokenX: string, tokenY: string): Promise<number> {
+  private async getTokenPairVolatility(_tokenX: string, _tokenY: string): Promise<number> {
     // Would fetch historical price data and calculate volatility
     // Placeholder: return moderate volatility
     return 0.25; // 25% annualized volatility
@@ -548,30 +551,30 @@ export class RiskAssessmentEngine {
     return volatility * timeAdjustment * 0.1; // Conservative IL estimate
   }
 
-  private calculateRiskAdjustedReturn(positions: DLMMPosition[], ilPercentage: number): number {
+  private calculateRiskAdjustedReturn(positions: EnhancedDLMMPosition[], ilPercentage: number): number {
     // Calculate risk-adjusted return considering IL
     const totalReturn = positions.reduce((sum, pos) => {
-      return sum + (pos.pnl?.percentage || 0);
+      return sum + (pos.pnlPercent || 0);
     }, 0);
 
     return totalReturn - ilPercentage;
   }
 
-  private calculateDiversificationScore(positions: DLMMPosition[]): number {
+  private calculateDiversificationScore(positions: EnhancedDLMMPosition[]): number {
     if (positions.length === 0) return 0;
 
     // Simple diversification score based on number of unique token pairs
-    const uniquePairs = new Set(positions.map(p => `${p.tokenX.address}-${p.tokenY.address}`));
+    const uniquePairs = new Set(positions.map(p => `${p.tokenX.address.toString()}-${p.tokenY.address.toString()}`));
     const diversificationRatio = uniquePairs.size / Math.max(positions.length, 1);
 
     return Math.min(diversificationRatio * 100, 100);
   }
 
-  private calculateSharpeRatio(positions: DLMMPosition[]): number {
+  private calculateSharpeRatio(positions: EnhancedDLMMPosition[]): number {
     // Simplified Sharpe ratio calculation
     if (positions.length === 0) return 0;
 
-    const returns = positions.map(p => p.pnl?.percentage || 0);
+    const returns = positions.map(p => p.pnlPercent || 0);
     const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
     const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
     const stdDev = Math.sqrt(variance);
@@ -579,11 +582,11 @@ export class RiskAssessmentEngine {
     return stdDev > 0 ? avgReturn / stdDev : 0;
   }
 
-  private calculateMaxDrawdown(positions: DLMMPosition[]): number {
+  private calculateMaxDrawdown(positions: EnhancedDLMMPosition[]): number {
     // Simplified max drawdown calculation
     if (positions.length === 0) return 0;
 
-    const returns = positions.map(p => p.pnl?.percentage || 0);
+    const returns = positions.map(p => p.pnlPercent || 0);
     let maxDrawdown = 0;
     let peak = 0;
 
@@ -596,11 +599,11 @@ export class RiskAssessmentEngine {
     return maxDrawdown;
   }
 
-  private calculateValueAtRisk(positions: DLMMPosition[], confidence: number): number {
+  private calculateValueAtRisk(positions: EnhancedDLMMPosition[], confidence: number): number {
     // Simplified VaR calculation
     if (positions.length === 0) return 0;
 
-    const returns = positions.map(p => p.pnl?.percentage || 0).sort((a, b) => a - b);
+    const returns = positions.map(p => p.pnlPercent || 0).sort((a, b) => a - b);
     const index = Math.floor((1 - confidence) * returns.length);
 
     return returns[index] || 0;

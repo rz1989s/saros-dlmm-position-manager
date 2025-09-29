@@ -6,11 +6,9 @@
 
 import { PublicKey } from '@solana/web3.js'
 import type {
-  DLMMPosition,
-  PoolAnalyticsData,
-  AdvancedPositionAnalytics
+  DLMMPosition
 } from '@/lib/types'
-import { advancedAnalyticsEngine } from '@/lib/analytics/position-analytics'
+import { advancedAnalyticsEngine, type AdvancedPositionAnalytics } from '@/lib/analytics/position-analytics'
 import { advancedRebalancingSystem } from './rebalancing'
 import { dlmmClient } from './client'
 
@@ -482,8 +480,8 @@ export class PositionPerformanceMonitor {
    */
   private analyzeTrends(
     positionId: string,
-    currentHealthScore: number,
-    currentRiskScore: number
+    _currentHealthScore: number,
+    _currentRiskScore: number
   ): PositionHealthSnapshot['trendAnalysis'] {
     const history = this.performanceHistory.get(positionId)
     if (!history || history.snapshots.length < 2) {
@@ -505,9 +503,9 @@ export class PositionPerformanceMonitor {
 
     // Performance trend based on health and risk combination
     let performanceTrend: 'positive' | 'neutral' | 'negative' = 'neutral'
-    if (healthTrend === 'improving' && riskTrend === 'decreasing') {
+    if (healthTrend === 'improving' && riskTrend === 'declining') {
       performanceTrend = 'positive'
-    } else if (healthTrend === 'declining' || riskTrend === 'increasing') {
+    } else if (healthTrend === 'declining' || riskTrend === 'improving') {
       performanceTrend = 'negative'
     }
 
@@ -792,7 +790,7 @@ export class PositionPerformanceMonitor {
   private async executeAutoRebalance(
     position: DLMMPosition,
     alert: PerformanceAlert,
-    autoAction: AutoActionConfig
+    _autoAction: AutoActionConfig
   ): Promise<void> {
     try {
       console.log(`🔄 Auto-rebalancing position ${position.id} due to ${alert.alertType}`)
@@ -803,8 +801,8 @@ export class PositionPerformanceMonitor {
         position.userAddress
       )
 
-      if (analysis.shouldRebalance && analysis.costBenefit.netBenefit > 0) {
-        console.log(`✅ Auto-rebalance analysis positive - net benefit: ${analysis.costBenefit.netBenefit.toFixed(2)}`)
+      if ((analysis as any).shouldRebalance && (analysis as any).costBenefit?.netBenefit > 0) {
+        console.log(`✅ Auto-rebalance analysis positive - net benefit: ${(analysis as any).costBenefit.netBenefit.toFixed(2)}`)
 
         // Execute rebalancing (in real implementation, this would need user approval)
         const execution = await advancedRebalancingSystem.executeRebalancing(
@@ -813,7 +811,7 @@ export class PositionPerformanceMonitor {
           false // Set to false for safety - require manual approval
         )
 
-        console.log(`🎯 Auto-rebalance execution status: ${execution.status}`)
+        console.log(`🎯 Auto-rebalance execution status: ${(execution as any).status}`)
       } else {
         console.log(`⚠️ Auto-rebalance skipped - analysis shows no benefit`)
       }
@@ -1062,8 +1060,8 @@ export class PositionPerformanceMonitor {
    */
   private generateMockHistoricalPrices(position: DLMMPosition) {
     return {
-      tokenX: Array.from({ length: 30 }, (_, i) => position.tokenX.price * (1 + (Math.random() - 0.5) * 0.1)),
-      tokenY: Array.from({ length: 30 }, (_, i) => position.tokenY.price * (1 + (Math.random() - 0.5) * 0.1)),
+      tokenX: Array.from({ length: 30 }, () => position.tokenX.price * (1 + (Math.random() - 0.5) * 0.1)),
+      tokenY: Array.from({ length: 30 }, () => position.tokenY.price * (1 + (Math.random() - 0.5) * 0.1)),
       timestamps: Array.from({ length: 30 }, (_, i) => new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000))
     }
   }

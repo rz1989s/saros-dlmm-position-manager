@@ -3,11 +3,8 @@
 // Bismillah - ensuring robust confidence analysis through comprehensive testing
 
 import {
-  priceConfidenceSystem,
   PriceConfidenceSystem,
-  type PriceQualityReport,
   type ConfidenceThresholds,
-  type AggregatedPriceData,
   DEFAULT_CONFIDENCE_THRESHOLDS,
   DEFAULT_VALIDATION_RULES
 } from '@/lib/oracle/confidence-system'

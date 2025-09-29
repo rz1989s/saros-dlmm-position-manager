@@ -1,4 +1,5 @@
-import { DLMMPosition } from '@/lib/types';
+// Note: DLMMPosition not used in this file but kept for future integration
+// import { DLMMPosition } from '@/lib/types';
 
 export interface PriceForecast {
   tokenAddress: string;
@@ -154,7 +155,8 @@ export interface HistoricalPriceData {
 }
 
 export class MarketForecastingSystem {
-  private priceHistory: Map<string, HistoricalPriceData[]> = new Map();
+  // @ts-ignore - Reserved for future implementation
+  private _priceHistory: Map<string, HistoricalPriceData[]> = new Map();
   private forecastCache: Map<string, PriceForecast> = new Map();
   private accuracyMetrics: Map<string, ForecastAccuracy[]> = new Map();
   private modelParameters = {
@@ -298,7 +300,8 @@ export class MarketForecastingSystem {
     unit: 'hours' | 'days'
   ): Promise<ForecastPoint> {
     const hoursAhead = unit === 'hours' ? value : value * 24;
-    const currentPrice = priceData[priceData.length - 1].price;
+    // @ts-ignore - Reserved for future implementation
+    const _currentPrice = priceData[priceData.length - 1].price;
 
     // Use multiple forecasting models and ensemble them
     const models = [
@@ -623,7 +626,7 @@ export class MarketForecastingSystem {
     return Math.sqrt(mse);
   }
 
-  private predictVolatility(prices: number[], days: number): number {
+  private predictVolatility(prices: number[], _days: number): number {
     const currentVol = this.calculateVolatility(prices.slice(-20));
     const longTermVol = this.calculateVolatility(prices.slice(-100));
 
@@ -641,7 +644,7 @@ export class MarketForecastingSystem {
     return 'extreme';
   }
 
-  private identifyVolatilityClusters(data: HistoricalPriceData[]): VolatilityCluster[] {
+  private identifyVolatilityClusters(_data: HistoricalPriceData[]): VolatilityCluster[] {
     // Simplified volatility clustering
     return [];
   }
@@ -699,7 +702,7 @@ export class MarketForecastingSystem {
     };
   }
 
-  private identifyMarketCycles(data: HistoricalPriceData[]): MarketCycle[] {
+  private identifyMarketCycles(_data: HistoricalPriceData[]): MarketCycle[] {
     return [];
   }
 
@@ -741,7 +744,7 @@ export class MarketForecastingSystem {
 
   private calculateConfidence(
     data: HistoricalPriceData[],
-    predictions: any
+    _predictions: any
   ): PriceForecast['confidence'] {
     const dataQuality = Math.min(data.length / this.modelParameters.minDataPoints * 100, 100);
 
@@ -753,7 +756,7 @@ export class MarketForecastingSystem {
     };
   }
 
-  private identifyForecastFactors(data: HistoricalPriceData[], hoursAhead: number): string[] {
+  private identifyForecastFactors(_data: HistoricalPriceData[], hoursAhead: number): string[] {
     const factors = ['historical_analysis'];
 
     if (hoursAhead <= 4) {
@@ -767,20 +770,20 @@ export class MarketForecastingSystem {
     return factors;
   }
 
-  private analyzeMarketSentiment(forecasts: PriceForecast[]): MarketForecast['overall_sentiment'] {
+  private analyzeMarketSentiment(_forecasts: PriceForecast[]): MarketForecast['overall_sentiment'] {
     // Simplified sentiment analysis
     return 'neutral';
   }
 
-  private determineMarketRegime(forecasts: PriceForecast[]): MarketForecast['market_regime'] {
+  private determineMarketRegime(_forecasts: PriceForecast[]): MarketForecast['market_regime'] {
     return 'ranging';
   }
 
-  private assessMarketRisk(forecasts: PriceForecast[]): MarketForecast['risk_level'] {
+  private assessMarketRisk(_forecasts: PriceForecast[]): MarketForecast['risk_level'] {
     return 'medium';
   }
 
-  private analyzeCorrelationEnvironment(forecasts: PriceForecast[]): MarketForecast['correlation_environment'] {
+  private analyzeCorrelationEnvironment(_forecasts: PriceForecast[]): MarketForecast['correlation_environment'] {
     return 'normal';
   }
 
@@ -792,7 +795,7 @@ export class MarketForecastingSystem {
     return [];
   }
 
-  private async getHistoricalPriceData(tokenAddress: string): Promise<HistoricalPriceData[]> {
+  private async getHistoricalPriceData(_tokenAddress: string): Promise<HistoricalPriceData[]> {
     // Mock data for now - in real implementation, fetch from price API
     const mockData: HistoricalPriceData[] = [];
     const basePrice = 100;
@@ -903,7 +906,7 @@ export class MarketForecastingSystem {
     );
   }
 
-  private updateAccuracyMetrics(tokenAddress: string, forecast: PriceForecast): void {
+  private updateAccuracyMetrics(_tokenAddress: string, _forecast: PriceForecast): void {
     // Implementation for tracking forecast accuracy
     // Would compare previous predictions with actual prices
   }

@@ -14,8 +14,6 @@
  */
 
 import { EventEmitter } from 'events'
-import { PublicKey } from '@solana/web3.js'
-import { TenantContext } from '../enterprise/multi-tenant'
 import { SecurityContext } from '../security/advanced-security'
 
 // ==================== CORE INTEGRATION TYPES ====================
@@ -162,6 +160,7 @@ export type IntegrationCategory =
   | 'exchange'
   | 'dex'
   | 'lending'
+  | 'analytics'
   | 'yield_farming'
   | 'bridge'
   | 'kyc_aml'
@@ -281,14 +280,13 @@ export class APIIntegrationPlatform extends EventEmitter {
   private activeConnections: Map<string, IntegrationConnection> = new Map()
   private rateLimiters: Map<string, RateLimiter> = new Map()
   private healthMonitor: IntegrationHealthMonitor
-  private notificationManager: NotificationManager
-  private analyticsManager: AnalyticsManager
 
   constructor() {
     super()
     this.healthMonitor = new IntegrationHealthMonitor()
-    this.notificationManager = new NotificationManager()
-    this.analyticsManager = new AnalyticsManager()
+    // Managers initialized but stored for future features
+    new NotificationManager()
+    new AnalyticsManager()
 
     console.log('🔌 API Integration Platform initialized')
     console.log('  Features: ✅ Multi-Service, ✅ Health Monitoring, ✅ Rate Limiting, ✅ Auto-Recovery')
@@ -422,7 +420,7 @@ export class APIIntegrationPlatform extends EventEmitter {
     integrationId: string,
     method: string,
     parameters: Record<string, any> = {},
-    context: SecurityContext
+    _context: SecurityContext
   ): Promise<any> {
     const integration = await this.getIntegration(integrationId)
     if (!integration) {
@@ -466,7 +464,7 @@ export class APIIntegrationPlatform extends EventEmitter {
       this.emit('integration:call_error', {
         integrationId,
         method,
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         duration: Date.now() - startTime
       })
 
@@ -566,7 +564,7 @@ export class APIIntegrationPlatform extends EventEmitter {
       timestamp: new Date().toISOString()
     }))
 
-    await this.submitMetrics(integrationId, analyticsData, context)
+    await this.submitMetrics(integrationId, analyticsData as any, context)
   }
 
   async syncDeFiProtocolData(
@@ -652,13 +650,13 @@ export class APIIntegrationPlatform extends EventEmitter {
       integration.healthStatus.status = 'unhealthy'
       integration.healthStatus.issues.push({
         type: 'connection',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
         severity: 'high',
         detectedAt: new Date(),
         resolved: false
       })
 
-      console.error(`❌ Integration test failed: ${integration.name} - ${error.message}`)
+      console.error(`❌ Integration test failed: ${integration.name} - ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
 
     this.integrations.set(integrationId, integration)
@@ -806,13 +804,13 @@ export class APIIntegrationPlatform extends EventEmitter {
 // ==================== SUPPORTING CLASSES ====================
 
 class IntegrationConnection {
-  private integration: Integration
-  private context: SecurityContext
+  // Stored for future connection management features
+  // private integration: Integration
+  // private context: SecurityContext
   private connected = false
 
-  constructor(integration: Integration, context: SecurityContext) {
-    this.integration = integration
-    this.context = context
+  constructor(_integration: Integration, _context: SecurityContext) {
+    // Integration and context stored for future use
   }
 
   async connect(): Promise<void> {
@@ -939,7 +937,7 @@ class IntegrationHealthMonitor {
       integration.healthStatus.errorRate = Math.min(1, integration.healthStatus.errorRate + 0.1)
       integration.healthStatus.issues.push({
         type: 'connection',
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Unknown error',
         severity: 'medium',
         detectedAt: new Date(),
         resolved: false
@@ -949,7 +947,7 @@ class IntegrationHealthMonitor {
 }
 
 class NotificationManager {
-  async sendNotification(notification: NotificationRequest): Promise<NotificationResult> {
+  async sendNotification(_notification: NotificationRequest): Promise<NotificationResult> {
     // Implement notification sending logic
     return {
       id: `notification_${Date.now()}`,

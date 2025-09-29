@@ -74,7 +74,7 @@ describe('DLMMOperations', () => {
         protocolFeesY: '0',
         hook: 'So11111111111111111111111111111111111111112'
       }
-      const mockTransaction = { signature: 'mock-tx' }
+      const mockTransaction = new Transaction()
       const mockDistribution = [
         { binId: 122, xAmount: 500, yAmount: 1000 },
         { binId: 123, xAmount: 500, yAmount: 1000 },
@@ -271,7 +271,7 @@ describe('DLMMOperations', () => {
         protocolFeesY: '0',
         hook: 'So11111111111111111111111111111111111111112'
       }
-      const mockTransaction = { signature: 'limit-order-tx' }
+      const mockTransaction = new Transaction()
 
       mockDlmmClient.getLbPair.mockResolvedValue(mockPairData)
       mockDlmmClient.createAddLiquidityTransaction.mockResolvedValue(mockTransaction)

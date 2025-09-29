@@ -13,7 +13,6 @@ import { StaggerList } from '@/components/animations/stagger-list'
 import {
   TrendingUp,
   TrendingDown,
-  BarChart3,
   Target,
   Zap,
   Brain,
@@ -65,16 +64,6 @@ interface MarketRecommendation {
   }
 }
 
-interface PeerAnalysis {
-  competitorId: string
-  feeComparison: number // percentage difference
-  volumeComparison: number
-  liquidityComparison: number
-  efficiencyScore: number
-  marketPosition: 'leader' | 'challenger' | 'follower'
-  threatLevel: 'high' | 'medium' | 'low'
-  strategicGaps: string[]
-}
 
 interface MarketIntelligence {
   marketSize: number

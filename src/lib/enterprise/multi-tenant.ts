@@ -259,13 +259,13 @@ export class MultiTenantManager extends EventEmitter {
   private tenants: Map<string, Tenant> = new Map()
   private users: Map<string, TenantUser[]> = new Map()
   private contextManager: TenantContextManager
-  private rateLimiter: TenantRateLimiter
   private usageTracker: TenantUsageTracker
 
   constructor() {
     super()
     this.contextManager = new TenantContextManager()
-    this.rateLimiter = new TenantRateLimiter()
+    // Rate limiter initialized for future use
+    new TenantRateLimiter()
     this.usageTracker = new TenantUsageTracker()
   }
 

@@ -7,7 +7,7 @@ import type {
   DLMMPosition,
   PositionAnalytics,
   PoolAnalyticsData
-} from '@/lib/types'
+} from '../types'
 
 // ============================================================================
 // ENHANCED TYPES FOR ADVANCED ANALYTICS
@@ -139,7 +139,9 @@ export interface PerformanceTimeSeries {
 
 export class AdvancedPositionAnalyticsEngine {
   // Note: These private fields are kept for future use in historical tracking
+  // @ts-ignore - Reserved for future implementation
   private _priceHistory: Map<string, Array<{ timestamp: Date; price: number }>> = new Map()
+  // @ts-ignore - Reserved for future implementation
   private _positionSnapshots: Map<string, PerformanceTimeSeries[]> = new Map()
 
   /**
@@ -621,7 +623,7 @@ export class AdvancedPositionAnalyticsEngine {
    * Calculate position health and optimization metrics
    */
   private async calculateHealthMetrics(
-    position: DLMMPosition,
+    _position: DLMMPosition,
     poolData: PoolAnalyticsData
   ): Promise<AdvancedPositionAnalytics['healthMetrics']> {
 
@@ -676,7 +678,7 @@ export class AdvancedPositionAnalyticsEngine {
     }, 0)
 
     // Calculate portfolio IL (simplified)
-    const portfolioIL = positions.reduce((sum, pos) => {
+    const portfolioIL = positions.reduce((sum, _pos) => {
       // This would need individual position IL calculations
       return sum + 0 // Placeholder
     }, 0)
@@ -859,7 +861,7 @@ export class AdvancedPositionAnalyticsEngine {
 
   private async calculatePositionCorrelations(
     positions: DLMMPosition[],
-    poolDataMap: Map<string, PoolAnalyticsData>
+    _poolDataMap: Map<string, PoolAnalyticsData>
   ): Promise<PortfolioAnalytics['correlations']> {
 
     const correlations = []

@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -15,24 +14,18 @@ import {
   TrendingDown,
   BarChart3,
   Calendar,
-  Clock,
-  DollarSign,
   Activity,
   LineChart,
   PieChart,
   Gauge,
   Target,
   ArrowUpDown,
-  Zap,
   AlertCircle,
   CheckCircle,
-  Layers,
-  RefreshCw,
-  Calculator,
   History
 } from 'lucide-react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useDLMM } from '@/hooks/use-dlmm'
+import { useDLMM, useUserPositions } from '@/hooks/use-dlmm'
 
 interface HistoricalDataPoint {
   timestamp: number
@@ -181,8 +174,9 @@ Date.prototype.getDayOfYear = function() {
 }
 
 export default function HistoricalFeeAnalysisDemo() {
-  const { connected } = useWallet()
-  const { positions, poolData } = useDLMM()
+  const { } = useWallet()
+  const { } = useDLMM()
+  const { } = useUserPositions()
 
   const [selectedPeriod, setSelectedPeriod] = useState('12')
   const [analysisType, setAnalysisType] = useState('performance')
@@ -282,7 +276,6 @@ export default function HistoricalFeeAnalysisDemo() {
       const sumXX = x.reduce((sum, val) => sum + val * val, 0)
 
       const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
-      const intercept = (sumY - slope * sumX) / n
 
       // Determine direction and strength
       const direction = slope > 0.1 ? 'increasing' : slope < -0.1 ? 'decreasing' : 'stable'
@@ -661,7 +654,7 @@ export default function HistoricalFeeAnalysisDemo() {
             </CardHeader>
             <CardContent>
               <StaggerList className="space-y-4">
-                {seasonalPatterns.map((pattern, index) => (
+                {seasonalPatterns.map((pattern) => (
                   <motion.div
                     key={pattern.period}
                     className="p-4 border rounded-lg"

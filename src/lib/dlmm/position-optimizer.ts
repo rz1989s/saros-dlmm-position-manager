@@ -4,14 +4,13 @@
 // 🧠 AI-driven recommendations with backtesting validation
 // 🔄 Real-time optimization with market condition adaptation
 
-import { PublicKey } from '@solana/web3.js'
+// import { PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
 import { advancedAnalyticsEngine } from '@/lib/analytics/position-analytics'
 import type {
   DLMMPosition,
   PoolAnalyticsData,
-  PositionAnalytics,
-  BacktestConfig,
+  // PositionAnalytics,
   BacktestResult
 } from '@/lib/types'
 import type {
@@ -263,7 +262,7 @@ export class PositionOptimizationEngine {
    */
   private async analyzeMarketConditions(
     poolData: PoolAnalyticsData,
-    position: DLMMPosition
+    _position: DLMMPosition
   ): Promise<MarketConditionAnalysis> {
 
     // Calculate volatility from recent price changes
@@ -441,17 +440,17 @@ export class PositionOptimizationEngine {
     poolData: PoolAnalyticsData,
     analytics: AdvancedPositionAnalytics,
     marketConditions: MarketConditionAnalysis,
-    config: OptimizationConfig
+    _config: OptimizationConfig
   ): Promise<OptimizationRecommendation> {
 
     // Calculate optimal range based on market conditions
-    const currentPrice = (position.tokenX.price + position.tokenY.price) / 2
+    // const currentPrice = (position.tokenX.price + position.tokenY.price) / 2
     const volatility = marketConditions.volatility
 
     // Wider range for high volatility, tighter for low volatility
     const rangeMultiplier = Math.max(0.05, Math.min(0.3, volatility * 2))
-    const optimalLowerPrice = currentPrice * (1 - rangeMultiplier)
-    const optimalUpperPrice = currentPrice * (1 + rangeMultiplier)
+    // const optimalLowerPrice = currentPrice * (1 - rangeMultiplier)
+    // const optimalUpperPrice = currentPrice * (1 + rangeMultiplier)
 
     // Convert to bin IDs (simplified calculation)
     const centerBinId = position.activeBin
@@ -517,10 +516,10 @@ export class PositionOptimizationEngine {
    */
   private async generateLiquidityDistributionRecommendation(
     position: DLMMPosition,
-    poolData: PoolAnalyticsData,
+    _poolData: PoolAnalyticsData,
     analytics: AdvancedPositionAnalytics,
     marketConditions: MarketConditionAnalysis,
-    config: OptimizationConfig
+    _config: OptimizationConfig
   ): Promise<OptimizationRecommendation> {
 
     // Determine optimal distribution strategy based on market conditions
@@ -529,7 +528,7 @@ export class PositionOptimizationEngine {
     else if (marketConditions.volatility > 0.15) strategy = 'dynamic'
 
     // Generate optimal distribution
-    const centerBinId = position.activeBin
+    // const centerBinId = position.activeBin
     const distribution: Distribution[] = []
 
     if (strategy === 'concentrated') {
@@ -596,10 +595,10 @@ export class PositionOptimizationEngine {
    */
   private async generateRebalancingRecommendation(
     position: DLMMPosition,
-    poolData: PoolAnalyticsData,
+    _poolData: PoolAnalyticsData,
     analytics: AdvancedPositionAnalytics,
     marketConditions: MarketConditionAnalysis,
-    config: OptimizationConfig
+    _config: OptimizationConfig
   ): Promise<OptimizationRecommendation> {
 
     const urgency = analytics.healthMetrics.rebalanceUrgency
@@ -608,7 +607,7 @@ export class PositionOptimizationEngine {
     else if (urgency > 60) priority = 'high'
 
     // Calculate optimal rebalance frequency
-    const optimalFrequency = marketConditions.volatility > 0.1 ? 7 :
+    // const optimalFrequency = marketConditions.volatility > 0.1 ? 7 :
                            marketConditions.volatility > 0.05 ? 14 : 30
 
     const estimatedCost = 0.02 * parseFloat(position.liquidityAmount) // 2% rebalance cost
@@ -647,7 +646,7 @@ export class PositionOptimizationEngine {
     poolData: PoolAnalyticsData,
     analytics: AdvancedPositionAnalytics,
     marketConditions: MarketConditionAnalysis,
-    config: OptimizationConfig
+    _config: OptimizationConfig
   ): Promise<OptimizationRecommendation> {
 
     const currentYield = analytics.performanceAttribution.feeContribution / analytics.totalValue * 100
@@ -656,7 +655,7 @@ export class PositionOptimizationEngine {
 
     // Focus liquidity in high-volume bins
     const distribution: Distribution[] = []
-    const centerBinId = position.activeBin
+    // const centerBinId = position.activeBin
 
     // Concentrate in bins with highest expected volume
     for (let i = -2; i <= 2; i++) {
@@ -740,8 +739,8 @@ export class PositionOptimizationEngine {
    * Perform sensitivity analysis
    */
   private async performSensitivityAnalysis(
-    position: DLMMPosition,
-    poolData: PoolAnalyticsData,
+    _position: DLMMPosition,
+    _poolData: PoolAnalyticsData,
     recommendation: OptimizationRecommendation
   ): Promise<SensitivityAnalysis> {
 
@@ -863,10 +862,10 @@ export class PositionOptimizationEngine {
    */
   private generateMockHistoricalPrices(position: DLMMPosition, days: number) {
     return {
-      tokenX: Array.from({ length: days }, (_, i) =>
+      tokenX: Array.from({ length: days }, () =>
         position.tokenX.price * (1 + (Math.random() - 0.5) * 0.1)
       ),
-      tokenY: Array.from({ length: days }, (_, i) =>
+      tokenY: Array.from({ length: days }, () =>
         position.tokenY.price * (1 + (Math.random() - 0.5) * 0.1)
       ),
       timestamps: Array.from({ length: days }, (_, i) =>

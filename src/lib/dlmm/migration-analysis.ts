@@ -2,13 +2,11 @@
 // 📊 Comprehensive migration cost-benefit analysis with accurate impact predictions
 // Advanced analysis of migration scenarios with detailed financial modeling
 
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { connectionManager } from '@/lib/connection-manager'
-import { sdkTracker } from '@/lib/sdk-tracker'
 import { logger } from '@/lib/logger'
-import type { DLMMPosition, TokenInfo } from '@/lib/types'
-import type { CrossPoolRoute, CrossPoolMigrationPlan } from './cross-pool-migration'
+import type { DLMMPosition } from '@/lib/types'
+import type { CrossPoolMigrationPlan } from './cross-pool-migration'
 
 /**
  * Detailed impact analysis for a migration scenario
@@ -307,7 +305,7 @@ export class MigrationImpactAnalyzer {
   private analysisCache = new Map<string, { data: any; timestamp: number }>()
   private readonly cacheDuration = 600000 // 10 minutes for detailed analysis
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     logger.init('📊 MigrationImpactAnalyzer: Advanced impact analysis capabilities initialized')
   }
 
@@ -451,7 +449,7 @@ export class MigrationImpactAnalyzer {
   private async calculateCosts(
     sourcePosition: DLMMPosition,
     migrationPlan: CrossPoolMigrationPlan,
-    marketConditions: any
+    _marketConditions: any
   ): Promise<CostBreakdown> {
     const positionValue = parseFloat(sourcePosition.liquidityAmount)
 
@@ -522,7 +520,7 @@ export class MigrationImpactAnalyzer {
   private async calculateBenefits(
     sourcePosition: DLMMPosition,
     migrationPlan: CrossPoolMigrationPlan,
-    marketConditions: any
+    _marketConditions: any
   ): Promise<BenefitBreakdown> {
     const positionValue = parseFloat(sourcePosition.liquidityAmount)
 
@@ -703,8 +701,8 @@ export class MigrationImpactAnalyzer {
    * Analyze worst case scenario
    */
   private analyzeWorstCase(
-    sourcePosition: DLMMPosition,
-    migrationPlan: CrossPoolMigrationPlan,
+    _sourcePosition: DLMMPosition,
+    _migrationPlan: CrossPoolMigrationPlan,
     riskFactors: RiskFactor[]
   ): WorstCaseAnalysis {
     const totalLoss = riskFactors.reduce((sum, factor) => sum + factor.impact, 0)
@@ -794,7 +792,6 @@ export class MigrationImpactAnalyzer {
     logger.debug('⚙️ Analyzing operational impact...')
 
     const stepCount = migrationPlan.steps.length
-    const hasIntermediateSwaps = migrationPlan.route.intermediateSwaps.length > 0
 
     return {
       executionComplexity: stepCount > 5 ? 'high' : stepCount > 3 ? 'medium' : 'low',
@@ -1092,7 +1089,7 @@ export class MigrationImpactAnalyzer {
   private generateRecommendation(
     financialImpact: FinancialImpact,
     riskAssessment: RiskAssessment,
-    operationalImpact: OperationalImpact,
+    _operationalImpact: OperationalImpact,
     marketImpact: MarketImpact,
     scenarios: ScenarioAnalysis[]
   ): MigrationRecommendation {

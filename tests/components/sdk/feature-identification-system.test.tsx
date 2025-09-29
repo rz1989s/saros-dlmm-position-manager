@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { FeatureBadge } from '@/components/ui/feature-badge'
-import { FeatureTooltip } from '@/components/ui/tooltip'
+// import { FeatureTooltip } from '@/components/ui/tooltip' // Unused import
 import { FeatureIdentifier } from '@/components/sdk/feature-identifier'
 import { JudgeModeProvider, useJudgeMode } from '@/contexts/judge-mode-context'
 import { JudgeModeToggle } from '@/components/sdk/judge-mode-toggle'

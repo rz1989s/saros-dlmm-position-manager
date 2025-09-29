@@ -5,7 +5,6 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
 import { feeTierManager } from './fee-tiers'
-import { dynamicFeeOptimizer } from './fee-optimization'
 import { logger } from '@/lib/logger'
 import type {
   FeeTier,
@@ -332,7 +331,7 @@ export class FeeTierMigrationAnalyzer {
   private readonly gasEstimator = new GasEstimator()
   private readonly marketAnalyzer = new MarketConditionAnalyzer()
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     logger.init('🔄 FeeTierMigrationAnalyzer: Advanced migration framework initialized')
   }
 
@@ -712,8 +711,8 @@ export class FeeTierMigrationAnalyzer {
    */
   private async createExecutionPlan(
     position: DLMMPosition,
-    fromTier: FeeTier,
-    toTier: FeeTier,
+    _fromTier: FeeTier,
+    _toTier: FeeTier,
     impact: FeeMigrationImpact,
     riskAssessment: MigrationRiskAssessment
   ): Promise<MigrationExecutionPlan> {
@@ -980,10 +979,13 @@ export class FeeTierMigrationAnalyzer {
    */
   private async performSensitivityAnalysis(
     position: DLMMPosition,
-    fromTier: FeeTier,
-    toTier: FeeTier,
+    _fromTier: FeeTier,
+    _toTier: FeeTier,
     impact: FeeMigrationImpact
   ): Promise<SensitivityAnalysis> {
+    // Get pool volume first
+    const poolVolume = parseFloat((await dlmmClient.getPoolMetrics(position.poolAddress))?.volume24h || '0')
+
     // Define key variables
     const variables: SensitivityVariable[] = [
       {
@@ -995,8 +997,8 @@ export class FeeTierMigrationAnalyzer {
       },
       {
         name: 'pool_volume',
-        baseValue: parseFloat((await dlmmClient.getPoolMetrics(position.poolAddress))?.volume24h || '0'),
-        range: [variables[0]?.baseValue * 0.5 || 0, variables[0]?.baseValue * 2 || 0],
+        baseValue: poolVolume,
+        range: [poolVolume * 0.5, poolVolume * 2],
         impact: 'high',
         correlation: 0.8
       },
@@ -1116,7 +1118,7 @@ export class FeeTierMigrationAnalyzer {
   private setupMigrationMonitoring(
     position: DLMMPosition,
     fromTier: FeeTier,
-    toTier: FeeTier
+    _toTier: FeeTier
   ): MigrationMonitoring {
     return {
       preExecutionMetrics: {
@@ -1195,7 +1197,7 @@ export class FeeTierMigrationAnalyzer {
   }
 
   private async determineOptimalTiming(
-    position: DLMMPosition,
+    _position: DLMMPosition,
     fromTier: FeeTier,
     toTier: FeeTier,
     marketConditions: any

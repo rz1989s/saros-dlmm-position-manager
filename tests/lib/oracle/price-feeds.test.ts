@@ -491,14 +491,14 @@ describe('OraclePriceFeeds', () => {
       await oracleFeeds.getTokenPrice('USDC')
 
       let stats = oracleFeeds.getCacheStats()
-      expect(stats.count).toBe(2)
+      expect(stats.basic.count).toBe(2)
 
       // Clear cache
       oracleFeeds.clearPriceCache()
 
       stats = oracleFeeds.getCacheStats()
-      expect(stats.count).toBe(0)
-      expect(stats.symbols).toEqual([])
+      expect(stats.basic.count).toBe(0)
+      expect(stats.basic.symbols).toEqual([])
       expect(consoleSpy).toHaveBeenCalledWith('🧹 Price cache cleared')
     })
   })
@@ -506,16 +506,16 @@ describe('OraclePriceFeeds', () => {
   describe('getCacheStats', () => {
     it('should return cache statistics', async () => {
       const initialStats = oracleFeeds.getCacheStats()
-      expect(initialStats.count).toBe(0)
-      expect(initialStats.symbols).toEqual([])
+      expect(initialStats.basic.count).toBe(0)
+      expect(initialStats.basic.symbols).toEqual([])
 
       // Add some cached items
       await oracleFeeds.getTokenPrice('SOL')
       await oracleFeeds.getTokenPrice('ETH')
 
       const stats = oracleFeeds.getCacheStats()
-      expect(stats.count).toBe(2)
-      expect(stats.symbols).toEqual(expect.arrayContaining(['SOL', 'ETH']))
+      expect(stats.basic.count).toBe(2)
+      expect(stats.basic.symbols).toEqual(expect.arrayContaining(['SOL', 'ETH']))
     })
 
     it('should correctly parse cache keys to symbols', async () => {
@@ -523,11 +523,11 @@ describe('OraclePriceFeeds', () => {
       await oracleFeeds.getMultipleTokenPrices(['RAY', 'USDT'])
 
       const stats = oracleFeeds.getCacheStats()
-      expect(stats.count).toBe(3)
-      expect(stats.symbols).toEqual(expect.arrayContaining(['USDC', 'RAY', 'USDT']))
+      expect(stats.basic.count).toBe(3)
+      expect(stats.basic.symbols).toEqual(expect.arrayContaining(['USDC', 'RAY', 'USDT']))
 
       // Should not include the 'price-' prefix
-      expect(stats.symbols.every(symbol => !symbol.includes('price-'))).toBe(true)
+      expect(stats.basic.symbols.every((symbol: string) => !symbol.includes('price-'))).toBe(true)
     })
   })
 
@@ -711,8 +711,8 @@ describe('OraclePriceFeeds', () => {
 
       // Should have used cache for subsequent requests (only 1 cache entry)
       const stats = oracleFeeds.getCacheStats()
-      expect(stats.count).toBe(1)
-      expect(stats.symbols).toEqual(['SOL'])
+      expect(stats.basic.count).toBe(1)
+      expect(stats.basic.symbols).toEqual(['SOL'])
     })
   })
 

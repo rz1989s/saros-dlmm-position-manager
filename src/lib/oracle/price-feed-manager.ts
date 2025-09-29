@@ -2,10 +2,10 @@
 // Unified oracle management with intelligent fallback and caching
 // Bismillah - implementing robust price feed architecture
 
-import { pythIntegration, type PythPriceData } from './pyth-integration'
-import { switchboardIntegration, type SwitchboardPriceData } from './switchboard-integration'
-import { priceConfidenceSystem, type PriceQualityReport, type AggregatedPriceData } from './confidence-system'
-import { oraclePriceFeeds, type PriceData } from './price-feeds'
+import { pythIntegration } from './pyth-integration'
+import { switchboardIntegration } from './switchboard-integration'
+import { priceConfidenceSystem, type AggregatedPriceData } from './confidence-system'
+import { oraclePriceFeeds } from './price-feeds'
 import { logger } from '@/lib/logger'
 
 // ============================================================================
@@ -444,7 +444,7 @@ export class PriceFeedManager {
   /**
    * Fetch from fallback sources
    */
-  private async fetchFromFallback(symbol: string, config: PriceFeedConfig): Promise<UnifiedPriceData> {
+  private async fetchFromFallback(symbol: string, _config: PriceFeedConfig): Promise<UnifiedPriceData> {
     const fallbackPrice = await oraclePriceFeeds.getTokenPrice(symbol)
 
     return {

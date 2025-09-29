@@ -1,6 +1,5 @@
 import { PublicKey, Connection } from '@solana/web3.js'
-import { PositionConsolidationEngine, ConsolidationAnalysis } from '../../../src/lib/dlmm/consolidation'
-import { DLMMClient } from '../../../src/lib/dlmm/client'
+import { PositionConsolidationEngine } from '../../../src/lib/dlmm/consolidation'
 import type { DLMMPosition } from '../../../src/lib/types'
 
 // Mock the DLMM client
@@ -27,25 +26,31 @@ jest.mock('../../../src/lib/oracle/price-feeds', () => ({
 
 describe('PositionConsolidationEngine', () => {
   let consolidationEngine: PositionConsolidationEngine
-  let mockClient: jest.Mocked<DLMMClient>
+  let mockConnection: Connection
   let mockPositions: DLMMPosition[]
 
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mockClient = {
-      getLbPair: jest.fn(),
-      getConnection: jest.fn(() => new Connection('http://localhost:8899')),
-      getUserPositions: jest.fn(),
-      getBinData: jest.fn(),
-      getPoolInfo: jest.fn()
-    } as any
+    mockConnection = new Connection('http://localhost:8899')
 
-    consolidationEngine = new PositionConsolidationEngine(mockClient)
+    consolidationEngine = new PositionConsolidationEngine(mockConnection)
 
     mockPositions = [
       // Two USDC/USDT positions in different pools (consolidation opportunity)
       {
+        id: 'position-1',
+        poolAddress: new PublicKey('Pool1111111111111111111111111111111111111111'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388608,
+        liquidityAmount: '8000',
+        feesEarned: {
+          tokenX: '100',
+          tokenY: '100'
+        },
+        createdAt: new Date('2024-01-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position1111111111111111111111111111111111'),
         pair: new PublicKey('Pool1111111111111111111111111111111111111111'),
         tokenX: {
@@ -70,20 +75,32 @@ describe('PositionConsolidationEngine', () => {
         unrealizedPnl: 350,
         feeEarnings: 200,
         impermanentLoss: -50,
-        createdAt: new Date('2024-01-01'),
         updatedAt: new Date(),
         bins: [
           {
             binId: 8388608,
             price: 1.0,
-            liquidityX: 4000,
-            liquidityY: 4000,
-            reserveX: 4000,
-            reserveY: 4000
+            liquidityX: '4000',
+            liquidityY: '4000',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '10000'
           }
         ]
       },
       {
+        id: 'position-2',
+        poolAddress: new PublicKey('Pool2222222222222222222222222222222222222222'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388605,
+        liquidityAmount: '12000',
+        feesEarned: {
+          tokenX: '200',
+          tokenY: '200'
+        },
+        createdAt: new Date('2024-01-15'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position2222222222222222222222222222222222'),
         pair: new PublicKey('Pool2222222222222222222222222222222222222222'),
         tokenX: {
@@ -108,21 +125,33 @@ describe('PositionConsolidationEngine', () => {
         unrealizedPnl: 700,
         feeEarnings: 400,
         impermanentLoss: -100,
-        createdAt: new Date('2024-01-15'),
         updatedAt: new Date(),
         bins: [
           {
             binId: 8388605,
             price: 1.0,
-            liquidityX: 6000,
-            liquidityY: 6000,
-            reserveX: 6000,
-            reserveY: 6000
+            liquidityX: '6000',
+            liquidityY: '6000',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '15000'
           }
         ]
       },
       // Small SOL/USDC position (low efficiency - consolidation candidate)
       {
+        id: 'position-3',
+        poolAddress: new PublicKey('Pool3333333333333333333333333333333333333333'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388590,
+        liquidityAmount: '500',
+        feesEarned: {
+          tokenX: '2.5',
+          tokenY: '2.5'
+        },
+        createdAt: new Date('2024-02-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position3333333333333333333333333333333333'),
         pair: new PublicKey('Pool3333333333333333333333333333333333333333'),
         tokenX: {
@@ -139,7 +168,7 @@ describe('PositionConsolidationEngine', () => {
           decimals: 6,
           price: 1.0
         },
-        currentValue: 500, // Very small position
+        currentValue: 500,
         initialValue: 600,
         pnl: -100,
         pnlPercent: -16.67,
@@ -147,21 +176,33 @@ describe('PositionConsolidationEngine', () => {
         unrealizedPnl: -50,
         feeEarnings: 5,
         impermanentLoss: -5,
-        createdAt: new Date('2024-02-01'),
         updatedAt: new Date(),
         bins: [
           {
             binId: 8388590,
             price: 100.0,
-            liquidityX: 2.5,
-            liquidityY: 250,
-            reserveX: 2.5,
-            reserveY: 250
+            liquidityX: '2.5',
+            liquidityY: '250',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '5000'
           }
         ]
       },
       // Another small ETH/USDC position
       {
+        id: 'position-4',
+        poolAddress: new PublicKey('Pool4444444444444444444444444444444444444444'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388580,
+        liquidityAmount: '800',
+        feesEarned: {
+          tokenX: '5',
+          tokenY: '5'
+        },
+        createdAt: new Date('2024-02-10'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position4444444444444444444444444444444444'),
         pair: new PublicKey('Pool4444444444444444444444444444444444444444'),
         tokenX: {
@@ -178,7 +219,7 @@ describe('PositionConsolidationEngine', () => {
           decimals: 6,
           price: 1.0
         },
-        currentValue: 800, // Small position
+        currentValue: 800,
         initialValue: 1000,
         pnl: -200,
         pnlPercent: -20.0,
@@ -186,21 +227,33 @@ describe('PositionConsolidationEngine', () => {
         unrealizedPnl: -100,
         feeEarnings: 10,
         impermanentLoss: -10,
-        createdAt: new Date('2024-02-10'),
         updatedAt: new Date(),
         bins: [
           {
             binId: 8388580,
             price: 2000.0,
-            liquidityX: 0.2,
-            liquidityY: 400,
-            reserveX: 0.2,
-            reserveY: 400
+            liquidityX: '0.2',
+            liquidityY: '400',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '8000'
           }
         ]
       },
       // Large SOL/USDC position (good reference)
       {
+        id: 'position-5',
+        poolAddress: new PublicKey('Pool5555555555555555555555555555555555555555'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388595,
+        liquidityAmount: '25000',
+        feesEarned: {
+          tokenX: '1000',
+          tokenY: '1000'
+        },
+        createdAt: new Date('2024-01-20'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position5555555555555555555555555555555555'),
         pair: new PublicKey('Pool5555555555555555555555555555555555555555'),
         tokenX: {
@@ -225,16 +278,16 @@ describe('PositionConsolidationEngine', () => {
         unrealizedPnl: 3500,
         feeEarnings: 2000,
         impermanentLoss: -500,
-        createdAt: new Date('2024-01-20'),
         updatedAt: new Date(),
         bins: [
           {
             binId: 8388595,
             price: 100.0,
-            liquidityX: 125,
-            liquidityY: 12500,
-            reserveX: 125,
-            reserveY: 12500
+            liquidityX: '125',
+            liquidityY: '12500',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '50000'
           }
         ]
       }
@@ -243,14 +296,12 @@ describe('PositionConsolidationEngine', () => {
 
   describe('analyzeConsolidationOpportunities', () => {
     it('should identify comprehensive consolidation opportunities', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: true,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey('11111111111111111111111111111111'), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis).toMatchObject({
         summary: expect.objectContaining({
@@ -299,14 +350,12 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should identify similar pair consolidation opportunities', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'cost_reduction',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       // Should identify USDC/USDT consolidation opportunity
       const similarPairOpportunity = analysis.opportunities.find(
@@ -318,21 +367,19 @@ describe('PositionConsolidationEngine', () => {
       expect(similarPairOpportunity!.analysis.benefits.length).toBeGreaterThan(0)
 
       const gasSavingsBenefit = similarPairOpportunity!.analysis.benefits.find(
-        benefit => benefit.category === 'gas_savings'
+        (benefit: any) => benefit.category === 'gas_savings'
       )
       expect(gasSavingsBenefit).toBeDefined()
       expect(gasSavingsBenefit!.annualValue).toBeGreaterThan(0)
     })
 
     it('should identify low efficiency consolidation opportunities', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       // Should identify small positions for consolidation
       const lowEfficiencyOpportunities = analysis.opportunities.filter(
@@ -352,14 +399,12 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should calculate accurate cost-benefit analysis', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       analysis.opportunities.forEach(opportunity => {
         expect(opportunity.analysis.summary).toMatchObject({
@@ -371,22 +416,22 @@ describe('PositionConsolidationEngine', () => {
         })
 
         // Benefits should have positive values
-        opportunity.analysis.benefits.forEach(benefit => {
+        opportunity.analysis.benefits.forEach((benefit: any) => {
           expect(benefit.annualValue).toBeGreaterThan(0)
           expect(benefit.presentValue).toBeGreaterThan(0)
         })
 
         // Costs should have positive values
-        opportunity.analysis.costs.forEach(cost => {
+        opportunity.analysis.costs.forEach((cost: any) => {
           expect(cost.immediateValue).toBeGreaterThan(0)
         })
 
         // NPV calculation verification
         const totalBenefits = opportunity.analysis.benefits.reduce(
-          (sum, benefit) => sum + benefit.presentValue, 0
+          (sum: number, benefit: any) => sum + benefit.presentValue, 0
         )
         const totalCosts = opportunity.analysis.costs.reduce(
-          (sum, cost) => sum + cost.immediateValue, 0
+          (sum: number, cost: any) => sum + cost.immediateValue, 0
         )
         const expectedNPV = totalBenefits - totalCosts
 
@@ -395,14 +440,12 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should generate execution plans when requested', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: false,
-        includeRiskAssessment: false,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.executionPlan).toBeDefined()
       expect(analysis.executionPlan.phases).toHaveLength(analysis.executionPlan.totalPhases)
@@ -429,19 +472,17 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should perform risk assessment when requested', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: false,
-        includeRiskAssessment: true,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.riskAssessment).toBeDefined()
       expect(analysis.riskAssessment.overallRisk).toMatch(/^(low|medium|high)$/)
 
-      analysis.riskAssessment.riskFactors.forEach(factor => {
+      analysis.riskAssessment.riskFactors.forEach((factor: any) => {
         expect(factor).toMatchObject({
           category: expect.any(String),
           description: expect.any(String),
@@ -462,18 +503,16 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should create monitoring plans when requested', async () => {
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: false,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.monitoringPlan).toBeDefined()
 
-      analysis.monitoringPlan.keyMetrics.forEach(metric => {
+      analysis.monitoringPlan.keyMetrics.forEach((metric: any) => {
         expect(metric).toMatchObject({
           name: expect.any(String),
           description: expect.any(String),
@@ -484,7 +523,7 @@ describe('PositionConsolidationEngine', () => {
         })
       })
 
-      analysis.monitoringPlan.alertThresholds.forEach(threshold => {
+      analysis.monitoringPlan.alertThresholds.forEach((threshold: any) => {
         expect(threshold).toMatchObject({
           metric: expect.any(String),
           condition: expect.any(String),
@@ -498,32 +537,26 @@ describe('PositionConsolidationEngine', () => {
     })
 
     it('should handle different optimization objectives', async () => {
-      const efficiencyAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const efficiencyAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
-      const costReductionAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'cost_reduction',
-        timeframe: '30d'
-      })
+      const costReductionAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
-      const riskReductionAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'risk_reduction',
-        timeframe: '30d'
-      })
+      const riskReductionAnalysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       // Different objectives should produce different recommendations
       expect(efficiencyAnalysis.opportunities.length).toBeGreaterThan(0)
@@ -538,7 +571,7 @@ describe('PositionConsolidationEngine', () => {
 
       // Cost reduction should prioritize gas savings
       const costReductionOpps = costReductionAnalysis.opportunities.filter(opp => {
-        return opp.analysis.benefits.some(benefit => benefit.category === 'gas_savings')
+        return opp.analysis.benefits.some((benefit: any) => benefit.category === 'gas_savings')
       })
       expect(costReductionOpps.length).toBeGreaterThan(0)
     })
@@ -546,14 +579,12 @@ describe('PositionConsolidationEngine', () => {
     it('should handle no consolidation opportunities scenario', async () => {
       const wellOptimizedPositions = [mockPositions[4]] // Only one large, efficient position
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(wellOptimizedPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: true,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        wellOptimizedPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.summary.totalOpportunities).toBe(0)
       expect(analysis.opportunities).toHaveLength(0)
@@ -562,14 +593,12 @@ describe('PositionConsolidationEngine', () => {
 
     it('should handle empty positions array', async () => {
       await expect(
-        consolidationEngine.analyzeConsolidationOpportunities([], {
-          includeCostBenefitAnalysis: true,
-          includeRiskAssessment: true,
-          includeExecutionPlan: true,
-          includeMonitoringPlan: true,
-          optimizationObjective: 'efficiency',
-          timeframe: '30d'
-        })
+        consolidationEngine.analyzeConsolidationOpportunities(
+          [],
+          [], // analytics array
+          new PublicKey("11111111111111111111111111111111"), // userAddress
+          false // forceRefresh
+        )
       ).rejects.toThrow('No positions provided for consolidation analysis')
     })
   })
@@ -581,7 +610,7 @@ describe('PositionConsolidationEngine', () => {
       expect(similarPairs).toHaveLength(1) // USDC/USDT pair
       expect(similarPairs[0].positions).toHaveLength(2)
 
-      const pairSymbols = similarPairs[0].positions.map(posId => {
+      const pairSymbols = similarPairs[0].positions.map((posId: any) => {
         const position = mockPositions.find(p => p.publicKey.toString() === posId.toString())
         return `${position!.tokenX.symbol}/${position!.tokenY.symbol}`
       })
@@ -594,7 +623,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(lowEfficiencyOpps.length).toBeGreaterThan(0)
 
-      lowEfficiencyOpps.forEach(opp => {
+      lowEfficiencyOpps.forEach((opp: any) => {
         const position = mockPositions.find(p => p.publicKey.toString() === opp.positions[0].toString())
         expect(position!.currentValue).toBeLessThan(1000) // Small positions
       })
@@ -604,7 +633,7 @@ describe('PositionConsolidationEngine', () => {
       const highCostOpps = (consolidationEngine as any).identifyHighCostOpportunities(mockPositions)
 
       // Should identify positions with high fee-to-value ratios
-      highCostOpps.forEach(opp => {
+      highCostOpps.forEach((opp: any) => {
         const position = mockPositions.find(p => p.publicKey.toString() === opp.positions[0].toString())
         const feeRatio = (position!.feeEarnings || 0) / position!.currentValue
         expect(feeRatio).toBeLessThan(0.1) // Low fee efficiency indicates high relative costs
@@ -615,7 +644,7 @@ describe('PositionConsolidationEngine', () => {
       const overlappingRangeOpps = (consolidationEngine as any).identifyOverlappingRangeOpportunities(mockPositions)
 
       // Should identify positions with overlapping price ranges in same pairs
-      overlappingRangeOpps.forEach(opp => {
+      overlappingRangeOpps.forEach((opp: any) => {
         expect(opp.positions.length).toBeGreaterThanOrEqual(2)
         expect(opp.type).toBe('overlapping_ranges')
       })
@@ -627,15 +656,15 @@ describe('PositionConsolidationEngine', () => {
       const positions = [mockPositions[0], mockPositions[1]] // Two similar positions
       const benefits = (consolidationEngine as any).calculateConsolidationBenefits(positions, 'efficiency')
 
-      const gasSavings = benefits.find(b => b.category === 'gas_savings')
-      const efficiencyGains = benefits.find(b => b.category === 'efficiency_gains')
-      const liquidityBenefits = benefits.find(b => b.category === 'liquidity_benefits')
+      const gasSavings = benefits.find((b: any) => b.category === 'gas_savings')
+      const efficiencyGains = benefits.find((b: any) => b.category === 'efficiency_gains')
+      const liquidityBenefits = benefits.find((b: any) => b.category === 'liquidity_benefits')
 
       expect(gasSavings).toBeDefined()
       expect(efficiencyGains).toBeDefined()
       expect(liquidityBenefits).toBeDefined()
 
-      benefits.forEach(benefit => {
+      benefits.forEach((benefit: any) => {
         expect(benefit.annualValue).toBeGreaterThan(0)
         expect(benefit.presentValue).toBeGreaterThan(0)
         expect(benefit.confidence).toBeGreaterThan(0)
@@ -647,15 +676,15 @@ describe('PositionConsolidationEngine', () => {
       const positions = [mockPositions[0], mockPositions[1]]
       const costs = (consolidationEngine as any).calculateConsolidationCosts(positions)
 
-      const transactionCosts = costs.find(c => c.category === 'transaction_costs')
-      const slippageCosts = costs.find(c => c.category === 'slippage_costs')
-      const opportunityCosts = costs.find(c => c.category === 'opportunity_costs')
+      const transactionCosts = costs.find((c: any) => c.category === 'transaction_costs')
+      const slippageCosts = costs.find((c: any) => c.category === 'slippage_costs')
+      const opportunityCosts = costs.find((c: any) => c.category === 'opportunity_costs')
 
       expect(transactionCosts).toBeDefined()
       expect(slippageCosts).toBeDefined()
       expect(opportunityCosts).toBeDefined()
 
-      costs.forEach(cost => {
+      costs.forEach((cost: any) => {
         expect(cost.immediateValue).toBeGreaterThan(0)
         expect(cost.confidence).toBeGreaterThan(0)
         expect(cost.confidence).toBeLessThanOrEqual(1)
@@ -725,7 +754,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(phases.length).toBeGreaterThan(0)
 
-      phases.forEach((phase, index) => {
+      phases.forEach((phase: any, index: number) => {
         expect(phase.phase).toBe(index + 1)
         expect(phase.opportunities.length).toBeGreaterThan(0)
         expect(phase.estimatedDuration).toBeGreaterThan(0)
@@ -735,11 +764,11 @@ describe('PositionConsolidationEngine', () => {
       })
 
       // High priority opportunities should be in earlier phases
-      const highPriorityPhase = phases.find(p =>
-        p.opportunities.some(oppId => oppId === 'opp1')
+      const highPriorityPhase = phases.find((p: any) =>
+        p.opportunities.some((oppId: any) => oppId === 'opp1')
       )
-      const mediumPriorityPhase = phases.find(p =>
-        p.opportunities.some(oppId => oppId === 'opp2')
+      const mediumPriorityPhase = phases.find((p: any) =>
+        p.opportunities.some((oppId: any) => oppId === 'opp2')
       )
 
       if (highPriorityPhase && mediumPriorityPhase) {
@@ -765,7 +794,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(Array.isArray(dependencies)).toBe(true)
 
-      dependencies.forEach(dep => {
+      dependencies.forEach((dep: any) => {
         expect(dep).toMatchObject({
           prerequisite: expect.any(String),
           dependent: expect.any(String),
@@ -792,7 +821,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(Array.isArray(risks)).toBe(true)
 
-      risks.forEach(risk => {
+      risks.forEach((risk: any) => {
         expect(risk).toMatchObject({
           category: expect.any(String),
           description: expect.any(String),
@@ -831,7 +860,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(metrics.length).toBeGreaterThan(0)
 
-      metrics.forEach(metric => {
+      metrics.forEach((metric: any) => {
         expect(metric).toMatchObject({
           name: expect.any(String),
           description: expect.any(String),
@@ -857,7 +886,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(thresholds.length).toBeGreaterThan(0)
 
-      thresholds.forEach(threshold => {
+      thresholds.forEach((threshold: any) => {
         expect(threshold).toMatchObject({
           metric: expect.any(String),
           condition: expect.stringMatching(/^(above|below|equals)$/),
@@ -874,7 +903,7 @@ describe('PositionConsolidationEngine', () => {
 
       expect(Array.isArray(schedule)).toBe(true)
 
-      schedule.forEach(item => {
+      schedule.forEach((item: any) => {
         expect(item).toMatchObject({
           metric: expect.any(String),
           frequency: expect.stringMatching(/^(realtime|hourly|daily|weekly|monthly)$/),
@@ -893,14 +922,12 @@ describe('PositionConsolidationEngine', () => {
         { ...mockPositions[1], currentValue: 5000 }
       ]
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(zeroValuePositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        zeroValuePositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.summary.totalOpportunities).toBeGreaterThanOrEqual(0)
       expect(Number.isFinite(analysis.summary.netBenefit)).toBe(true)
@@ -912,14 +939,12 @@ describe('PositionConsolidationEngine', () => {
         { ...mockPositions[1], currentValue: undefined, initialValue: undefined }
       ]
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(incompletePositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        incompletePositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.summary).toBeDefined()
       expect(Number.isFinite(analysis.summary.potentialSavings)).toBe(true)
@@ -927,41 +952,35 @@ describe('PositionConsolidationEngine', () => {
 
     it('should handle invalid optimization objectives', async () => {
       await expect(
-        consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-          includeCostBenefitAnalysis: true,
-          includeRiskAssessment: false,
-          includeExecutionPlan: false,
-          includeMonitoringPlan: false,
-          optimizationObjective: 'invalid' as any,
-          timeframe: '30d'
-        })
+        consolidationEngine.analyzeConsolidationOpportunities(
+          mockPositions,
+          [], // analytics array
+          new PublicKey("11111111111111111111111111111111"), // userAddress
+          false // forceRefresh
+        )
       ).rejects.toThrow('Invalid optimization objective')
     })
 
     it('should handle invalid timeframes', async () => {
       await expect(
-        consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-          includeCostBenefitAnalysis: true,
-          includeRiskAssessment: false,
-          includeExecutionPlan: false,
-          includeMonitoringPlan: false,
-          optimizationObjective: 'efficiency',
-          timeframe: 'invalid' as any
-        })
+        consolidationEngine.analyzeConsolidationOpportunities(
+          mockPositions,
+          [], // analytics array
+          new PublicKey("11111111111111111111111111111111"), // userAddress
+          false // forceRefresh
+        )
       ).rejects.toThrow('Invalid timeframe')
     })
 
     it('should handle single position portfolios', async () => {
       const singlePosition = [mockPositions[0]]
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(singlePosition, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        singlePosition,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(analysis.summary.totalOpportunities).toBe(0)
       expect(analysis.opportunities).toHaveLength(0)
@@ -973,14 +992,12 @@ describe('PositionConsolidationEngine', () => {
         { ...mockPositions[1], currentValue: 1000000000 }
       ]
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(extremePositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: false,
-        includeExecutionPlan: false,
-        includeMonitoringPlan: false,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        extremePositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       expect(Number.isFinite(analysis.summary.netBenefit)).toBe(true)
       expect(analysis.summary.potentialSavings).toBeGreaterThanOrEqual(0)
@@ -991,27 +1008,23 @@ describe('PositionConsolidationEngine', () => {
     it('should cache analysis results', async () => {
       const startTime = Date.now()
 
-      const analysis1 = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: true,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis1 = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       const firstCallTime = Date.now() - startTime
 
       const startTime2 = Date.now()
 
-      const analysis2 = await consolidationEngine.analyzeConsolidationOpportunities(mockPositions, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: true,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis2 = await consolidationEngine.analyzeConsolidationOpportunities(
+        mockPositions,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       const secondCallTime = Date.now() - startTime2
 
@@ -1029,14 +1042,12 @@ describe('PositionConsolidationEngine', () => {
 
       const startTime = Date.now()
 
-      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(largePortfolio, {
-        includeCostBenefitAnalysis: true,
-        includeRiskAssessment: true,
-        includeExecutionPlan: true,
-        includeMonitoringPlan: true,
-        optimizationObjective: 'efficiency',
-        timeframe: '30d'
-      })
+      const analysis = await consolidationEngine.analyzeConsolidationOpportunities(
+        largePortfolio,
+        [], // analytics array
+        new PublicKey("11111111111111111111111111111111"), // userAddress
+        false // forceRefresh
+      )
 
       const executionTime = Date.now() - startTime
 

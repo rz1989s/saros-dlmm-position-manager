@@ -51,8 +51,18 @@ describe('Oracle Prices Hooks', () => {
 
     // Setup default mock returns
     mockOraclePriceFeeds.getCacheStats.mockReturnValue({
-      count: 50,
-      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
+      basic: {
+        count: 50,
+        symbols: ['USDC', 'SOL', 'BTC', 'ETH']
+      },
+      advanced: {
+        totalHitRate: 0.92,
+        averageLatency: 15,
+        predictiveAccuracy: 0.85,
+        optimalTTLUtilization: 0.78,
+        demandPatterns: { 'SOL': 'stable', 'USDC': 'stable' }
+      },
+      perSymbol: {}
     })
 
     mockOraclePriceFeeds.getSupportedTokens.mockReturnValue(['USDC', 'SOL', 'BTC', 'ETH'])
@@ -439,8 +449,18 @@ describe('Oracle Prices Hooks', () => {
 
   describe('useOracleCache', () => {
     const mockCacheStats = {
-      count: 50,
-      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
+      basic: {
+        count: 50,
+        symbols: ['USDC', 'SOL', 'BTC', 'ETH']
+      },
+      advanced: {
+        totalHitRate: 0.92,
+        averageLatency: 15,
+        predictiveAccuracy: 0.85,
+        optimalTTLUtilization: 0.78,
+        demandPatterns: { 'SOL': 'stable', 'USDC': 'stable' }
+      },
+      perSymbol: {}
     }
 
     const mockSupportedTokens = ['USDC', 'SOL', 'BTC', 'ETH']
@@ -520,8 +540,18 @@ describe('Oracle Prices Hooks', () => {
     }
 
     const mockCacheStats = {
-      count: 50,
-      symbols: ['USDC', 'SOL', 'BTC', 'ETH'],
+      basic: {
+        count: 50,
+        symbols: ['USDC', 'SOL', 'BTC', 'ETH']
+      },
+      advanced: {
+        totalHitRate: 0.92,
+        averageLatency: 15,
+        predictiveAccuracy: 0.85,
+        optimalTTLUtilization: 0.78,
+        demandPatterns: { 'SOL': 'stable', 'USDC': 'stable' }
+      },
+      perSymbol: {}
     }
 
     it('should combine multiple token prices with cache data', async () => {

@@ -2,13 +2,10 @@
 // Complete swap functionality using SDK v1.4.0 with enhanced features
 // Bismillah - implementing core swap operations for Phase 1
 
-import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
 import {
   LiquidityBookServices,
-  MODE,
-  type Pair,
-  type GetTokenOutputParams,
-  type GetTokenOutputResponse
+  type GetTokenOutputParams
 } from '@saros-finance/dlmm-sdk'
 import { dlmmClient } from './client'
 import { connectionManager } from '@/lib/connection-manager'
@@ -191,7 +188,8 @@ export class SwapOperations {
     success: boolean
     error?: string
   }> {
-    const { pairAddress, tokenIn, tokenOut, amountIn, slippageTolerance } = params
+    const { pairAddress, tokenIn, amountIn, slippageTolerance } = params
+    // tokenOut destructured for future validation
 
     console.log('🔄 SwapOperations.simulateSwap: Simulating swap...')
 
@@ -310,7 +308,8 @@ export class SwapOperations {
     errors: string[]
     warnings: string[]
   }> {
-    const { pairAddress, userAddress, tokenIn, tokenOut, amountIn, slippageTolerance } = params
+    const { pairAddress, tokenIn, tokenOut, amountIn, slippageTolerance } = params
+    // userAddress destructured for future balance validation
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -383,8 +382,8 @@ export class SwapOperations {
   /**
    * Get optimal slippage for a given swap amount
    */
-  getOptimalSlippage(amountIn: bigint, tokenPair: string): number {
-    // Dynamic slippage based on trade size and pair volatility
+  getOptimalSlippage(amountIn: bigint, _tokenPair: string): number {
+    // Dynamic slippage based on trade size and pair volatility (tokenPair for future volatility analysis)
     const amountNumber = Number(amountIn)
 
     // Base slippage recommendations

@@ -4,15 +4,16 @@
 
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { multiPositionAnalysisEngine } from './multi-position-analysis'
-import { portfolioOptimizationEngine } from './portfolio-optimizer'
-import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
+// Note: These imports are preserved for future functionality
+// import { multiPositionAnalysisEngine } from './multi-position-analysis'
+// import { portfolioOptimizationEngine } from './portfolio-optimizer'
+// import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
 import type {
   DLMMPosition,
   PositionAnalytics,
-  ConsolidationOpportunity,
-  TokenInfo,
-  PoolMetrics
+  ConsolidationOpportunity
+  // TokenInfo,
+  // PoolMetrics - reserved for future consolidation enhancements
 } from '@/lib/types'
 
 // ============================================================================
@@ -28,6 +29,12 @@ export interface ConsolidationAnalysis {
   riskAssessment: ConsolidationRiskAssessment
   performanceProjection: PerformanceProjection
   monitoringPlan: ConsolidationMonitoringPlan
+  summary?: {
+    totalOpportunities: number
+    totalSavings: number
+    recommendedAction: string
+    urgency: string
+  }
 }
 
 export interface CostBenefitAnalysis {
@@ -341,6 +348,8 @@ export interface ConsolidationExecutionPlan {
   riskMitigation: RiskMitigationPlan
   qualityAssurance: QualityAssurancePlan
   rollbackPlan: RollbackPlan
+  totalPhases?: number
+  estimatedDuration?: number
 }
 
 export interface ConsolidationPhase {
@@ -354,6 +363,7 @@ export interface ConsolidationPhase {
   deliverables: string[]
   successCriteria: string[]
   checkpoints: Checkpoint[]
+  estimatedDuration?: number
 }
 
 export interface ConsolidationActivity {
@@ -785,6 +795,20 @@ export interface ConsolidationRiskAssessment {
   riskMatrix: RiskMatrix
   riskTrends: RiskTrend[]
   mitigationEffectiveness: MitigationEffectiveness
+  overallRisk?: string
+  riskFactors?: Array<{
+    factor: string
+    level: string
+    mitigation: string
+  }>
+  mitigationStrategies?: Array<{
+    strategy: string
+    effectiveness: string
+  }>
+  contingencyPlans?: Array<{
+    trigger: string
+    action: string
+  }>
 }
 
 export interface ConsolidationRiskCategory {
@@ -913,6 +937,17 @@ export interface ConsolidationMonitoringPlan {
   reportingFramework: ReportingFramework
   alertSystem: AlertSystem
   reviewCycles: ReviewCycle[]
+  keyMetrics?: Array<{
+    metric: string
+    target: number
+    current: number
+  }>
+  alertThresholds?: Array<{
+    metric: string
+    threshold: number
+    severity: string
+  }>
+  monitoringFrequency?: string
 }
 
 export interface MonitoringObjective {
@@ -1054,7 +1089,7 @@ export class PositionConsolidationEngine {
   private readonly cacheDuration = 600000 // 10 minutes
   private readonly analysisHistory: ConsolidationAnalysis[] = []
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     console.log('🔄 PositionConsolidationEngine: Advanced position consolidation tools initialized')
   }
 
@@ -1186,7 +1221,7 @@ export class PositionConsolidationEngine {
   private async evaluateConsolidationOpportunity(
     pairKey: string,
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<ConsolidationOpportunity | null> {
     if (positions.length < 2) return null
 
@@ -1246,7 +1281,7 @@ export class PositionConsolidationEngine {
    */
   private async identifyCrossPairOpportunities(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<ConsolidationOpportunity[]> {
     const opportunities: ConsolidationOpportunity[] = []
 
@@ -1314,7 +1349,7 @@ export class PositionConsolidationEngine {
    */
   private async performCostBenefitAnalysis(
     opportunities: ConsolidationOpportunity[],
-    positions: DLMMPosition[]
+    _positions: DLMMPosition[]
   ): Promise<CostBenefitAnalysis> {
     console.log('💰 Performing cost-benefit analysis...')
 
@@ -1564,8 +1599,8 @@ export class PositionConsolidationEngine {
    * Perform strategic assessment
    */
   private async performStrategicAssessment(
-    opportunities: ConsolidationOpportunity[],
-    positions: DLMMPosition[]
+    _opportunities: ConsolidationOpportunity[],
+    _positions: DLMMPosition[]
   ): Promise<StrategicAssessment> {
     console.log('🎯 Performing strategic assessment...')
 
@@ -1781,7 +1816,7 @@ export class PositionConsolidationEngine {
    */
   private async createExecutionPlan(
     opportunities: ConsolidationOpportunity[],
-    strategicAssessment: StrategicAssessment
+    _strategicAssessment: StrategicAssessment
   ): Promise<ConsolidationExecutionPlan> {
     console.log('📋 Creating execution plan...')
 
@@ -2095,8 +2130,8 @@ export class PositionConsolidationEngine {
    * Perform risk assessment
    */
   private async performRiskAssessment(
-    opportunities: ConsolidationOpportunity[],
-    executionPlan: ConsolidationExecutionPlan
+    _opportunities: ConsolidationOpportunity[],
+    _executionPlan: ConsolidationExecutionPlan
   ): Promise<ConsolidationRiskAssessment> {
     console.log('⚠️ Performing risk assessment...')
 
@@ -2366,7 +2401,7 @@ export class PositionConsolidationEngine {
    */
   private createMonitoringPlan(
     opportunities: ConsolidationOpportunity[],
-    executionPlan: ConsolidationExecutionPlan
+    _executionPlan: ConsolidationExecutionPlan
   ): ConsolidationMonitoringPlan {
     console.log('📊 Creating monitoring plan...')
 

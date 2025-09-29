@@ -1,6 +1,5 @@
-import { PublicKey } from '@solana/web3.js';
-import { Pair, PositionInfo } from '@saros-finance/dlmm-sdk';
-import { DLMMPosition, TokenInfo } from '../types';
+import { Pair } from '@saros-finance/dlmm-sdk';
+import { DLMMPosition } from '../types';
 
 export interface RiskFactor {
   category: 'market' | 'liquidity' | 'technical' | 'operational' | 'regulatory';
@@ -141,8 +140,9 @@ export class MigrationRiskAssessment {
 
     return {
       positionId: position.id,
-      sourcePool: sourcePool.publicKey.toString(),
-      targetPool: targetPool.publicKey.toString(),
+      // TODO: Replace with correct SDK property for pair address
+      sourcePool: (sourcePool as any).toString(),
+      targetPool: (targetPool as any).toString(),
       assessmentTimestamp,
       riskFactors,
       liquidityRisk,
@@ -502,7 +502,7 @@ export class MigrationRiskAssessment {
   }
 
   // Helper calculation methods
-  private async calculatePoolLiquidity(pool: Pair): Promise<number> {
+  private async calculatePoolLiquidity(_pool: Pair): Promise<number> {
     // Simplified liquidity calculation
     return 1000000; // $1M placeholder
   }
@@ -512,7 +512,7 @@ export class MigrationRiskAssessment {
     return Math.min(100, impactRatio * 1000); // Scale to 0-100
   }
 
-  private async calculateImpermanentLossRisk(sourcePool: Pair, targetPool: Pair): Promise<number> {
+  private async calculateImpermanentLossRisk(_sourcePool: Pair, _targetPool: Pair): Promise<number> {
     // Simplified IL risk calculation based on volatility difference
     return 25; // 25% placeholder
   }
@@ -522,17 +522,17 @@ export class MigrationRiskAssessment {
     return Math.min(100, concentrationRatio * 500);
   }
 
-  private async calculateVolatilityRisk(sourcePool: Pair, targetPool: Pair): Promise<number> {
+  private async calculateVolatilityRisk(_sourcePool: Pair, _targetPool: Pair): Promise<number> {
     // Historical volatility analysis
     return 35; // 35% placeholder
   }
 
-  private async calculateCorrelationRisk(sourcePool: Pair, targetPool: Pair): Promise<number> {
+  private async calculateCorrelationRisk(_sourcePool: Pair, _targetPool: Pair): Promise<number> {
     // Token correlation analysis
     return 45; // 45% placeholder
   }
 
-  private async calculatePriceImpactRisk(sourcePool: Pair, targetPool: Pair): Promise<number> {
+  private async calculatePriceImpactRisk(_sourcePool: Pair, _targetPool: Pair): Promise<number> {
     // Price impact modeling
     return 30; // 30% placeholder
   }
@@ -552,12 +552,12 @@ export class MigrationRiskAssessment {
     return 20; // 20% placeholder
   }
 
-  private assessSmartContractRisk(sourcePool: Pair, targetPool: Pair): number {
+  private assessSmartContractRisk(_sourcePool: Pair, _targetPool: Pair): number {
     // Smart contract security assessment
     return 15; // 15% low risk for established protocols
   }
 
-  private assessOracleRisk(sourcePool: Pair, targetPool: Pair): number {
+  private assessOracleRisk(_sourcePool: Pair, _targetPool: Pair): number {
     // Oracle reliability and manipulation risk
     return 25; // 25% moderate risk
   }
@@ -572,7 +572,7 @@ export class MigrationRiskAssessment {
     return 10; // 10% low risk for native Solana
   }
 
-  private assessUpgradeRisk(sourcePool: Pair, targetPool: Pair): number {
+  private assessUpgradeRisk(_sourcePool: Pair, _targetPool: Pair): number {
     // Protocol upgrade and governance risks
     return 20; // 20% moderate risk
   }
@@ -593,7 +593,7 @@ export class MigrationRiskAssessment {
     return this.config.monitoringEnabled ? 10 : 50;
   }
 
-  private calculateRecoveryRisk(position: DLMMPosition): number {
+  private calculateRecoveryRisk(_position: DLMMPosition): number {
     // Recovery and rollback capability assessment
     return 25; // 25% moderate risk
   }
@@ -632,16 +632,16 @@ export class MigrationRiskAssessment {
   }
 
   async updateRiskAssessment(
-    assessmentId: string,
-    updates: Partial<RiskAssessmentResult>
+    _assessmentId: string,
+    _updates: Partial<RiskAssessmentResult>
   ): Promise<void> {
     // Update existing risk assessment
     // Implementation would update stored assessment data
   }
 
   async monitorRiskFactors(
-    positionId: string,
-    callback: (alert: any) => void
+    _positionId: string,
+    _callback: (alert: any) => void
   ): Promise<void> {
     // Start real-time risk monitoring
     // Implementation would set up monitoring loops

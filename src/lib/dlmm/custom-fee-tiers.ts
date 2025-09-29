@@ -2,14 +2,15 @@
 // 🎨 User-defined fee tier configurations with advanced validation
 // Flexible fee structure design with market-driven optimization
 
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { feeTierManager } from './fee-tiers'
+// Note: This import is preserved for future functionality
+// import { feeTierManager } from './fee-tiers'
 import { logger } from '@/lib/logger'
 import type {
   FeeTier,
-  FeeOptimizationSettings,
-  DLMMPosition
+  FeeOptimizationSettings
+  // DLMMPosition - reserved for future custom fee tier enhancements
 } from '@/lib/types'
 
 export interface CustomFeeTierConfig {
@@ -343,7 +344,7 @@ export class CustomFeeTierBuilder {
   private readonly optimizer = new TierOptimizer()
   private readonly simulator = new MarketSimulator()
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     logger.init('🎨 CustomFeeTierBuilder: Advanced fee tier creation system initialized')
     this.loadDefaultTemplates()
   }
@@ -995,8 +996,8 @@ export class CustomFeeTierBuilder {
   }
 
   private generateSimulationRecommendation(
-    config: CustomFeeTierConfig,
-    results: SimulationResult[],
+    _config: CustomFeeTierConfig,
+    _results: SimulationResult[],
     analysis: AggregatedSimulationAnalysis
   ): SimulationRecommendation {
     let action: 'deploy' | 'modify' | 'test_further' | 'reject' = 'test_further'
@@ -1106,7 +1107,7 @@ export class CustomFeeTierBuilder {
 class TierValidator {
   async validateTierConfig(
     config: CustomFeeTierConfig,
-    userSettings: FeeOptimizationSettings
+    _userSettings: FeeOptimizationSettings
   ): Promise<ValidationResult> {
     const errors: ValidationError[] = []
     const warnings: ValidationWarning[] = []

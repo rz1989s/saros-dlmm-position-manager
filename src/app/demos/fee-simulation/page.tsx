@@ -17,28 +17,19 @@ import {
   Dice1,
   Play,
   Pause,
-  RotateCcw,
   TrendingUp,
-  TrendingDown,
   BarChart3,
   Target,
-  Zap,
-  Calculator,
-  RefreshCw,
   AlertTriangle,
   CheckCircle,
-  DollarSign,
   Activity,
   Brain,
   LineChart,
-  PieChart,
-  Gauge,
-  Clock,
   Shield,
   Settings
 } from 'lucide-react'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { useDLMM } from '@/hooks/use-dlmm'
+import { useDLMM, useUserPositions } from '@/hooks/use-dlmm'
 
 interface SimulationParameters {
   iterations: number
@@ -134,8 +125,9 @@ const STRESS_SCENARIOS: StressTestScenario[] = [
 ]
 
 export default function FeeSimulationDemo() {
-  const { connected } = useWallet()
-  const { positions, poolData } = useDLMM()
+  const { } = useWallet()
+  const { } = useDLMM()
+  const { } = useUserPositions()
 
   const [params, setParams] = useState<SimulationParameters>({
     iterations: 10000,
@@ -264,7 +256,10 @@ export default function FeeSimulationDemo() {
       valueAtRisk,
       expectedShortfall,
       calmarRatio: isFinite(calmarRatio) ? calmarRatio : 0,
-      sortinoRatio: isFinite(sortinoRatio) ? sortinoRatio : 0
+      sortinoRatio: isFinite(sortinoRatio) ? sortinoRatio : 0,
+      iteration: 0,
+      finalReturn: avgReturn,
+      path: []
     }
   }, [params])
 
@@ -279,7 +274,6 @@ export default function FeeSimulationDemo() {
         let portfolioValue = 100
 
         // Apply stress scenario
-        const shockImpact = 1 + scenario.marketShock
         const volumeImpact = 1 + scenario.volumeChange
         const liquidityImpact = 1 + scenario.liquidityChange
 

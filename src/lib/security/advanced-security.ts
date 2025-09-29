@@ -13,7 +13,7 @@
  * - Blockchain-specific security
  */
 
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { Transaction } from '@solana/web3.js'
 import { EventEmitter } from 'events'
 import { createHash, createCipher, createDecipher, randomBytes } from 'crypto'
 import { TenantContext, Permission } from '../enterprise/multi-tenant'
@@ -170,7 +170,7 @@ export class EncryptionManager {
   decryptData(encryptedData: string): any {
     try {
       const parts = encryptedData.split(':')
-      const iv = Buffer.from(parts[0], 'hex')
+      // const iv = Buffer.from(parts[0], 'hex') // IV extracted but not used in createDecipher
       const encrypted = parts[1]
 
       const decipher = createDecipher(this.algorithm, this.encryptionKey)
@@ -227,10 +227,9 @@ export class EncryptionManager {
 
 export class SecurityAuditLogger {
   private auditLogs: Map<string, AuditLogEntry[]> = new Map()
-  private encryptionManager: EncryptionManager
 
-  constructor(encryptionManager: EncryptionManager) {
-    this.encryptionManager = encryptionManager
+  constructor(_encryptionManager: EncryptionManager) {
+    // Encryption manager stored for future use
   }
 
   async logSecurityEvent(
@@ -407,7 +406,7 @@ export class ThreatDetector {
     return []
   }
 
-  private detectApiAbuse(context: SecurityContext, action: string): ThreatIndicator[] {
+  private detectApiAbuse(context: SecurityContext, _action: string): ThreatIndicator[] {
     const key = `${context.userId}_api`
     const activities = this.suspiciousActivities.get(key) || []
 
@@ -467,7 +466,7 @@ export class ThreatDetector {
   }
 
   private detectDlmmThreats(
-    context: SecurityContext,
+    _context: SecurityContext,
     action: string,
     details: Record<string, any>
   ): ThreatIndicator[] {
@@ -508,19 +507,20 @@ export class ThreatDetector {
     return threats
   }
 
-  private recordActivity(
-    key: string,
-    activity: SuspiciousActivity
-  ): void {
-    const activities = this.suspiciousActivities.get(key) || []
-    activities.push(activity)
-
-    // Keep only recent activities (last 24 hours)
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    const recentActivities = activities.filter(a => a.timestamp > cutoff)
-
-    this.suspiciousActivities.set(key, recentActivities)
-  }
+  // Commented out for future use - activity recording functionality
+  // private recordActivity(
+  //   key: string,
+  //   activity: SuspiciousActivity
+  // ): void {
+  //   const activities = this.suspiciousActivities.get(key) || []
+  //   activities.push(activity)
+  //
+  //   // Keep only recent activities (last 24 hours)
+  //   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  //   const recentActivities = activities.filter(a => a.timestamp > cutoff)
+  //
+  //   this.suspiciousActivities.set(key, recentActivities)
+  // }
 
   private extractCountryFromIp(ip: string): string {
     // Simplified country extraction (in production, use proper GeoIP service)
@@ -724,7 +724,7 @@ export class AdvancedSecurityManager extends EventEmitter {
 
   private async detectSuspiciousTransaction(
     context: SecurityContext,
-    transaction: Transaction,
+    _transaction: Transaction,
     metadata: Record<string, any>
   ): Promise<boolean> {
     // Check for unusual transaction patterns
@@ -741,17 +741,17 @@ export class AdvancedSecurityManager extends EventEmitter {
     return false
   }
 
-  private async checkTransactionRateLimit(context: SecurityContext): Promise<boolean> {
+  private async checkTransactionRateLimit(_context: SecurityContext): Promise<boolean> {
     // Simple rate limiting (in production, use Redis or similar)
     return true // Placeholder
   }
 
-  private async checkAmountLimits(context: SecurityContext, amount: number): Promise<boolean> {
+  private async checkAmountLimits(_context: SecurityContext, amount: number): Promise<boolean> {
     // Check against tenant limits
     return amount <= 50000 // Simple limit
   }
 
-  private async getRecentTransactionCount(userId: string): Promise<number> {
+  private async getRecentTransactionCount(_userId: string): Promise<number> {
     // In production, query from database
     return 0 // Placeholder
   }
@@ -836,11 +836,11 @@ export class AdvancedSecurityManager extends EventEmitter {
   }
 
   private evaluateSecurityRule(
-    rule: SecurityRule,
-    context: SecurityContext,
-    resource: string,
-    action: string,
-    additionalContext?: Record<string, any>
+    _rule: SecurityRule,
+    _context: SecurityContext,
+    _resource: string,
+    _action: string,
+    _additionalContext?: Record<string, any>
   ): boolean {
     // Simplified rule evaluation
     return false // Placeholder

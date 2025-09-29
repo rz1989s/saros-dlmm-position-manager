@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { DLMMPosition } from '../types';
 
 export interface MarketAnalysisDashboard {
   overall_market_conditions: OverallMarketConditions;
@@ -690,7 +690,7 @@ export class MarketAnalysisEngine {
    * Perform comprehensive sector analysis
    */
   private async performSectorAnalysis(
-    positions?: DLMMPosition[],
+    _positions?: DLMMPosition[],
     marketData?: Map<string, any>
   ): Promise<SectorAnalysis[]> {
     const sectors = [
@@ -762,7 +762,7 @@ export class MarketAnalysisEngine {
   /**
    * Helper methods for calculations
    */
-  private async calculateTrendIndicators(marketData?: Map<string, any>): Promise<any> {
+  private async calculateTrendIndicators(_marketData?: Map<string, any>): Promise<any> {
     // Simplified trend calculation
     return {
       moving_averages: { short: 100, medium: 105, long: 110 },
@@ -772,7 +772,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async calculateMomentumIndicators(marketData?: Map<string, any>): Promise<any> {
+  private async calculateMomentumIndicators(_marketData?: Map<string, any>): Promise<any> {
     return {
       rsi: 65,
       macd: 0.5,
@@ -781,7 +781,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async calculateBreadthIndicators(marketData?: Map<string, any>): Promise<any> {
+  private async calculateBreadthIndicators(_marketData?: Map<string, any>): Promise<any> {
     return {
       positive_breadth: 65, // 65% of assets trending up
       volume_participation: 72, // 72% of volume in trending direction
@@ -803,7 +803,7 @@ export class MarketAnalysisEngine {
     return Math.min(100, Math.abs(indicators.trend_slope) * 1000 + indicators.trend_consistency * 50);
   }
 
-  private calculateTrendDuration(indicators: any): number {
+  private calculateTrendDuration(_indicators: any): number {
     // Simplified - would track actual trend start date
     return 14; // 14 days
   }
@@ -826,7 +826,7 @@ export class MarketAnalysisEngine {
     return (breadth * 0.4 + participation * 0.3 + strength * 0.3);
   }
 
-  private async getSectorData(sector: string, marketData?: Map<string, any>): Promise<any> {
+  private async getSectorData(_sector: string, _marketData?: Map<string, any>): Promise<any> {
     // Mock sector data - in real implementation, aggregate from multiple sources
     const baseCap = 1000000000; // $1B base
     const multiplier = Math.random() * 5;
@@ -845,7 +845,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async getTopPerformers(sector: string, count: number): Promise<TokenPerformance[]> {
+  private async getTopPerformers(_sector: string, count: number): Promise<TokenPerformance[]> {
     // Mock top performers
     return Array.from({ length: count }, (_, i) => ({
       symbol: `TOP${i + 1}`,
@@ -857,7 +857,7 @@ export class MarketAnalysisEngine {
     }));
   }
 
-  private async getBottomPerformers(sector: string, count: number): Promise<TokenPerformance[]> {
+  private async getBottomPerformers(_sector: string, count: number): Promise<TokenPerformance[]> {
     // Mock bottom performers
     return Array.from({ length: count }, (_, i) => ({
       symbol: `BOT${i + 1}`,
@@ -869,7 +869,7 @@ export class MarketAnalysisEngine {
     }));
   }
 
-  private async calculateSectorTrends(sector: string): Promise<SectorTrend[]> {
+  private async calculateSectorTrends(_sector: string): Promise<SectorTrend[]> {
     const timeframes: Array<'1h' | '4h' | '1d' | '7d' | '30d'> = ['1h', '4h', '1d', '7d', '30d'];
 
     return timeframes.map(timeframe => ({
@@ -880,16 +880,16 @@ export class MarketAnalysisEngine {
     }));
   }
 
-  private async calculateTotalLiquidity(marketData?: Map<string, any>): Promise<number> {
+  private async calculateTotalLiquidity(_marketData?: Map<string, any>): Promise<number> {
     // Mock total liquidity calculation
     return 50000000000; // $50B
   }
 
-  private async calculateLiquidityChange(marketData?: Map<string, any>): Promise<number> {
+  private async calculateLiquidityChange(_marketData?: Map<string, any>): Promise<number> {
     return (Math.random() - 0.5) * 10; // ±5% change
   }
 
-  private async analyzeLiquidityDistribution(marketData?: Map<string, any>): Promise<LiquidityDistribution[]> {
+  private async analyzeLiquidityDistribution(_marketData?: Map<string, any>): Promise<LiquidityDistribution[]> {
     return [
       {
         pool_type: 'Concentrated Liquidity',
@@ -915,7 +915,7 @@ export class MarketAnalysisEngine {
     ];
   }
 
-  private async analyzeMarketDepth(marketData?: Map<string, any>): Promise<DepthAnalysis> {
+  private async analyzeMarketDepth(_marketData?: Map<string, any>): Promise<DepthAnalysis> {
     // Mock depth analysis
     const bidDepth = Array.from({ length: 10 }, (_, i) => ({
       price_level: 100 - i,
@@ -977,7 +977,7 @@ export class MarketAnalysisEngine {
     return weights.reduce((sum, w) => sum + w * w, 0) * 100;
   }
 
-  private async generateLiquidityHeatmap(marketData?: Map<string, any>): Promise<LiquidityHeatmap[]> {
+  private async generateLiquidityHeatmap(_marketData?: Map<string, any>): Promise<LiquidityHeatmap[]> {
     return [
       {
         price_range: '±1%',
@@ -1006,7 +1006,7 @@ export class MarketAnalysisEngine {
     ];
   }
 
-  private async analyzeVolume(marketData?: Map<string, any>): Promise<VolumeAnalysis> {
+  private async analyzeVolume(_marketData?: Map<string, any>): Promise<VolumeAnalysis> {
     // Mock volume analysis implementation
     return {
       total_volume_24h: 25000000000,
@@ -1024,7 +1024,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async analyzeVolatility(marketData?: Map<string, any>): Promise<VolatilityAnalysis> {
+  private async analyzeVolatility(_marketData?: Map<string, any>): Promise<VolatilityAnalysis> {
     // Mock volatility analysis implementation
     return {
       current_volatility: 0.45,
@@ -1052,7 +1052,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async calculateSentimentIndicators(marketData?: Map<string, any>): Promise<SentimentIndicators> {
+  private async calculateSentimentIndicators(_marketData?: Map<string, any>): Promise<SentimentIndicators> {
     // Mock sentiment indicators implementation
     return {
       overall_sentiment: 'bullish',
@@ -1086,7 +1086,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async analyzeCrossMarketCorrelations(marketData?: Map<string, any>): Promise<CrossMarketCorrelation> {
+  private async analyzeCrossMarketCorrelations(_marketData?: Map<string, any>): Promise<CrossMarketCorrelation> {
     // Mock correlation analysis implementation
     return {
       defi_traditional_correlation: 0.35,
@@ -1099,7 +1099,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async calculateEfficiencyMetrics(marketData?: Map<string, any>): Promise<MarketEfficiencyMetrics> {
+  private async calculateEfficiencyMetrics(_marketData?: Map<string, any>): Promise<MarketEfficiencyMetrics> {
     // Mock efficiency metrics implementation
     return {
       price_efficiency_score: 75,
@@ -1115,7 +1115,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async analyzeRiskRegime(marketData?: Map<string, any>): Promise<RiskRegimeAnalysis> {
+  private async analyzeRiskRegime(_marketData?: Map<string, any>): Promise<RiskRegimeAnalysis> {
     // Mock risk regime analysis implementation
     return {
       current_regime: 'risk_on',
@@ -1127,7 +1127,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async analyzeMarketCycles(marketData?: Map<string, any>): Promise<MarketCycleAnalysis> {
+  private async analyzeMarketCycles(_marketData?: Map<string, any>): Promise<MarketCycleAnalysis> {
     // Mock market cycle analysis implementation
     return {
       current_cycle_phase: 'early_bull',
@@ -1150,7 +1150,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async analyzeMarketFlows(marketData?: Map<string, any>): Promise<MarketFlowAnalysis> {
+  private async analyzeMarketFlows(_marketData?: Map<string, any>): Promise<MarketFlowAnalysis> {
     // Mock market flow analysis implementation
     return {
       net_flows: [],
@@ -1166,7 +1166,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async calculateStressIndicators(marketData?: Map<string, any>): Promise<MarketStressIndicators> {
+  private async calculateStressIndicators(_marketData?: Map<string, any>): Promise<MarketStressIndicators> {
     // Mock stress indicators implementation
     return {
       overall_stress_level: 'low',
@@ -1183,7 +1183,7 @@ export class MarketAnalysisEngine {
     };
   }
 
-  private async generateMarketPredictions(marketData?: Map<string, any>): Promise<MarketPredictions> {
+  private async generateMarketPredictions(_marketData?: Map<string, any>): Promise<MarketPredictions> {
     // Mock predictions implementation
     return {
       short_term: {
@@ -1502,7 +1502,7 @@ export class MarketAnalysisEngine {
     const allAlerts: MarketAlert[] = [];
 
     for (const alerts of this.alertHistory.values()) {
-      allAlerts.push(...alerts.filter(alert => alert.timestamp >= cutoffDate));
+      allAlerts.push(...alerts.filter((alert: MarketAlert) => alert.timestamp >= cutoffDate));
     }
 
     return allAlerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());

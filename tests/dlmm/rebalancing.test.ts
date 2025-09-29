@@ -341,8 +341,19 @@ describe('AdvancedRebalancingSystem', () => {
     beforeEach(() => {
       // Mock the DLMM client methods
       const mockDlmmClient = require('@/lib/dlmm/client')
+      type UserPosition = {
+        positionMint: PublicKey;
+        pair: string;
+        totalValue: string;
+        currentBin: number;
+      }
+      type LbPairResult = {
+        activeId: number;
+        tokenX: PublicKey;
+        tokenY: PublicKey;
+      }
       mockDlmmClient.dlmmClient = {
-        getUserPositions: jest.fn().mockResolvedValue([
+        getUserPositions: jest.fn<() => Promise<UserPosition[]>>().mockResolvedValue([
           {
             positionMint: new PublicKey('55555555555555555555555555555555'),
             pair: mockPosition.poolAddress.toString(),
@@ -350,7 +361,7 @@ describe('AdvancedRebalancingSystem', () => {
             currentBin: mockPosition.activeBin,
           }
         ]),
-        getLbPair: jest.fn().mockResolvedValue({
+        getLbPair: jest.fn<() => Promise<LbPairResult>>().mockResolvedValue({
           activeId: mockPosition.activeBin,
           tokenX: mockPosition.tokenX.address,
           tokenY: mockPosition.tokenY.address,
@@ -606,8 +617,9 @@ describe('AdvancedRebalancingSystem', () => {
 
       // Mock the operations
       const mockOperations = require('@/lib/dlmm/operations')
+      type SignatureResult = { signature: string }
       mockOperations.dlmmOperations = {
-        rebalancePosition: jest.fn().mockResolvedValue([
+        rebalancePosition: jest.fn<() => Promise<SignatureResult[]>>().mockResolvedValue([
           { signature: 'mock-tx-1' },
           { signature: 'mock-tx-2' },
         ]),
@@ -669,8 +681,19 @@ describe('AdvancedRebalancingSystem', () => {
 
       // Mock the DLMM client
       const mockDlmmClient = require('@/lib/dlmm/client')
+      type UserPosition = {
+        positionMint: PublicKey;
+        pair: string;
+        totalValue: string;
+        currentBin: number;
+      }
+      type LbPairResult = {
+        activeId: number;
+        tokenX: PublicKey;
+        tokenY: PublicKey;
+      }
       mockDlmmClient.dlmmClient = {
-        getUserPositions: jest.fn().mockResolvedValue([
+        getUserPositions: jest.fn<() => Promise<UserPosition[]>>().mockResolvedValue([
           {
             positionMint: new PublicKey('55555555555555555555555555555555'),
             pair: mockPosition.poolAddress.toString(),
@@ -678,7 +701,7 @@ describe('AdvancedRebalancingSystem', () => {
             currentBin: mockPosition.activeBin,
           }
         ]),
-        getLbPair: jest.fn().mockResolvedValue({
+        getLbPair: jest.fn<() => Promise<LbPairResult>>().mockResolvedValue({
           activeId: mockPosition.activeBin,
           tokenX: mockPosition.tokenX.address,
           tokenY: mockPosition.tokenY.address,
@@ -1109,8 +1132,14 @@ describe('AdvancedRebalancingSystem', () => {
     it('should handle network errors during monitoring', async () => {
       // Mock network error
       const mockDlmmClient = require('@/lib/dlmm/client')
+      type UserPosition = {
+        positionMint: PublicKey;
+        pair: string;
+        totalValue: string;
+        currentBin: number;
+      }
       mockDlmmClient.dlmmClient = {
-        getUserPositions: jest.fn().mockRejectedValue(new Error('Network error') as any),
+        getUserPositions: jest.fn<() => Promise<UserPosition[]>>().mockRejectedValue(new Error('Network error')),
       }
 
       const configId = rebalancingSystem.createRebalancingConfig({

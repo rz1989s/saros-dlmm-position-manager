@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { DLMMPosition } from '../types';
 
 export interface PerformanceAttribution {
   positionId: string;
@@ -780,7 +780,6 @@ export class PerformanceAttributionEngine {
     positions.forEach(position => {
       const sector = this.classifyTokenSector(position.tokenX.symbol, position.tokenY.symbol);
       const value = (position as any).totalValue || 0;
-      const _returnPct = (position as any).pnl?.percentage || 0;
 
       if (!sectors.has(sector)) {
         sectors.set(sector, { weight: 0, return: 0, positions: [] });
@@ -843,7 +842,7 @@ export class PerformanceAttributionEngine {
     }));
   }
 
-  private decomposePortfolioPerformance(positions: DLMMPosition[]): PerformanceDecomposition {
+  private decomposePortfolioPerformance(_positions: DLMMPosition[]): PerformanceDecomposition {
     // Simplified Brinson attribution
     return {
       assetAllocation: 0.5,
@@ -856,7 +855,7 @@ export class PerformanceAttributionEngine {
 
   private generateAttributionSummary(
     positionContributions: PositionContribution[],
-    sectorAllocation: SectorAllocation[],
+    _sectorAllocation: SectorAllocation[],
     riskContribution: RiskContribution[]
   ): AttributionSummary {
     const topContributors = positionContributions
@@ -908,7 +907,7 @@ export class PerformanceAttributionEngine {
   /**
    * Utility methods
    */
-  private async getPositionReturns(position: DLMMPosition): Promise<number[]> {
+  private async getPositionReturns(_position: DLMMPosition): Promise<number[]> {
     // Mock historical returns - in real implementation, fetch actual data
     return Array.from({ length: 30 }, () => (Math.random() - 0.5) * 0.1);
   }
@@ -998,7 +997,7 @@ export class PerformanceAttributionEngine {
     return benchmarkSum !== 0 ? assetSum / benchmarkSum : 1;
   }
 
-  private identifyActiveBets(position: DLMMPosition): ActiveBet[] {
+  private identifyActiveBets(_position: DLMMPosition): ActiveBet[] {
     return [
       {
         factor: 'concentration',

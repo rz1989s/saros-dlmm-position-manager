@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { DLMMPosition } from '../types';
 
 export interface PerformanceBenchmarkAnalysis {
   portfolio_performance: PortfolioPerformance;
@@ -674,7 +674,7 @@ export interface OutlierThreshold {
 
 export class PerformanceBenchmarkingEngine {
   private benchmarkCache: Map<string, any> = new Map();
-  private performanceHistory: Map<string, any[]> = new Map();
+  // private _performanceHistory: Map<string, any[]> = new Map(); // Unused, kept for future extension
   private config: BenchmarkingConfig = {
     benchmarks: [
       {
@@ -842,7 +842,7 @@ export class PerformanceBenchmarkingEngine {
    */
   private calculatePortfolioPerformance(
     returns: number[],
-    portfolioValue: number
+    _portfolioValue: number
   ): PortfolioPerformance {
     const totalReturn = this.calculateTotalReturn(returns);
     const annualizedReturn = this.calculateAnnualizedReturn(returns);
@@ -1072,7 +1072,7 @@ export class PerformanceBenchmarkingEngine {
     const periods = ['1M', '3M', '6M', '1Y'];
     const periodsData: PerformancePeriod[] = [];
 
-    const periodLengths = {
+    const periodLengths: Record<string, number> = {
       '1M': 21,
       '3M': 63,
       '6M': 126,
@@ -1216,8 +1216,8 @@ export class PerformanceBenchmarkingEngine {
   }
 
   private calculateRelativePerformancePeriods(
-    portfolioReturns: number[],
-    benchmarkReturns: number[]
+    _portfolioReturns: number[],
+    _benchmarkReturns: number[]
   ): RelativePerformancePeriod[] {
     // Simplified implementation
     return this.config.analysis_periods.map(period => ({
@@ -1231,14 +1231,14 @@ export class PerformanceBenchmarkingEngine {
   }
 
   // Additional helper methods would be implemented here for the remaining functionality
-  private async getBenchmarkReturns(benchmarkName: string): Promise<number[]> {
+  private async getBenchmarkReturns(_benchmarkName: string): Promise<number[]> {
     // Mock benchmark returns - in real implementation, fetch from data source
     return Array.from({ length: 252 }, () => (Math.random() - 0.5) * 4);
   }
 
   private async calculateRiskAdjustedComparisons(
     portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _benchmarkComparisons: BenchmarkComparison[]
   ): Promise<RiskAdjustedComparison> {
     // Mock implementation
     return {
@@ -1284,9 +1284,9 @@ export class PerformanceBenchmarkingEngine {
 
   // Mock implementations for remaining methods to complete the interface
   private async performAttributionAnalysis(
-    positions: DLMMPosition[],
-    portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _positions: DLMMPosition[],
+    _portfolioReturns: number[],
+    _benchmarkComparisons: BenchmarkComparison[]
   ): Promise<AttributionVsBenchmark> {
     return {
       total_excess_return: 2.5,
@@ -1301,8 +1301,8 @@ export class PerformanceBenchmarkingEngine {
   }
 
   private calculateRollingPerformance(
-    portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _portfolioReturns: number[],
+    _benchmarkComparisons: BenchmarkComparison[]
   ): RollingPerformanceAnalysis {
     return {
       rolling_periods: [],
@@ -1367,7 +1367,7 @@ export class PerformanceBenchmarkingEngine {
 
   private async performPeerComparison(
     portfolioPerformance: PortfolioPerformance,
-    portfolioReturns: number[]
+    _portfolioReturns: number[]
   ): Promise<PeerComparisonAnalysis> {
     return {
       peer_universe: {
@@ -1481,9 +1481,9 @@ export class PerformanceBenchmarkingEngine {
 
   // Continue with remaining mock implementations...
   private async performStyleAnalysis(
-    positions: DLMMPosition[],
-    portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _positions: DLMMPosition[],
+    _portfolioReturns: number[],
+    _benchmarkComparisons: BenchmarkComparison[]
   ): Promise<StyleAnalysis> {
     return {
       style_classification: {
@@ -1519,7 +1519,7 @@ export class PerformanceBenchmarkingEngine {
   }
 
   private calculateTrackingAnalysis(
-    portfolioReturns: number[],
+    _portfolioReturns: number[],
     benchmarkComparisons: BenchmarkComparison[]
   ): TrackingAnalysis {
     const primaryBenchmark = benchmarkComparisons.find(b => b.benchmark_type === 'market_index');
@@ -1556,8 +1556,8 @@ export class PerformanceBenchmarkingEngine {
   }
 
   private calculateActiveShareAnalysis(
-    positions: DLMMPosition[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _positions: DLMMPosition[],
+    _benchmarkComparisons: BenchmarkComparison[]
   ): ActiveShareAnalysis {
     return {
       active_share: 0.65,
@@ -1587,8 +1587,8 @@ export class PerformanceBenchmarkingEngine {
   }
 
   private analyzePerformancePersistence(
-    portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _portfolioReturns: number[],
+    _benchmarkComparisons: BenchmarkComparison[]
   ): PerformancePersistence {
     return {
       persistence_metrics: [
@@ -1620,7 +1620,7 @@ export class PerformanceBenchmarkingEngine {
 
   private async calculatePerformanceRankings(
     portfolioPerformance: PortfolioPerformance,
-    peerComparison: PeerComparisonAnalysis
+    _peerComparison: PeerComparisonAnalysis
   ): Promise<PerformanceRankings> {
     return {
       absolute_rankings: this.config.analysis_periods.map(period => ({
@@ -1676,7 +1676,7 @@ export class PerformanceBenchmarkingEngine {
 
   private performOutlierAnalysis(
     portfolioReturns: number[],
-    benchmarkComparisons: BenchmarkComparison[]
+    _benchmarkComparisons: BenchmarkComparison[]
   ): OutlierAnalysis {
     const threshold = 2.5; // Standard deviations
     const mean = portfolioReturns.reduce((sum, r) => sum + r, 0) / portfolioReturns.length;
@@ -1697,9 +1697,9 @@ export class PerformanceBenchmarkingEngine {
         benchmark_return: 0, // Would need actual benchmark data
         excess_return: period.return, // Simplified
         z_score: period.z_score,
-        outlier_type: period.return > mean ? 'positive' : 'negative',
-        outlier_magnitude: Math.abs(period.z_score) > 3 ? 'extreme' :
-                          Math.abs(period.z_score) > 2.5 ? 'moderate' : 'mild'
+        outlier_type: (period.return > mean ? 'positive' : 'negative') as 'positive' | 'negative',
+        outlier_magnitude: (Math.abs(period.z_score) > 3 ? 'extreme' :
+                          Math.abs(period.z_score) > 2.5 ? 'moderate' : 'mild') as 'mild' | 'moderate' | 'extreme'
       }));
 
     return {

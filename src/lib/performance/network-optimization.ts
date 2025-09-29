@@ -541,28 +541,29 @@ export class NetworkOptimizationLayer {
     return null
   }
 
-  private createCoalescingGroup<T>(
-    key: string,
-    method: string,
-    params: any[],
-    options: any
-  ): RequestCoalescingGroup {
-    const group: RequestCoalescingGroup = {
-      key,
-      requests: [],
-      promise: this.executeOptimizedRequest<T>('coalesced', method, params, options),
-      createdAt: Date.now()
-    }
+  // Reserved for future request coalescing optimization
+  // private createCoalescingGroup<T>(
+  //   key: string,
+  //   method: string,
+  //   params: any[],
+  //   options: any
+  // ): RequestCoalescingGroup {
+  //   const group: RequestCoalescingGroup = {
+  //     key,
+  //     requests: [],
+  //     promise: this.executeOptimizedRequest<T>('coalesced', method, params, options),
+  //     createdAt: Date.now()
+  //   }
 
-    this.coalescingGroups.set(key, group)
+  //   this.coalescingGroups.set(key, group)
 
-    // Clean up after completion
-    group.promise.finally(() => {
-      this.coalescingGroups.delete(key)
-    })
+  //   // Clean up after completion
+  //   group.promise.finally(() => {
+  //     this.coalescingGroups.delete(key)
+  //   })
 
-    return group
-  }
+  //   return group
+  // }
 
   private createCoalescingKey(method: string, params: any[]): string {
     return `${method}:${JSON.stringify(params)}`
@@ -641,7 +642,7 @@ export class NetworkOptimizationLayer {
   }
 
   private async executeBatchRequest(groupKey: string, requests: PendingRequest[]): Promise<void> {
-    const [endpointUrl, method] = groupKey.split(':')
+    const [_endpointUrl, method] = groupKey.split(':')
 
     try {
       // Execute requests in parallel with concurrency limit
@@ -712,7 +713,7 @@ export class NetworkOptimizationLayer {
 
   private createCacheKey(method: string, params: any[]): string {
     // Create a stable cache key
-    const paramsString = JSON.stringify(params, (key, value) => {
+    const paramsString = JSON.stringify(params, (_key, value) => {
       if (value instanceof PublicKey) {
         return value.toString()
       }

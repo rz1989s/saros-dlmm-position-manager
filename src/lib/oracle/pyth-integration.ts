@@ -4,7 +4,6 @@
 
 import { HermesClient } from '@pythnetwork/hermes-client'
 import { logger } from '@/lib/logger'
-import { connectionManager } from '@/lib/connection-manager'
 
 // ============================================================================
 // PYTH INTEGRATION INTERFACES
@@ -408,7 +407,7 @@ export class PythIntegration {
    * Stop all streaming connections
    */
   stopAllStreaming(): void {
-    for (const [key, eventSource] of this.streamingConnections) {
+    for (const [_key, eventSource] of this.streamingConnections) {
       eventSource.close()
     }
     this.streamingConnections.clear()

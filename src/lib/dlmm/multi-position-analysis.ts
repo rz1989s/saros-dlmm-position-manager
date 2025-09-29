@@ -4,15 +4,11 @@
 
 import { Connection, PublicKey } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { oraclePriceFeeds } from '@/lib/oracle/price-feeds'
-import { advancedAnalyticsEngine } from '@/lib/analytics/position-analytics'
 import type {
+  DLMMPosition,
   EnhancedDLMMPosition,
   PositionAnalytics,
-  PoolAnalyticsData,
-  TokenInfo,
-  PortfolioPosition,
-  DiversificationAnalysis
+  TokenInfo
 } from '@/lib/types'
 
 // ============================================================================
@@ -313,9 +309,8 @@ export class MultiPositionAnalysisEngine {
   private analysisCache = new Map<string, { analysis: CrossPositionAnalytics; timestamp: number }>()
   private correlationCache = new Map<string, { matrix: CorrelationMatrix; timestamp: number }>()
   private readonly cacheDuration = 300000 // 5 minutes
-  private readonly correlation_history: Map<string, number[]> = new Map()
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     console.log('🔍 MultiPositionAnalysisEngine: Advanced cross-position analytics initialized')
   }
 
@@ -462,8 +457,6 @@ export class MultiPositionAnalysisEngine {
   ): Promise<CorrelationPair> {
     // Token overlap analysis
     const sharedTokens = this.findSharedTokens(pos1, pos2)
-    const tokenOverlapScore = sharedTokens.length > 0 ? 0.8 : 0.2
-
     // Price correlation (simplified - would use historical price data)
     let priceCorrelation = 0.1 // Base correlation
     if (sharedTokens.length > 0) {
@@ -523,19 +516,15 @@ export class MultiPositionAnalysisEngine {
   ): Promise<ClusterAnalysis> {
     // Simplified clustering based on token pairs and correlations
     const clusters = new Map<string, string[]>()
-    const clusterCentroids = new Map<string, any>()
 
     // Group positions by similarity
     for (const position of positions) {
-      const tokenPair = `${position.tokenX.symbol}/${position.tokenY.symbol}`
       let assignedCluster = false
 
       // Try to assign to existing cluster
-      for (const [clusterId, clusterPositions] of clusters) {
+      for (const [, clusterPositions] of clusters) {
         const clusterPosition = positions.find(p => p.id === clusterPositions[0])
         if (clusterPosition) {
-          const clusterPair = `${clusterPosition.tokenX.symbol}/${clusterPosition.tokenY.symbol}`
-
           // Check if position should belong to this cluster
           const correlation = correlationPairs.find(cp =>
             (cp.position1Id === position.id && clusterPositions.includes(cp.position2Id)) ||
@@ -563,7 +552,7 @@ export class MultiPositionAnalysisEngine {
       const clusterPositions = positions.filter(p => positionIds.includes(p.id))
 
       const avgVolatility = 0.15 // Simplified
-      const avgApr = clusterPositions.reduce((sum, p) => sum + 12.5, 0) / clusterPositions.length
+      const avgApr = clusterPositions.reduce((sum) => sum + 12.5, 0) / clusterPositions.length
       const avgLiquidity = clusterPositions.reduce((sum, p) => sum + parseFloat(p.liquidityAmount), 0) / clusterPositions.length
 
       const dominantTokens = this.findDominantTokens(clusterPositions)
@@ -602,13 +591,12 @@ export class MultiPositionAnalysisEngine {
    */
   private async performRiskDecomposition(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<RiskDecomposition> {
     console.log('⚠️ Performing risk decomposition...')
 
     // Calculate individual position risks
-    const positionRisks = positions.map((position, index) => {
-      const analytic = analytics[index]
+    const positionRisks = positions.map((position) => {
       const positionValue = parseFloat(position.liquidityAmount) * (position.tokenX.price + position.tokenY.price) / 2
 
       return {
@@ -793,7 +781,7 @@ export class MultiPositionAnalysisEngine {
    */
   private async calculatePortfolioMetrics(
     positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _analytics: PositionAnalytics[]
   ): Promise<PortfolioMetrics> {
     const totalValue = positions.reduce((sum, p) => sum + parseFloat(p.liquidityAmount) * (p.tokenX.price + p.tokenY.price) / 2, 0)
     const totalInitialValue = totalValue * 0.9 // Estimated
@@ -829,8 +817,8 @@ export class MultiPositionAnalysisEngine {
    * Perform time series analysis
    */
   private async performTimeSeriesAnalysis(
-    positions: DLMMPosition[],
-    analytics: PositionAnalytics[]
+    _positions: DLMMPosition[],
+    _analytics: PositionAnalytics[]
   ): Promise<TimeSeriesAnalysis> {
     // Simplified time series (would need historical data)
     const timestamps = Array.from({length: 30}, (_, i) => new Date(Date.now() - (29-i) * 24 * 60 * 60 * 1000))
@@ -999,7 +987,7 @@ export class MultiPositionAnalysisEngine {
     return `${position.tokenX.symbol}/${position.tokenY.symbol}`
   }
 
-  private identifyDependencyChains(pairs: CorrelationPair[]): DependencyChain[] {
+  private identifyDependencyChains(_pairs: CorrelationPair[]): DependencyChain[] {
     // Simplified dependency chain identification
     return []
   }
@@ -1018,7 +1006,7 @@ export class MultiPositionAnalysisEngine {
       .map(([token]) => token)
   }
 
-  private calculateClusterCoherence(positions: DLMMPosition[], correlationPairs: CorrelationPair[]): number {
+  private calculateClusterCoherence(_positions: DLMMPosition[], _correlationPairs: CorrelationPair[]): number {
     // Simplified coherence calculation
     return 0.7
   }
@@ -1045,12 +1033,14 @@ export class MultiPositionAnalysisEngine {
   }
 
   private calculateConcentrationRisk(positionRisks: any[], totalValue: number): number {
-    const weights = positionRisks.map(pr => pr.value / totalValue)
-    const herfindahl = weights.reduce((sum, w) => sum + w * w, 0)
+    const herfindahl = positionRisks.reduce((sum, pr) => {
+      const weight = pr.value / totalValue
+      return sum + weight * weight
+    }, 0)
     return herfindahl * 100
   }
 
-  private generateRiskScenarios(positions: DLMMPosition[], positionRisks: any[]): RiskScenario[] {
+  private generateRiskScenarios(positions: DLMMPosition[], _positionRisks: any[]): RiskScenario[] {
     return [
       {
         scenarioName: 'Market Stress',
@@ -1071,7 +1061,7 @@ export class MultiPositionAnalysisEngine {
     ]
   }
 
-  private async analyzeLiquidityDistribution(positions: DLMMPosition[]): Promise<LiquidityDistribution> {
+  private async analyzeLiquidityDistribution(_positions: DLMMPosition[]): Promise<LiquidityDistribution> {
     // Simplified implementation
     const bins: LiquidityBin[] = [
       { binRange: '0-1000', liquidityAmount: 5000, positionCount: 2, utilizationRate: 0.8, feeCapture: 0.15 },
@@ -1087,7 +1077,7 @@ export class MultiPositionAnalysisEngine {
     }
   }
 
-  private identifyLiquidityRisks(positions: DLMMPosition[], distribution: LiquidityDistribution): LiquidityRisk[] {
+  private identifyLiquidityRisks(positions: DLMMPosition[], _distribution: LiquidityDistribution): LiquidityRisk[] {
     return [
       {
         riskType: 'concentration',
@@ -1098,7 +1088,7 @@ export class MultiPositionAnalysisEngine {
     ]
   }
 
-  private identifyLiquidityOpportunities(positions: DLMMPosition[], distribution: LiquidityDistribution): LiquidityOpportunity[] {
+  private identifyLiquidityOpportunities(positions: DLMMPosition[], _distribution: LiquidityDistribution): LiquidityOpportunity[] {
     return [
       {
         opportunityType: 'rebalancing',
@@ -1199,7 +1189,7 @@ export class MultiPositionAnalysisEngine {
     return Array.from(pairMap.values())
   }
 
-  private analyzeNetworkExposure(positions: DLMMPosition[]): NetworkExposure {
+  private analyzeNetworkExposure(_positions: DLMMPosition[]): NetworkExposure {
     return {
       ecosystemExposure: { 'Solana': 100 },
       protocolExposure: { 'Saros': 100 },
@@ -1226,7 +1216,7 @@ export class MultiPositionAnalysisEngine {
     }
   }
 
-  private identifyExposureRisks(tokenExposure: TokenExposure[], pairExposure: PairExposure[]): ExposureRisk[] {
+  private identifyExposureRisks(tokenExposure: TokenExposure[], _pairExposure: PairExposure[]): ExposureRisk[] {
     const risks: ExposureRisk[] = []
 
     // Check for concentration risks

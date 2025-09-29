@@ -2,14 +2,11 @@
 // 🤖 Automated migration execution with monitoring and intelligent decision-making
 // Advanced automation with real-time adaptation and safety mechanisms
 
-import { Connection, PublicKey } from '@solana/web3.js'
+import { Connection } from '@solana/web3.js'
 import { dlmmClient } from './client'
-import { connectionManager } from '@/lib/connection-manager'
-import { sdkTracker } from '@/lib/sdk-tracker'
 import { logger } from '@/lib/logger'
 import type { DLMMPosition } from '@/lib/types'
 import type {
-  CrossPoolRoute,
   CrossPoolMigrationPlan,
   CrossPoolMigrationResult
 } from './cross-pool-migration'
@@ -247,7 +244,7 @@ export class MigrationAutomationSystem {
   private monitoringInterval: NodeJS.Timeout | null = null
   private isMonitoring = false
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     logger.init('🤖 MigrationAutomationSystem: Advanced automation capabilities initialized')
     this.startMonitoring()
   }
@@ -683,7 +680,7 @@ export class MigrationAutomationSystem {
   /**
    * Get risk value for trigger evaluation
    */
-  private getRiskValue(trigger: TriggerCondition, position: DLMMPosition): number {
+  private getRiskValue(_trigger: TriggerCondition, position: DLMMPosition): number {
     // Simplified risk calculation
     const positionValue = parseFloat(position.liquidityAmount)
     return positionValue > 100000 ? 0.8 : positionValue > 10000 ? 0.5 : 0.3
@@ -1079,7 +1076,7 @@ Migration Automation ${trigger}:
       await this.updateMarketConditions()
 
       // Check active executions
-      for (const [id, execution] of this.activeExecutions) {
+      for (const [, execution] of this.activeExecutions) {
         if (execution.status === 'running') {
           // Check for timeouts or issues
           const elapsed = Date.now() - execution.startTime.getTime()

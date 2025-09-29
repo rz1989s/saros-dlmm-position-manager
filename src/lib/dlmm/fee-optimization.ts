@@ -8,11 +8,8 @@ import { feeTierManager } from './fee-tiers'
 import { logger } from '@/lib/logger'
 import type {
   FeeTier,
-  FeeAnalysis,
   FeeOptimizationSettings,
-  FeeMigrationImpact,
-  DLMMPosition,
-  PoolMetrics
+  DLMMPosition
 } from '@/lib/types'
 
 export interface OptimizationContext {
@@ -161,7 +158,7 @@ export class DynamicFeeOptimizer {
   private readonly cacheDuration = 300000 // 5 minutes
   private readonly marketCacheDuration = 600000 // 10 minutes
 
-  constructor(private connection: Connection) {
+  constructor(_connection: Connection) {
     logger.init('🎯 DynamicFeeOptimizer: Advanced optimization engine initialized')
     this.startMarketMonitoring()
   }
@@ -825,7 +822,7 @@ export class DynamicFeeOptimizer {
     action: string,
     position: DLMMPosition,
     targetTier: FeeTier,
-    benefits: OptimizationBenefits
+    _benefits: OptimizationBenefits
   ): ImplementationStep[] {
     const steps: ImplementationStep[] = []
 
@@ -925,13 +922,13 @@ export class DynamicFeeOptimizer {
     const steps: RollbackStep[] = [
       {
         condition: 'Migration fails or underperforms',
-        action: `Revert to ${currentTier.name} fee tier`,
+        action: `Revert to ${currentTier.name} fee tier from ${targetTier.name}`,
         estimatedTime: 15,
         costImpact: 0.002
       },
       {
         condition: 'Severe performance degradation',
-        action: 'Emergency exit to stable tier',
+        action: `Emergency exit from ${targetTier.name} to stable tier`,
         estimatedTime: 10,
         costImpact: 0.005
       }
@@ -1013,7 +1010,7 @@ export class DynamicFeeOptimizer {
     return Math.min(1, spread / avgFee)
   }
 
-  private async shouldConsolidate(position: DLMMPosition, context: OptimizationContext): Promise<boolean> {
+  private async shouldConsolidate(_position: DLMMPosition, context: OptimizationContext): Promise<boolean> {
     // Check if user has multiple positions in same or similar pools
     // Simplified check
     return context.liquidityAnalysis.liquidityUtilization < 0.6 &&

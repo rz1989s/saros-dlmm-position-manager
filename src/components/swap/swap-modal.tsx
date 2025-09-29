@@ -60,7 +60,7 @@ export function SwapModal({
   const [tokenIn, setTokenIn] = useState<TokenInfo | null>(null)
   const [tokenOut, setTokenOut] = useState<TokenInfo | null>(null)
   const [amountIn, setAmountIn] = useState('')
-  const [slippageTolerance, setSlippageTolerance] = useState(0.5)
+  const [slippageTolerance] = useState(0.5)
 
   // Swap state
   const [quote, setQuote] = useState<SwapQuote | null>(null)

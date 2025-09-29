@@ -6,7 +6,7 @@ import {
   StrategyManager,
   FeeCollectionStrategy,
   FeeCollectionOpportunity,
-  CompoundingAnalysis
+  // CompoundingAnalysis // Unused import
 } from '@/lib/dlmm/strategies'
 import type { DLMMPosition } from '@/lib/types'
 
@@ -41,8 +41,15 @@ describe('Advanced Fee Collection Strategies', () => {
         id: 'pos1',
         poolAddress: new PublicKey('58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2'),
         userAddress: mockUserAddress,
-        positionMint: new PublicKey('58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2'),
         activeBin: 100,
+        liquidityAmount: '1000000',
+        feesEarned: {
+          tokenX: '5000',
+          tokenY: '5000'
+        },
+        createdAt: new Date('2024-01-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         tokenX: {
           address: new PublicKey('So11111111111111111111111111111111111111112'),
           symbol: 'SOL',
@@ -57,25 +64,16 @@ describe('Advanced Fee Collection Strategies', () => {
           decimals: 6,
           price: 1
         },
-        liquidityAmount: '1000.0',
         currentValue: 1000,
         pnl: 50,
         pnlPercent: 5,
-        bins: [],
-        distributionX: '500',
-        distributionY: '500',
-        feesEarned: '10.5',
-        apr: 12.5,
-        range: 10,
-        createdAt: new Date('2024-01-01'),
-        lastUpdate: new Date()
+        bins: []
       }
     ] as DLMMPosition[]
 
     // Setup mocks
     const { dlmmClient } = require('@/lib/dlmm/client')
     dlmmClient.getUserPositions.mockResolvedValue(mockPositions.map(p => ({
-      positionMint: p.positionMint,
       pair: p.poolAddress.toString(),
       ...p
     })))
@@ -184,13 +182,12 @@ describe('Advanced Fee Collection Strategies', () => {
       const additionalPositions = Array.from({ length: 3 }, (_, i) => ({
         ...mockPositions[0],
         id: `pos${i + 2}`,
-        positionMint: new PublicKey(`58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo${i + 2}`)
       }))
 
       const { dlmmClient } = require('@/lib/dlmm/client')
       dlmmClient.getUserPositions.mockResolvedValue([
-        ...mockPositions.map(p => ({ positionMint: p.positionMint, pair: p.poolAddress.toString(), ...p })),
-        ...additionalPositions.map(p => ({ positionMint: p.positionMint, pair: p.poolAddress.toString(), ...p }))
+        ...mockPositions.map(p => ({ pair: p.poolAddress.toString(), ...p })),
+        ...additionalPositions.map(p => ({ pair: p.poolAddress.toString(), ...p }))
       ])
 
       const analysis = await strategyManager.analyzeFeeCollectionOpportunities(mockUserAddress)

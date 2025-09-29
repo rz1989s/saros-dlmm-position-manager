@@ -133,6 +133,15 @@ describe('PortfolioReportingEngine', () => {
 
     mockPositions = [
       {
+        id: 'position-1',
+        poolAddress: new PublicKey('Pool1111111111111111111111111111111111111111'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8192,
+        liquidityAmount: '15000000000',
+        feesEarned: { tokenX: '100000', tokenY: '100000' },
+        createdAt: new Date('2024-01-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position1111111111111111111111111111111111'),
         pair: new PublicKey('Pool1111111111111111111111111111111111111111'),
         tokenX: {
@@ -157,11 +166,19 @@ describe('PortfolioReportingEngine', () => {
         unrealizedPnl: 700,
         feeEarnings: 500,
         impermanentLoss: -200,
-        createdAt: new Date('2024-01-01'),
         updatedAt: new Date(),
         bins: []
       },
       {
+        id: 'position-2',
+        poolAddress: new PublicKey('Pool2222222222222222222222222222222222222222'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8193,
+        liquidityAmount: '8000000000',
+        feesEarned: { tokenX: '50000', tokenY: '50000' },
+        createdAt: new Date('2024-01-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position2222222222222222222222222222222222'),
         pair: new PublicKey('Pool2222222222222222222222222222222222222222'),
         tokenX: {
@@ -186,7 +203,6 @@ describe('PortfolioReportingEngine', () => {
         unrealizedPnl: 4000,
         feeEarnings: 1200,
         impermanentLoss: -400,
-        createdAt: new Date('2024-01-15'),
         updatedAt: new Date(),
         bins: []
       }
@@ -807,7 +823,7 @@ describe('PortfolioReportingEngine', () => {
         currentValue: Math.random() * 10000
       }))
 
-      mockClient.getUserPositions.mockResolvedValue(largePortfolio)
+      mockClient.getUserPositions.mockResolvedValue(largePortfolio as any)
 
       const request = {
         walletAddress: '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',

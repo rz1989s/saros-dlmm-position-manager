@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { DLMMPosition } from '../types';
 
 export interface CustomAnalyticsFramework {
   user_metrics: UserDefinedMetric[];
@@ -906,7 +906,8 @@ export class CustomAnalyticsFrameworkEngine {
   private apiEndpoints: Map<string, CustomApiEndpoint> = new Map();
   private visualizations: Map<string, VisualizationConfig> = new Map();
   private metricCache: Map<string, any> = new Map();
-  private executionQueue: Map<string, any> = new Map();
+  // @ts-ignore - Reserved for future implementation
+  private _executionQueue: Map<string, any> = new Map();
 
   constructor() {
     this.initializeFramework();
@@ -1309,7 +1310,7 @@ export class CustomAnalyticsFrameworkEngine {
       // Attempt calculation with test data
       await this.executeMetricFormula(metric, testData);
     } catch (error) {
-      throw new Error(`Metric calculation test failed: ${error.message}`);
+      throw new Error(`Metric calculation test failed: ${(error as Error).message}`);
     }
   }
 
@@ -1396,7 +1397,7 @@ export class CustomAnalyticsFrameworkEngine {
     return this.getNestedValue(marketData, path) || 0;
   }
 
-  private async fetchExternalData(source: string, path: string): Promise<any> {
+  private async fetchExternalData(source: string, _path: string): Promise<any> {
     const dataSource = this.dataSources.get(source);
     if (!dataSource) {
       throw new Error(`Data source not found: ${source}`);
@@ -1434,7 +1435,7 @@ export class CustomAnalyticsFrameworkEngine {
       const result = Function(...Object.keys(context), `return ${metric.formula.expression}`)(...Object.values(context));
       return result;
     } catch (error) {
-      throw new Error(`Formula execution failed: ${error.message}`);
+      throw new Error(`Formula execution failed: ${(error as Error).message}`);
     }
   }
 
@@ -1484,7 +1485,7 @@ export class CustomAnalyticsFrameworkEngine {
     const now = Date.now();
     const cacheTime = cached.timestamp;
 
-    const validityPeriods = {
+    const validityPeriods: Record<string, number> = {
       'real_time': 0,
       'hourly': 60 * 60 * 1000,
       'daily': 24 * 60 * 60 * 1000,
@@ -1610,7 +1611,7 @@ export class CustomAnalyticsFrameworkEngine {
 
   private async generateWidgetData(
     widget: DashboardWidget,
-    filters?: Record<string, any>,
+    _filters?: Record<string, any>,
     positions?: DLMMPosition[]
   ): Promise<any> {
     switch (widget.data_source.type) {
@@ -1754,7 +1755,7 @@ export class CustomAnalyticsFrameworkEngine {
     }
   }
 
-  private async authenticateApiRequest(endpoint: CustomApiEndpoint, request: any, context: any): Promise<void> {
+  private async authenticateApiRequest(endpoint: CustomApiEndpoint, _request: any, context: any): Promise<void> {
     if (!endpoint.authentication.required) return;
 
     // Implement authentication logic based on endpoint configuration
@@ -1783,12 +1784,12 @@ export class CustomAnalyticsFrameworkEngine {
     return `api_${endpoint.id}_${requestHash}`;
   }
 
-  private getCachedApiResponse(cacheKey: string): any {
+  private getCachedApiResponse(_cacheKey: string): any {
     // Implement cache retrieval
     return null; // Placeholder
   }
 
-  private cacheApiResponse(cacheKey: string, response: any, ttl: number): void {
+  private cacheApiResponse(cacheKey: string, _response: any, ttl: number): void {
     // Implement response caching
     console.log(`Caching API response: ${cacheKey} (TTL: ${ttl}s)`);
   }
@@ -1829,12 +1830,12 @@ export class CustomAnalyticsFrameworkEngine {
     return { dashboard_id: dashboardId, export_url: `/exports/${dashboardId}.pdf` };
   }
 
-  private async handleDataAggregation(config: any, request: any): Promise<any> {
+  private async handleDataAggregation(_config: any, _request: any): Promise<any> {
     // Handle data aggregation requests
     return { aggregated_data: [] };
   }
 
-  private async handleCustomFunction(config: any, request: any, context: any): Promise<any> {
+  private async handleCustomFunction(config: any, _request: any, _context: any): Promise<any> {
     // Handle custom function execution
     if (config.custom_code) {
       // In a real implementation, execute the custom code in a sandboxed environment

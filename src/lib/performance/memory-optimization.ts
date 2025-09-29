@@ -241,7 +241,7 @@ export class MemoryOptimizationSystem {
     }
   }
 
-  private detectMemoryLeaks(currentStats: MemoryStats): void {
+  private detectMemoryLeaks(_currentStats: MemoryStats): void {
     if (this.memoryHistory.length < 10) return
 
     const recent = this.memoryHistory.slice(-10)
@@ -520,7 +520,7 @@ export class MemoryOptimizationSystem {
     // Cleanup tracked event listeners
     for (const [key, listeners] of Array.from(this.eventListenerRegistry.entries())) {
       try {
-        for (const listener of listeners) {
+        for (const _listener of listeners) {
           // Remove event listeners (this would need element references in practice)
           itemsCleared++
           memoryFreed += 100 // Approximate memory per listener
@@ -679,7 +679,7 @@ export class MemoryOptimizationSystem {
   // COMPONENT MEMORY TRACKING
   // ============================================================================
 
-  trackComponent(componentName: string, instance?: any): void {
+  trackComponent(componentName: string, _instance?: any): void {
     if (!this.config.trackComponentMemory) return
 
     const tracker = this.componentTrackers.get(componentName) || {
@@ -756,13 +756,13 @@ export class MemoryOptimizationSystem {
   // ============================================================================
 
   generateOptimizationReport(): MemoryOptimizationReport {
-    const currentStats = this.getCurrentMemoryStats()
+    const _currentStats = this.getCurrentMemoryStats()
     const recentCleanup = this.cleanupHistory[this.cleanupHistory.length - 1]
 
     return {
       timestamp: new Date(),
-      beforeStats: this.memoryHistory[this.memoryHistory.length - 2] || currentStats,
-      afterStats: currentStats,
+      beforeStats: this.memoryHistory[this.memoryHistory.length - 2] || _currentStats,
+      afterStats: _currentStats,
       memoryFreed: recentCleanup?.memoryFreed || 0,
       optimizationApplied: recentCleanup ? Object.keys(recentCleanup.categories) : [],
       leaksDetected: this.detectedLeaks.slice(-5),
@@ -773,13 +773,13 @@ export class MemoryOptimizationSystem {
 
   private generateRecommendations(): string[] {
     const recommendations: string[] = []
-    const currentStats = this.getCurrentMemoryStats()
+    const _currentStats = this.getCurrentMemoryStats()
 
-    if (currentStats.utilization > 0.8) {
+    if (_currentStats.utilization > 0.8) {
       recommendations.push('Memory utilization is high - consider reducing cache sizes')
     }
 
-    if (currentStats.fragmentationRatio > 0.3) {
+    if (_currentStats.fragmentationRatio > 0.3) {
       recommendations.push('High memory fragmentation detected - garbage collection recommended')
     }
 

@@ -516,9 +516,19 @@ describe('Position Migration Hooks', () => {
       totalSteps: 3,
       completedSteps: ['1', '2', '3'],
       failedSteps: [],
+      rolledBackSteps: [],
       startTime: new Date(),
       endTime: new Date(),
-      errors: []
+      errors: [] as Array<{ stepId: string; error: string; timestamp: Date }>,
+      safetyChecks: {
+        preExecutionValidation: true,
+        postExecutionValidation: true,
+        rollbackCapability: true,
+        atomicityEnsured: true,
+      },
+      transactionHashes: [],
+      totalGasUsed: 0,
+      estimatedGasRemaining: 0,
     }
 
     it('should initialize with correct default state', () => {
@@ -531,9 +541,9 @@ describe('Position Migration Hooks', () => {
 
     it('should execute migration plan successfully', async () => {
       mockPositionMigrationManager.executeMigrationPlan.mockImplementation(
-        (plan, _publicKey, progressCallback) => {
+        (plan: any, _userAddress: PublicKey, onProgress?: (progress: any) => void) => {
           // Simulate progress updates
-          progressCallback?.({
+          onProgress?.({
             planId: plan.id,
             status: 'in_progress',
             currentStep: 1,
@@ -541,9 +551,9 @@ describe('Position Migration Hooks', () => {
             completedSteps: ['1'],
             failedSteps: [],
             startTime: new Date(),
-            errors: []
+            errors: [] as Array<{ stepId: string; error: string; timestamp: Date }> as Array<{ stepId: string; error: string; timestamp: Date }>
           })
-          progressCallback?.({
+          onProgress?.({
             planId: plan.id,
             status: 'in_progress',
             currentStep: 2,
@@ -551,7 +561,7 @@ describe('Position Migration Hooks', () => {
             completedSteps: ['1', '2'],
             failedSteps: [],
             startTime: new Date(),
-            errors: []
+            errors: [] as Array<{ stepId: string; error: string; timestamp: Date }> as Array<{ stepId: string; error: string; timestamp: Date }>
           })
           return Promise.resolve(mockProgress)
         }
@@ -620,16 +630,26 @@ describe('Position Migration Hooks', () => {
 
     it('should handle loading state during execution', async () => {
       mockPositionMigrationManager.executeMigrationPlan.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({
+        (_plan: any, _userAddress: PublicKey, _onProgress?: (progress: any) => void) => new Promise(resolve => setTimeout(() => resolve({
           planId: 'plan-123',
           status: 'completed' as const,
           currentStep: 3,
           totalSteps: 3,
           completedSteps: ['1', '2', '3'],
           failedSteps: [],
+          rolledBackSteps: [],
           startTime: new Date(),
           endTime: new Date(),
-          errors: []
+          errors: [] as Array<{ stepId: string; error: string; timestamp: Date }>,
+          safetyChecks: {
+            preExecutionValidation: true,
+            postExecutionValidation: true,
+            rollbackCapability: true,
+            atomicityEnsured: true,
+          },
+          transactionHashes: [],
+          totalGasUsed: 0,
+          estimatedGasRemaining: 0,
         }), 100))
       )
 
@@ -860,9 +880,19 @@ describe('Position Migration Hooks', () => {
       totalSteps: 3,
       completedSteps: ['1', '2', '3'],
       failedSteps: [],
+      rolledBackSteps: [],
       startTime: new Date(),
       endTime: new Date(),
-      errors: []
+      errors: [] as Array<{ stepId: string; error: string; timestamp: Date }>,
+      safetyChecks: {
+        preExecutionValidation: true,
+        postExecutionValidation: true,
+        rollbackCapability: true,
+        atomicityEnsured: true,
+      },
+      transactionHashes: [],
+      totalGasUsed: 0,
+      estimatedGasRemaining: 0,
     }
 
     beforeEach(() => {

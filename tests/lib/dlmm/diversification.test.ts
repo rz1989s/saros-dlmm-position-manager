@@ -1,6 +1,5 @@
 import { PublicKey, Connection } from '@solana/web3.js'
-import { DiversificationAnalysisEngine, DiversificationAnalysis } from '../../../src/lib/dlmm/diversification'
-import { DLMMClient } from '../../../src/lib/dlmm/client'
+import { DiversificationAnalysisEngine } from '../../../src/lib/dlmm/diversification'
 import type { DLMMPosition } from '../../../src/lib/types'
 
 // Mock the DLMM client
@@ -29,24 +28,27 @@ jest.mock('../../../src/lib/oracle/price-feeds', () => ({
 
 describe('DiversificationAnalysisEngine', () => {
   let diversificationEngine: DiversificationAnalysisEngine
-  let mockClient: jest.Mocked<DLMMClient>
+  let mockConnection: Connection
   let mockPositions: DLMMPosition[]
 
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mockClient = {
-      getLbPair: jest.fn(),
-      getConnection: jest.fn(() => new Connection('http://localhost:8899')),
-      getUserPositions: jest.fn(),
-      getBinData: jest.fn(),
-      getPoolInfo: jest.fn()
-    } as any
+    mockConnection = new Connection('http://localhost:8899')
 
-    diversificationEngine = new DiversificationAnalysisEngine(mockClient)
+    diversificationEngine = new DiversificationAnalysisEngine(mockConnection)
 
     mockPositions = [
       {
+        id: 'position-1',
+        poolAddress: new PublicKey('Pool1111111111111111111111111111111111111111'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388608,
+        liquidityAmount: '15000',
+        feesEarned: { tokenX: '250', tokenY: '250' },
+        createdAt: new Date('2024-01-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position1111111111111111111111111111111111'),
         pair: new PublicKey('Pool1111111111111111111111111111111111111111'),
         tokenX: {
@@ -71,11 +73,19 @@ describe('DiversificationAnalysisEngine', () => {
         unrealizedPnl: 700,
         feeEarnings: 500,
         impermanentLoss: -200,
-        createdAt: new Date('2024-01-01'),
         updatedAt: new Date(),
         bins: []
       },
       {
+        id: 'position-2',
+        poolAddress: new PublicKey('Pool2222222222222222222222222222222222222222'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388608,
+        liquidityAmount: '20000',
+        feesEarned: { tokenX: '600', tokenY: '600' },
+        createdAt: new Date('2024-01-15'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position2222222222222222222222222222222222'),
         pair: new PublicKey('Pool2222222222222222222222222222222222222222'),
         tokenX: {
@@ -100,11 +110,19 @@ describe('DiversificationAnalysisEngine', () => {
         unrealizedPnl: 3200,
         feeEarnings: 1200,
         impermanentLoss: -400,
-        createdAt: new Date('2024-01-15'),
         updatedAt: new Date(),
         bins: []
       },
       {
+        id: 'position-3',
+        poolAddress: new PublicKey('Pool3333333333333333333333333333333333333333'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388608,
+        liquidityAmount: '12000',
+        feesEarned: { tokenX: '400', tokenY: '400' },
+        createdAt: new Date('2024-02-01'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position3333333333333333333333333333333333'),
         pair: new PublicKey('Pool3333333333333333333333333333333333333333'),
         tokenX: {
@@ -129,11 +147,19 @@ describe('DiversificationAnalysisEngine', () => {
         unrealizedPnl: 1500,
         feeEarnings: 800,
         impermanentLoss: -300,
-        createdAt: new Date('2024-02-01'),
         updatedAt: new Date(),
         bins: []
       },
       {
+        id: 'position-4',
+        poolAddress: new PublicKey('Pool4444444444444444444444444444444444444444'),
+        userAddress: new PublicKey('User1111111111111111111111111111111111111111'),
+        activeBin: 8388608,
+        liquidityAmount: '8000',
+        feesEarned: { tokenX: '200', tokenY: '200' },
+        createdAt: new Date('2024-02-15'),
+        lastUpdated: new Date(),
+        isActive: true,
         publicKey: new PublicKey('Position4444444444444444444444444444444444'),
         pair: new PublicKey('Pool4444444444444444444444444444444444444444'),
         tokenX: {
@@ -158,7 +184,6 @@ describe('DiversificationAnalysisEngine', () => {
         unrealizedPnl: 800,
         feeEarnings: 400,
         impermanentLoss: -200,
-        createdAt: new Date('2024-02-15'),
         updatedAt: new Date(),
         bins: []
       }
@@ -167,13 +192,11 @@ describe('DiversificationAnalysisEngine', () => {
 
   describe('analyzeDiversification', () => {
     it('should perform comprehensive diversification analysis', async () => {
-      const analysis = await diversificationEngine.analyzeDiversification(mockPositions, {
-        includeSectorAnalysis: true,
-        includeGeographicAnalysis: false,
-        includeCorrelationAnalysis: true,
-        includeConcentrationAnalysis: true,
-        timeframe: '30d'
-      })
+      const analysis = await diversificationEngine.analyzeDiversification(
+        mockPositions,
+        [], // analytics array
+        new PublicKey('11111111111111111111111111111112') // mock user address
+      )
 
       expect(analysis).toMatchObject({
         overallScore: expect.any(Number),
@@ -218,13 +241,11 @@ describe('DiversificationAnalysisEngine', () => {
     })
 
     it('should calculate overall diversification score correctly', async () => {
-      const analysis = await diversificationEngine.analyzeDiversification(mockPositions, {
-        includeSectorAnalysis: true,
-        includeGeographicAnalysis: false,
-        includeCorrelationAnalysis: true,
-        includeConcentrationAnalysis: true,
-        timeframe: '30d'
-      })
+      const analysis = await diversificationEngine.analyzeDiversification(
+        mockPositions,
+        [], // analytics array
+        new PublicKey('11111111111111111111111111111112') // mock user address
+      )
 
       expect(analysis.overallScore).toBeGreaterThanOrEqual(0)
       expect(analysis.overallScore).toBeLessThanOrEqual(10)
@@ -250,7 +271,7 @@ describe('DiversificationAnalysisEngine', () => {
 
       // Token distribution should sum to approximately 200% (each position has 2 tokens)
       const totalDistribution = analysis.tokenDiversification.tokenDistribution.reduce(
-        (sum, token) => sum + token.percentage, 0
+        (sum: number, token: any) => sum + token.percentage, 0
       )
       expect(totalDistribution).toBeCloseTo(200, 10) // Allow some rounding error
 
@@ -273,12 +294,12 @@ describe('DiversificationAnalysisEngine', () => {
 
       // Pair distribution should sum to 100%
       const totalPairDistribution = analysis.pairDiversification.pairDistribution.reduce(
-        (sum, pair) => sum + pair.percentage, 0
+        (sum: number, pair: any) => sum + pair.percentage, 0
       )
       expect(totalPairDistribution).toBeCloseTo(100, 5)
 
       // Each pair should have reasonable allocation
-      analysis.pairDiversification.pairDistribution.forEach(pair => {
+      analysis.pairDiversification.pairDistribution.forEach((pair: any) => {
         expect(pair.percentage).toBeGreaterThan(0)
         expect(pair.percentage).toBeLessThan(100)
         expect(pair.value).toBeGreaterThan(0)
@@ -297,14 +318,14 @@ describe('DiversificationAnalysisEngine', () => {
       expect(analysis.sectorAnalysis).toBeDefined()
       expect(analysis.sectorAnalysis.sectorBreakdown).toHaveLength(3) // Stablecoins, Layer 1, Bitcoin
 
-      const sectors = analysis.sectorAnalysis.sectorBreakdown.map(s => s.sector)
+      const sectors = analysis.sectorAnalysis.sectorBreakdown.map((s: any) => s.sector)
       expect(sectors).toContain('Stablecoins')
       expect(sectors).toContain('Layer 1')
       expect(sectors).toContain('Bitcoin')
 
       // Sector breakdown should sum to 100%
       const totalSectorAllocation = analysis.sectorAnalysis.sectorBreakdown.reduce(
-        (sum, sector) => sum + sector.percentage, 0
+        (sum: number, sector: any) => sum + sector.percentage, 0
       )
       expect(totalSectorAllocation).toBeCloseTo(100, 5)
     })
@@ -367,13 +388,11 @@ describe('DiversificationAnalysisEngine', () => {
     })
 
     it('should generate appropriate recommendations', async () => {
-      const analysis = await diversificationEngine.analyzeDiversification(mockPositions, {
-        includeSectorAnalysis: true,
-        includeGeographicAnalysis: false,
-        includeCorrelationAnalysis: true,
-        includeConcentrationAnalysis: true,
-        timeframe: '30d'
-      })
+      const analysis = await diversificationEngine.analyzeDiversification(
+        mockPositions,
+        [], // analytics array
+        new PublicKey('11111111111111111111111111111112') // mock user address
+      )
 
       expect(analysis.recommendations).toBeDefined()
       expect(Array.isArray(analysis.recommendations)).toBe(true)

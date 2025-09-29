@@ -27,7 +27,8 @@ import {
   Wrench,
   Brain,
   Dice1,
-  History
+  History,
+  Globe
 } from 'lucide-react'
 
 interface Demo {
@@ -277,6 +278,30 @@ const PHASE_2_DEMOS: Demo[] = [
     complexity: 'advanced',
     sdkFeatures: [34],
     icon: Shield
+  },
+  {
+    id: 'custom-analytics',
+    title: 'Custom Analytics Framework',
+    description: 'Build custom metrics, dashboards, and reports with user-defined formulas and advanced analytics capabilities',
+    path: '/demos/custom-analytics',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [35],
+    icon: Brain
+  },
+  {
+    id: 'switchboard',
+    title: 'Switchboard Integration',
+    description: 'Experience Switchboard oracle technology with Surge optimization, cross-validation, and real-time monitoring',
+    path: '/demos/switchboard',
+    status: 'live',
+    category: 'oracle',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [14],
+    icon: Globe
   }
 ]
 

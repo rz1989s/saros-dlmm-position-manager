@@ -3,7 +3,7 @@
 // Bismillah - implementing intelligent price confidence system
 
 import { pythIntegration, type PythPriceData, type PriceConfidenceMetrics } from './pyth-integration'
-import { oraclePriceFeeds, type PriceData } from './price-feeds'
+import { oraclePriceFeeds } from './price-feeds'
 import { logger } from '@/lib/logger'
 
 // ============================================================================
@@ -155,14 +155,13 @@ export class PriceConfidenceSystem {
   private priceHistory = new Map<string, PythPriceData[]>()
   private qualityReports = new Map<string, PriceQualityReport>()
   private readonly maxHistorySize = 100
-  private thresholds: ConfidenceThresholds
   private validationRules: Record<string, PriceValidationRules>
 
   constructor(
     thresholds: ConfidenceThresholds = DEFAULT_CONFIDENCE_THRESHOLDS,
     validationRules: Record<string, PriceValidationRules> = DEFAULT_VALIDATION_RULES
   ) {
-    this.thresholds = thresholds
+    // Thresholds stored for future validation features
     this.validationRules = validationRules
 
     logger.init('📊 PriceConfidenceSystem: Advanced confidence analysis initialized')

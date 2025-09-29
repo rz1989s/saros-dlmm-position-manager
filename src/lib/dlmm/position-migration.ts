@@ -546,7 +546,7 @@ export class PositionMigrationManager {
       const transaction = await dlmmClient.createClaimFeesTransaction(
         step.poolAddress,
         userAddress,
-        position.positionMint
+        new PublicKey(position.positionMint)
       )
 
       // For simulation, we'll return success without actual transaction
@@ -665,7 +665,7 @@ export class PositionMigrationManager {
       const transaction = await dlmmClient.createClosePositionTransaction(
         step.poolAddress,
         userAddress,
-        position.positionMint
+        new PublicKey(position.positionMint)
       )
 
       console.log('✅ Close position transaction prepared')

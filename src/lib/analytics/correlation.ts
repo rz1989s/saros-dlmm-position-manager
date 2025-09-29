@@ -1,4 +1,4 @@
-import { DLMMPosition } from '@/lib/types';
+import { DLMMPosition } from '../types';
 
 export interface CorrelationMatrix {
   positions: string[]; // Position IDs
@@ -494,7 +494,7 @@ export class CrossPositionCorrelationEngine {
    */
   private analyzeCorrelationBreakdown(
     positions: DLMMPosition[],
-    marketData?: Map<string, any>
+    _marketData?: Map<string, any>
   ): CorrelationBreakdown {
     // Calculate market correlation (beta)
     const marketCorrelation = this.calculateMarketCorrelation(positions);
@@ -638,21 +638,21 @@ export class CrossPositionCorrelationEngine {
     return { eigenvalues, variance_explained, condition_number };
   }
 
-  private async getPositionReturns(position: DLMMPosition): Promise<number[]> {
+  private async getPositionReturns(_position: DLMMPosition): Promise<number[]> {
     // Mock return series - in real implementation, fetch actual historical data
     return Array.from({ length: this.config.correlation_window },
       () => (Math.random() - 0.5) * 0.1
     );
   }
 
-  private async getTokenPriceReturns(tokenSymbol: string): Promise<number[]> {
+  private async getTokenPriceReturns(_tokenSymbol: string): Promise<number[]> {
     // Mock price return series
     return Array.from({ length: this.config.correlation_window },
       () => (Math.random() - 0.5) * 0.08
     );
   }
 
-  private async getRiskFactorSeries(factor: string, positions: DLMMPosition[]): Promise<number[]> {
+  private async getRiskFactorSeries(_factor: string, _positions: DLMMPosition[]): Promise<number[]> {
     // Mock risk factor series
     return Array.from({ length: this.config.correlation_window },
       () => Math.random()
@@ -755,7 +755,7 @@ export class CrossPositionCorrelationEngine {
     return Math.min(30, timeSeriesCorr.length - shiftIndex);
   }
 
-  private identifyShiftTrigger(date: Date): string {
+  private identifyShiftTrigger(_date: Date): string {
     // Simplified trigger identification
     return 'market_volatility';
   }
@@ -887,18 +887,18 @@ export class CrossPositionCorrelationEngine {
     return Math.max(0, 100 - avgCorrelationWithOthers * 100);
   }
 
-  private findReplacementCandidates(positionIndex: number, correlations: number[][]): string[] {
+  private findReplacementCandidates(_positionIndex: number, _correlations: number[][]): string[] {
     // Simplified - would implement actual candidate identification
     return [];
   }
 
   // Additional helper methods for breakdown analysis
-  private calculateMarketCorrelation(positions: DLMMPosition[]): number {
+  private calculateMarketCorrelation(_positions: DLMMPosition[]): number {
     // Simplified market beta calculation
     return 0.7; // Assuming 70% market correlation
   }
 
-  private analyzeSectorCorrelations(positions: DLMMPosition[]): SectorCorrelation[] {
+  private analyzeSectorCorrelations(_positions: DLMMPosition[]): SectorCorrelation[] {
     // Group positions by sector and calculate correlations
     const sectors = ['DeFi', 'Stablecoins', 'GameFi', 'Other'];
 
@@ -911,9 +911,9 @@ export class CrossPositionCorrelationEngine {
     }));
   }
 
-  private calculateFactorCorrelation(positions: DLMMPosition[], factor: string): number {
+  private calculateFactorCorrelation(_positions: DLMMPosition[], factor: string): number {
     // Simplified factor correlation calculation
-    const factorMap = {
+    const factorMap: Record<string, number> = {
       'size': 0.4,
       'volatility': 0.5,
       'momentum': 0.3,
@@ -924,7 +924,7 @@ export class CrossPositionCorrelationEngine {
     return factorMap[factor] || 0.3;
   }
 
-  private calculateIdiosyncraticCorrelation(positions: DLMMPosition[]): number {
+  private calculateIdiosyncraticCorrelation(_positions: DLMMPosition[]): number {
     // Correlation not explained by common factors
     return 0.15; // 15% idiosyncratic correlation
   }
@@ -950,9 +950,9 @@ export class CrossPositionCorrelationEngine {
   }
 
   private identifyDiversificationOpportunities(
-    positions: DLMMPosition[],
-    correlationMatrix: CorrelationMatrix,
-    diversificationMetrics: DiversificationMetrics
+    _positions: DLMMPosition[],
+    _correlationMatrix: CorrelationMatrix,
+    _diversificationMetrics: DiversificationMetrics
   ): DiversificationOpportunity[] {
     // Simplified opportunity identification
     return [{
@@ -968,7 +968,7 @@ export class CrossPositionCorrelationEngine {
 
   private generateRebalancingRecommendations(
     positions: DLMMPosition[],
-    correlationMatrix: CorrelationMatrix
+    _correlationMatrix: CorrelationMatrix
   ): RebalancingRecommendation[] {
     const weights = this.calculatePositionWeights(positions);
 
@@ -983,7 +983,7 @@ export class CrossPositionCorrelationEngine {
   }
 
   private calculateRiskReductionPotential(
-    correlationMatrix: CorrelationMatrix,
+    _correlationMatrix: CorrelationMatrix,
     diversificationMetrics: DiversificationMetrics
   ): number {
     const currentDiversification = diversificationMetrics.diversification_score;
@@ -994,7 +994,7 @@ export class CrossPositionCorrelationEngine {
 
   private calculateOptimalWeights(
     positions: DLMMPosition[],
-    correlationMatrix: CorrelationMatrix
+    _correlationMatrix: CorrelationMatrix
   ): OptimalWeight[] {
     const currentWeights = this.calculatePositionWeights(positions);
 
@@ -1025,7 +1025,7 @@ export class CrossPositionCorrelationEngine {
     const normalCorr = await this.calculateNormalCorrelation(positions);
 
     // Stress scenarios increase correlations
-    const stressMultipliers = {
+    const stressMultipliers: Record<string, number> = {
       'market_crash': 1.8,
       'liquidity_crisis': 1.6,
       'sector_rotation': 1.3
@@ -1034,7 +1034,7 @@ export class CrossPositionCorrelationEngine {
     return Math.min(normalCorr * (stressMultipliers[scenario] || 1.5), 0.95);
   }
 
-  private identifyAffectedPositions(positions: DLMMPosition[], scenario: string): string[] {
+  private identifyAffectedPositions(positions: DLMMPosition[], _scenario: string): string[] {
     // All positions are affected in stress scenarios
     return positions.map((pos, i) => (pos as any).address || `pos_${i}`);
   }
@@ -1045,7 +1045,7 @@ export class CrossPositionCorrelationEngine {
   }
 
   private estimateRecoveryTime(scenario: string): number {
-    const recoveryTimes = {
+    const recoveryTimes: Record<string, number> = {
       'market_crash': 180, // 6 months
       'liquidity_crisis': 90, // 3 months
       'sector_rotation': 45 // 1.5 months

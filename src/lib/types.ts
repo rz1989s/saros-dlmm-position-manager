@@ -15,6 +15,19 @@ export interface DLMMPosition {
   createdAt: Date
   lastUpdated: Date
   isActive: boolean
+  // Optional calculated properties (present in EnhancedDLMMPosition)
+  publicKey?: PublicKey
+  pair?: PublicKey
+  currentValue?: number
+  initialValue?: number
+  pnl?: number
+  pnlPercent?: number
+  realizedPnl?: number
+  unrealizedPnl?: number
+  feeEarnings?: number
+  impermanentLoss?: number
+  bins?: BinInfo[]
+  updatedAt?: Date
 }
 
 // Extended interface for portfolio analysis with calculated properties
@@ -335,6 +348,7 @@ export interface PortfolioSummary {
 
 export interface ConsolidationOpportunity {
   id: string
+  type?: 'similar_pairs' | 'low_efficiency' | 'overlapping_ranges' | 'high_fee_concentration'
   targetPair: string
   positions: DLMMPosition[]
   currentPools: PublicKey[]
@@ -348,6 +362,24 @@ export interface ConsolidationOpportunity {
   consolidationCost: number
   projectedSavings: number
   priority: 'high' | 'medium' | 'low'
+  analysis?: {
+    summary: {
+      totalPositions: number
+      estimatedSavings: number
+      riskLevel: string
+      recommendation: string
+    }
+    benefits: Array<{
+      type: string
+      value: number
+      description: string
+    }>
+    costs: Array<{
+      type: string
+      value: number
+      description: string
+    }>
+  }
 }
 
 export interface DiversificationAnalysis {
@@ -816,6 +848,42 @@ export interface PredictiveRule {
   lastTriggered?: Date
   successCount: number
   totalTriggers: number
+}
+
+// ============================================================================
+// PORTFOLIO OPTIMIZATION TYPES (Missing interfaces for tests)
+// ============================================================================
+
+export interface PortfolioWeight {
+  weight: number
+  asset?: string
+  allocation?: number
+  value?: number
+}
+
+export interface OptimizationMetrics {
+  status: 'success' | 'failed' | 'pending'
+  totalValue: number
+  riskScore?: number
+  returnRate?: number
+  sharpeRatio?: number
+  volatility?: number
+  // Test-required properties
+  improvementScore: number
+  riskReduction: number
+  returnEnhancement: number
+  costEfficiency: number
+  diversificationImprovement: number
+  liquidityImprovement: number
+  convergenceScore: number
+}
+
+export interface OptimizationResult {
+  optimization: OptimizationMetrics
+  weights: PortfolioWeight[]
+  success: boolean
+  timestamp: Date
+  metadata?: any
 }
 
 export interface CacheEntry<T = any> {
@@ -1310,7 +1378,7 @@ export interface ArbitrageManagerConfig {
 }
 
 // Helper types for implementations
-interface RetryPolicy {
+export interface RetryPolicy {
   maxRetries: number
   backoffStrategy: 'linear' | 'exponential' | 'fibonacci'
   baseDelayMs: number
@@ -1318,14 +1386,14 @@ interface RetryPolicy {
   retryConditions: string[]
 }
 
-interface RollbackPlan {
+export interface RollbackPlan {
   enabled: boolean
   triggers: string[]
   steps: RollbackStep[]
   maxRollbackTime: number
 }
 
-interface RollbackStep {
+export interface RollbackStep {
   description: string
   transaction: any
   order: number
