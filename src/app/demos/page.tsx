@@ -26,7 +26,8 @@ import {
   AlertTriangle,
   Wrench,
   Brain,
-  Dice1
+  Dice1,
+  History
 } from 'lucide-react'
 
 interface Demo {
@@ -228,6 +229,18 @@ const PHASE_2_DEMOS: Demo[] = [
     complexity: 'advanced',
     sdkFeatures: [41],
     icon: Dice1
+  },
+  {
+    id: 'historical-fee-analysis',
+    title: 'Historical Fee Analysis',
+    description: 'Performance history, seasonal patterns, and trend analysis for optimal fee strategies with comprehensive insights',
+    path: '/demos/historical-fee-analysis',
+    status: 'live',
+    category: 'advanced',
+    priority: 'low',
+    complexity: 'intermediate',
+    sdkFeatures: [42],
+    icon: History
   },
   {
     id: 'correlation-analysis',
