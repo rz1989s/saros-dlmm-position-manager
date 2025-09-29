@@ -5,8 +5,7 @@ This directory contains historical documentation files that are no longer active
 ## Archived Files
 
 ### Bounty Research & Analysis
-- **bounty-analysis.md** - Initial strategic analysis of the DLMM Demo Challenge
-- **bounty-original.md** - Original bounty content from Superteam
+- **Note**: `bounty-analysis.md` and `bounty-original.md` moved back to root directory as they contain essential project context
 
 ### Development History & Testing
 - **CONSOLE_ERRORS_FIXED.md** - Historical console error fixes (v0.3.0)
