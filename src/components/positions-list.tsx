@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { PositionCard } from '@/components/position-card'
 import { WalletStatus } from '@/components/wallet-status'
 import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
+import { FeatureIdentifier } from '@/components/sdk/feature-identifier'
+import { SDK_FEATURES } from '@/lib/sdk-showcase/feature-registry'
 import { PositionCardSkeleton } from '@/components/ui/loading-states'
 import { StaggerList } from '@/components/animations/stagger-list'
 import { DataSourceToggle } from '@/components/ui/data-source-toggle'
@@ -28,6 +30,7 @@ interface PositionsListProps {
   onCreatePosition?: () => void
   onManagePosition?: (position: DLMMPosition) => void
   onRebalancePosition?: (position: DLMMPosition) => void
+  onCollectFees?: (position: DLMMPosition) => void
   onClosePosition?: (position: DLMMPosition) => void
 }
 
@@ -35,6 +38,7 @@ const PositionsList = memo(function PositionsList({
   onCreatePosition,
   onManagePosition,
   onRebalancePosition,
+  onCollectFees,
   onClosePosition,
 }: PositionsListProps) {
   const { isConnected } = useWalletState()
@@ -153,7 +157,11 @@ const PositionsList = memo(function PositionsList({
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <FeatureIdentifier
+        feature={SDK_FEATURES[18]}
+        badgePosition="top-right"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -193,10 +201,15 @@ const PositionsList = memo(function PositionsList({
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </FeatureIdentifier>
 
       {/* Controls */}
-      <Card>
+      <FeatureIdentifier
+        feature={SDK_FEATURES[2]}
+        badgePosition="top-left"
+      >
+        <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Your Positions</CardTitle>
@@ -315,6 +328,7 @@ const PositionsList = memo(function PositionsList({
                     analytics={positionAnalytics}
                     onManage={onManagePosition}
                     onRebalance={onRebalancePosition}
+                    onCollectFees={onCollectFees}
                     onClose={onClosePosition}
                   />
                 )
@@ -324,7 +338,8 @@ const PositionsList = memo(function PositionsList({
 
           {/* Pagination could be added here if needed */}
         </CardContent>
-      </Card>
+        </Card>
+      </FeatureIdentifier>
 
       {/* Add Liquidity Modal */}
       <AddLiquidityModal

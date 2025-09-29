@@ -6,6 +6,8 @@ import { TokenImage } from '@/components/ui/token-image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { FeatureIdentifier } from '@/components/sdk/feature-identifier'
+import { SDK_FEATURES } from '@/lib/sdk-showcase/feature-registry'
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -36,6 +38,7 @@ interface PositionCardProps {
   analytics: PositionAnalytics
   onManage?: (position: DLMMPosition) => void
   onRebalance?: (position: DLMMPosition) => void
+  onCollectFees?: (position: DLMMPosition) => void
   onClose?: (position: DLMMPosition) => void
 }
 
@@ -44,6 +47,7 @@ const PositionCard = memo(function PositionCard({
   analytics,
   onManage,
   onRebalance,
+  onCollectFees,
   onClose
 }: PositionCardProps) {
   const [showDetails, setShowDetails] = useState(false)
@@ -84,9 +88,20 @@ const PositionCard = memo(function PositionCard({
     onRebalance?.(position)
   }, [onRebalance, position])
 
+  const handleCollectFees = useCallback(() => {
+    onCollectFees?.(position)
+  }, [onCollectFees, position])
+
   const handleClose = useCallback(() => {
     onClose?.(position)
   }, [onClose, position])
+
+  // Check if there are fees available to collect
+  const feesAvailable = useMemo(() => {
+    const feeX = parseFloat(position.feesEarned.tokenX)
+    const feeY = parseFloat(position.feesEarned.tokenY)
+    return feeX > 0 || feeY > 0
+  }, [position.feesEarned])
 
   return (
     <motion.div
@@ -98,7 +113,11 @@ const PositionCard = memo(function PositionCard({
       whileTap="tap"
       layout
     >
-      <Card className="h-full border-0 shadow-md">
+      <FeatureIdentifier
+        feature={SDK_FEATURES[5]}
+        badgePosition="top-right"
+      >
+        <Card className="h-full border-0 shadow-md">
       <CardHeader className="pb-3 sm:pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -358,6 +377,25 @@ const PositionCard = memo(function PositionCard({
             </Button>
           </motion.div>
 
+          {/* Collect Fees Button - Only show if fees are available */}
+          {feesAvailable && onCollectFees && (
+            <motion.div
+              className="flex-1"
+              whileTap="tap"
+              variants={buttonTap}
+            >
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-full bg-green-100 text-green-800 hover:bg-green-200 border-green-300"
+                onClick={handleCollectFees}
+              >
+                <DollarSign className="h-4 w-4 mr-1" />
+                Collect Fees
+              </Button>
+            </motion.div>
+          )}
+
           <motion.div
             whileTap="tap"
             variants={buttonTap}
@@ -374,6 +412,7 @@ const PositionCard = memo(function PositionCard({
         </div>
       </CardContent>
     </Card>
+      </FeatureIdentifier>
     </motion.div>
   )
 })

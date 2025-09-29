@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { FeatureIdentifier } from '@/components/sdk/feature-identifier'
+import { SDK_FEATURES } from '@/lib/sdk-showcase/feature-registry'
 import {
   TrendingUp,
   DollarSign,
@@ -336,9 +338,13 @@ export function PnLTracker() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* P&L Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <FeatureIdentifier
+      feature={SDK_FEATURES[16]}
+      badgePosition="top-right"
+    >
+      <div className="space-y-6">
+        {/* P&L Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -625,7 +631,8 @@ export function PnLTracker() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </FeatureIdentifier>
   )
 }
