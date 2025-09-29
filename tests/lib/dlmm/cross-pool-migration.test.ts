@@ -2,11 +2,9 @@ import { PublicKey, Connection } from '@solana/web3.js'
 import {
   CrossPoolMigrationEngine,
   type CrossPoolRoute,
-  type CrossPoolMigrationPlan,
-  type CrossPoolMigrationResult,
-  type PoolCompatibility
+  type CrossPoolMigrationPlan
 } from '../../../src/lib/dlmm/cross-pool-migration'
-import type { DLMMPosition } from '../../../src/lib/types'
+import type { DLMMPosition, PoolInfo } from '../../../src/lib/types'
 import type { Pair } from '@saros-finance/dlmm-sdk'
 
 // Mock the DLMM client
@@ -36,7 +34,7 @@ jest.mock('../../../src/lib/connection-manager', () => ({
 // Mock SDK tracker
 jest.mock('../../../src/lib/sdk-tracker', () => ({
   sdkTracker: {
-    trackSDKCall: jest.fn(async (name, endpoint, fn) => fn())
+    trackSDKCall: jest.fn(async (_name: string, _endpoint: string, fn: () => any) => fn())
   }
 }))
 
@@ -55,7 +53,7 @@ describe('CrossPoolMigrationEngine', () => {
   let mockConnection: Connection
   let mockUserAddress: PublicKey
   let mockSourcePosition: DLMMPosition
-  let mockTargetPool: Pair
+  let mockTargetPool: PoolInfo
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -93,23 +91,35 @@ describe('CrossPoolMigrationEngine', () => {
     // Mock target pool
     mockTargetPool = {
       address: new PublicKey('7djbVF7BSTi2Qzq8H9GXDCFuhhMHKBJtpCzFr6BzxuCz'),
-      tokenX: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC
-      tokenY: new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'), // USDT
-      binStep: 25,
-      baseFactor: 5000,
-      filterLifetime: 10,
-      decayPeriod: 600,
-      reductionFactor: 5000,
-      variableFeeControl: 40000,
-      maxVolatilityAccumulated: 350000,
-      minBinId: -887272,
-      maxBinId: 887272,
-      protocolShare: 1000,
-      pairCreatedAt: new Date(),
-      reserveX: '1000000',
-      reserveY: '1000000',
-      totalSupply: '2000000'
-    } as Pair
+      tokenX: {
+        address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
+        symbol: 'USDC',
+        name: 'USD Coin',
+        decimals: 6,
+        price: 1.0
+      },
+      tokenY: {
+        address: new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'),
+        symbol: 'USDT',
+        name: 'Tether USD',
+        decimals: 6,
+        price: 1.0
+      },
+      activeBin: {
+        binId: 8388608,
+        price: 1.0,
+        liquidityX: '500000',
+        liquidityY: '500000',
+        isActive: true,
+        feeRate: 0.003,
+        volume24h: '1000000'
+      },
+      totalLiquidity: '1000000',
+      volume24h: '1000000',
+      fees24h: '3000',
+      apr: 15.5,
+      createdAt: new Date()
+    }
   })
 
   afterEach(() => {
@@ -194,7 +204,7 @@ describe('CrossPoolMigrationEngine', () => {
 
       // Should not include route to same pool
       expect(routes.every(route =>
-        !route.sourcePool.equals(route.targetPool)
+        route.sourcePool.toString() !== route.targetPool.toString()
       )).toBe(true)
     })
 
@@ -208,7 +218,7 @@ describe('CrossPoolMigrationEngine', () => {
 
       // Should not include routes to excluded pools
       expect(routes.every(route =>
-        !route.targetPool.equals(excludedPool)
+        route.targetPool.toString() !== excludedPool.toString()
       )).toBe(true)
     })
 
@@ -230,8 +240,7 @@ describe('CrossPoolMigrationEngine', () => {
         {
           ...mockTargetPool,
           address: new PublicKey('BetterPoolAddress1111111111111111111111111111'),
-          reserveX: '5000000', // Higher liquidity
-          reserveY: '5000000'
+          totalLiquidity: '5000000' // Higher liquidity
         }
       ]
 
@@ -274,7 +283,7 @@ describe('CrossPoolMigrationEngine', () => {
     it('should assess compatible pool correctly', async () => {
       const compatibility = await migrationEngine.assessPoolCompatibility(
         mockSourcePosition,
-        mockTargetPool
+        mockTargetPool as unknown as Pair
       )
 
       expect(compatibility).toMatchObject({
@@ -295,7 +304,7 @@ describe('CrossPoolMigrationEngine', () => {
       // Test with matching tokens
       const compatibility = await migrationEngine.assessPoolCompatibility(
         mockSourcePosition,
-        mockTargetPool
+        mockTargetPool as unknown as Pair
       )
 
       expect(compatibility.tokenMatches).toBe(true)
@@ -303,15 +312,27 @@ describe('CrossPoolMigrationEngine', () => {
 
     it('should identify incompatible pools', async () => {
       // Create pool with completely different tokens
-      const incompatiblePool = {
+      const incompatiblePool: PoolInfo = {
         ...mockTargetPool,
-        tokenX: new PublicKey('So11111111111111111111111111111111111111112'), // SOL
-        tokenY: new PublicKey('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') // mSOL
+        tokenX: {
+          address: new PublicKey('So11111111111111111111111111111111111111112'),
+          symbol: 'SOL',
+          name: 'Solana',
+          decimals: 9,
+          price: 100.0
+        },
+        tokenY: {
+          address: new PublicKey('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'),
+          symbol: 'mSOL',
+          name: 'Marinade Staked SOL',
+          decimals: 9,
+          price: 105.0
+        }
       }
 
       const compatibility = await migrationEngine.assessPoolCompatibility(
         mockSourcePosition,
-        incompatiblePool
+        incompatiblePool as unknown as Pair
       )
 
       expect(compatibility.tokenMatches).toBe(false)
@@ -344,9 +365,23 @@ describe('CrossPoolMigrationEngine', () => {
         targetPool: mockTargetPool.address,
         sourcePair: {
           address: mockSourcePosition.poolAddress,
-          tokenX: mockSourcePosition.tokenX.address,
-          tokenY: mockSourcePosition.tokenY.address
-        } as Pair,
+          tokenX: mockSourcePosition.tokenX,
+          tokenY: mockSourcePosition.tokenY,
+          activeBin: {
+            binId: 8388608,
+            price: 1.0,
+            liquidityX: '25000',
+            liquidityY: '25000',
+            isActive: true,
+            feeRate: 0.003,
+            volume24h: '500000'
+          },
+          totalLiquidity: '50000',
+          volume24h: '500000',
+          fees24h: '1500',
+          apr: 12.0,
+          createdAt: new Date()
+        },
         targetPair: mockTargetPool,
         estimatedSlippage: 0.005,
         estimatedGasCost: 0.01,
@@ -535,7 +570,25 @@ describe('CrossPoolMigrationEngine', () => {
           id: 'route-test-123',
           sourcePool: mockSourcePosition.poolAddress,
           targetPool: mockTargetPool.address,
-          sourcePair: {} as Pair,
+          sourcePair: {
+            address: mockSourcePosition.poolAddress,
+            tokenX: mockSourcePosition.tokenX,
+            tokenY: mockSourcePosition.tokenY,
+            activeBin: {
+              binId: 8388608,
+              price: 1.0,
+              liquidityX: '25000',
+              liquidityY: '25000',
+              isActive: true,
+              feeRate: 0.003,
+              volume24h: '500000'
+            },
+            totalLiquidity: '50000',
+            volume24h: '500000',
+            fees24h: '1500',
+            apr: 12.0,
+            createdAt: new Date()
+          },
           targetPair: mockTargetPool,
           estimatedSlippage: 0.005,
           estimatedGasCost: 0.01,

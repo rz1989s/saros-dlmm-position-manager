@@ -114,8 +114,8 @@ describe('MigrationRiskAssessment', () => {
       );
 
       expect(result).toHaveProperty('positionId', mockPosition.id);
-      expect(result).toHaveProperty('sourcePool', mockSourcePool.publicKey.toString());
-      expect(result).toHaveProperty('targetPool', mockTargetPool.publicKey.toString());
+      expect(result).toHaveProperty('sourcePool', (mockSourcePool as any).publicKey.toString());
+      expect(result).toHaveProperty('targetPool', (mockTargetPool as any).publicKey.toString());
       expect(result).toHaveProperty('assessmentTimestamp');
       expect(result).toHaveProperty('riskFactors');
       expect(result).toHaveProperty('liquidityRisk');
