@@ -92,6 +92,9 @@ export default function LandingPage() {
               <Link href="/strategies" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Strategies
               </Link>
+              <Link href="/demos" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Demos
+              </Link>
               <Link href="/showcase" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Showcase
               </Link>
@@ -419,6 +422,9 @@ export default function LandingPage() {
               </Link>
               <Link href="/analytics" className="text-gray-400 hover:text-white transition-colors">
                 Analytics
+              </Link>
+              <Link href="/demos" className="text-gray-400 hover:text-white transition-colors">
+                Demos
               </Link>
               <Link href="/showcase" className="text-gray-400 hover:text-white transition-colors">
                 Showcase

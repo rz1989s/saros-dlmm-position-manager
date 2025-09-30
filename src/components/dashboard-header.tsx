@@ -14,6 +14,7 @@ export function DashboardHeader() {
     { name: 'Analytics', href: '/analytics', icon: BarChart3, active: pathname === '/analytics' },
     { name: 'Strategies', href: '/strategies', icon: TrendingUp, active: pathname === '/strategies' },
     { name: 'Backtesting', href: '/backtesting', icon: TestTube, active: pathname === '/backtesting' },
+    { name: 'Demos', href: '/demos', icon: Trophy, active: pathname === '/demos', highlight: true },
     { name: 'Showcase', href: '/showcase', icon: Trophy, active: pathname === '/showcase', highlight: true },
   ]
 
