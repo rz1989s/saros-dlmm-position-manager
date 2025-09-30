@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 
 export default function LiquidityOperationsDemo() {
-  const { connected, publicKey } = useWalletIntegration()
+  const { connected } = useWalletIntegration()
   const [operation, setOperation] = useState<'add' | 'remove'>('add')
   const [amountX, setAmountX] = useState('100')
   const [amountY, setAmountY] = useState('50')

@@ -24,7 +24,7 @@ import {
 
 export default function PositionDiscoveryDemo() {
   const { publicKey, connected } = useWalletIntegration()
-  const { positions, loading } = useUserPositions(publicKey || undefined)
+  const { positions, loading } = useUserPositions()
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false)
 
   return (
@@ -158,7 +158,7 @@ export default function PositionDiscoveryDemo() {
                           Total Value
                         </span>
                         <span className="font-bold text-lg">
-                          {formatCurrency(parseFloat(position.totalValue || '0'))}
+                          {formatCurrency(position.currentValue || 0)}
                         </span>
                       </div>
 
@@ -168,7 +168,7 @@ export default function PositionDiscoveryDemo() {
                           Liquidity
                         </span>
                         <span className="font-medium text-sm">
-                          {parseFloat(position.liquidityX || '0').toFixed(2)} {position.tokenX.symbol}
+                          {parseFloat(position.liquidityAmount || '0').toFixed(2)} LP
                         </span>
                       </div>
 
