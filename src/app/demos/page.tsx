@@ -28,7 +28,10 @@ import {
   Brain,
   Dice1,
   History,
-  Globe
+  Globe,
+  GitBranch,
+  Calculator,
+  Bot
 } from 'lucide-react'
 
 interface Demo {
@@ -305,6 +308,81 @@ const PHASE_2_DEMOS: Demo[] = [
   }
 ]
 
+const PHASE_3_DEMOS: Demo[] = [
+  {
+    id: 'cross-pool-migration',
+    title: 'Cross-Pool Migration Engine',
+    description: 'Automated migration discovery, pool optimization analysis, and intelligent position consolidation across DLMM pools',
+    path: '/demos/cross-pool-migration',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [21, 22, 23],
+    icon: GitBranch
+  },
+  {
+    id: 'migration-analysis',
+    title: 'Migration Impact Analysis',
+    description: 'Comprehensive financial analysis with NPV/IRR calculations, scenario modeling, and confidence scoring for data-driven decisions',
+    path: '/demos/migration-analysis',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [22],
+    icon: Calculator
+  },
+  {
+    id: 'migration-automation',
+    title: 'Migration Automation System',
+    description: 'Intelligent automation with configurable trigger conditions, multi-layered safety mechanisms, and real-time monitoring',
+    path: '/demos/migration-automation',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [23],
+    icon: Bot
+  },
+  {
+    id: 'migration-risk',
+    title: 'Migration Risk Assessment',
+    description: 'Multi-dimensional risk analysis with intelligent mitigation strategies, real-time monitoring, and historical performance tracking',
+    path: '/demos/migration-risk',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [24],
+    icon: AlertTriangle
+  },
+  {
+    id: 'migration-simulation',
+    title: 'Migration Simulation',
+    description: 'Comprehensive impact simulation with scenario testing, Monte Carlo analysis, and what-if modeling for data-driven decisions',
+    path: '/demos/migration-simulation',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [44],
+    icon: Activity
+  },
+  {
+    id: 'migration-rollback',
+    title: 'Migration Rollback',
+    description: 'Comprehensive rollback system with checkpoint management, automated state restoration, and emergency recovery controls',
+    path: '/demos/migration-rollback',
+    status: 'live',
+    category: 'advanced',
+    priority: 'low',
+    complexity: 'advanced',
+    sdkFeatures: [46],
+    icon: RotateCcw
+  }
+]
+
 const categoryColors = {
   core: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   oracle: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
@@ -328,7 +406,7 @@ export default function DemosPage() {
   const [filter, setFilter] = useState<'all' | 'core' | 'oracle' | 'analytics' | 'advanced'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'beta' | 'planned'>('all')
 
-  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS]
+  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS, ...PHASE_3_DEMOS]
 
   const filteredDemos = allDemos.filter(demo => {
     if (filter !== 'all' && demo.category !== filter) return false

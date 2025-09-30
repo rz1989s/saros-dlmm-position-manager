@@ -139,27 +139,31 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   },
   21: {
     id: 21,
-    name: "Cross-Pool Migration",
-    status: "planned",
-    description: "Automated migration, pool discovery, liquidity optimization"
+    name: "Cross-Pool Migration Engine",
+    status: "completed",
+    sdkLocation: "src/app/demos/cross-pool-migration/page.tsx + src/hooks/use-position-migration.ts",
+    description: "Automated migration discovery, pool optimization analysis, and intelligent position consolidation"
   },
   22: {
     id: 22,
     name: "Migration Impact Analysis",
-    status: "planned",
-    description: "NPV/IRR calculations, scenario modeling, confidence scoring"
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-analysis/page.tsx",
+    description: "Comprehensive financial analysis with NPV/IRR calculations, scenario modeling, and confidence scoring"
   },
   23: {
     id: 23,
-    name: "Migration Automation",
-    status: "planned",
-    description: "Trigger conditions, safety mechanisms, monitoring systems"
+    name: "Migration Automation System",
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-automation/page.tsx",
+    description: "Intelligent automation with trigger conditions, multi-layered safety mechanisms, and real-time monitoring"
   },
   24: {
     id: 24,
     name: "Migration Risk Assessment",
-    status: "planned",
-    description: "Multi-dimensional analysis, mitigation strategies, real-time monitoring"
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-risk/page.tsx",
+    description: "Multi-dimensional risk analysis with intelligent mitigation strategies and real-time monitoring"
   },
   25: {
     id: 25,
@@ -295,8 +299,9 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   44: {
     id: 44,
     name: "Migration Simulation",
-    status: "planned",
-    description: "Impact simulation, scenario analysis, risk quantification"
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-simulation/page.tsx",
+    description: "Comprehensive impact simulation with scenario analysis, Monte Carlo testing, and risk quantification"
   },
   45: {
     id: 45,
@@ -307,8 +312,9 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   46: {
     id: 46,
     name: "Migration Rollback",
-    status: "planned",
-    description: "Rollback system, checkpoints, emergency recovery"
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-rollback/page.tsx",
+    description: "Comprehensive rollback system with checkpoint management, automated recovery, and emergency controls"
   },
   47: {
     id: 47,
