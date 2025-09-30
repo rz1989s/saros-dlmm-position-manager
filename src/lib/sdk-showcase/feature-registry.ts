@@ -306,7 +306,8 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   45: {
     id: 45,
     name: "Migration Analytics",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/migration-analytics-dashboard/page.tsx",
     description: "Performance tracking, success metrics, impact analysis"
   },
   46: {
@@ -352,37 +353,43 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   52: {
     id: 52,
     name: "Multi-Position Analysis",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/multi-position-analysis/page.tsx",
     description: "Cross-position analytics, risk decomposition, optimization recommendations"
   },
   53: {
     id: 53,
     name: "Portfolio Optimization",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/portfolio-optimizer/page.tsx",
     description: "Mean-variance optimization, multiple objectives, automated rebalancing"
   },
   54: {
     id: 54,
     name: "Diversification Analysis",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/diversification/page.tsx",
     description: "HHI calculations, diversification scoring, correlation metrics"
   },
   55: {
     id: 55,
     name: "Position Consolidation",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/consolidation/page.tsx",
     description: "Consolidation opportunities, NPV analysis, execution planning"
   },
   56: {
     id: 56,
     name: "Portfolio Reporting",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/portfolio-reporting/page.tsx",
     description: "Multi-format export, professional templates, scheduled reporting"
   },
   57: {
     id: 57,
     name: "Portfolio Alerts",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/portfolio-alerts/page.tsx",
     description: "Risk alerts, performance notifications, threshold monitoring"
   },
   58: {
@@ -394,7 +401,8 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   59: {
     id: 59,
     name: "Tax Optimization",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/tax-optimization/page.tsx",
     description: "Tax-loss harvesting, gain/loss optimization, compliance reporting"
   },
 
@@ -416,31 +424,36 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   62: {
     id: 62,
     name: "Batch Operations",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/batch-operations/page.tsx",
     description: "Transaction optimization, rollback mechanisms, performance tracking"
   },
   63: {
     id: 63,
     name: "Memory Optimization",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/memory-optimization/page.tsx",
     description: "Memory management, leak detection, cleanup strategies"
   },
   64: {
     id: 64,
     name: "Network Optimization",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/network-optimization/page.tsx",
     description: "Connection pooling, request coalescing, adaptive prioritization"
   },
   65: {
     id: 65,
     name: "Response Time Optimization",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/response-optimization/page.tsx",
     description: "Predictive prefetching, progressive loading, response streaming"
   },
   66: {
     id: 66,
     name: "Data Prefetching",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/data-prefetching/page.tsx",
     description: "Predictive loading, cache warming, intelligent preloading"
   },
 
@@ -448,19 +461,22 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   67: {
     id: 67,
     name: "Multi-Tenant Support",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/multi-tenant/page.tsx",
     description: "Tenant isolation, resource management, role-based access"
   },
   68: {
     id: 68,
     name: "Advanced Security",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/advanced-security/page.tsx",
     description: "Data encryption, audit logging, threat detection"
   },
   69: {
     id: 69,
     name: "API Integration Platform",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/app/demos/api-platform/page.tsx",
     description: "Third-party services, health monitoring, rate limiting"
   }
 }

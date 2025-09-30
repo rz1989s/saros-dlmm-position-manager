@@ -31,7 +31,14 @@ import {
   Globe,
   GitBranch,
   Calculator,
-  Bot
+  Bot,
+  Target,
+  PieChart,
+  Layers,
+  FileText,
+  Building2,
+  Bell,
+  DollarSign
 } from 'lucide-react'
 
 interface Demo {
@@ -380,6 +387,204 @@ const PHASE_3_DEMOS: Demo[] = [
     complexity: 'advanced',
     sdkFeatures: [46],
     icon: RotateCcw
+  },
+  {
+    id: 'multi-position-analysis',
+    title: 'Multi-Position Analysis Engine',
+    description: 'Cross-position analytics with risk decomposition, correlation analysis, and portfolio-wide optimization recommendations',
+    path: '/demos/multi-position-analysis',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [52],
+    icon: BarChart3
+  },
+  {
+    id: 'portfolio-optimizer',
+    title: 'Portfolio Optimization Engine',
+    description: 'Mean-variance optimization with Markowitz framework, multiple objectives, and automated rebalancing strategies',
+    path: '/demos/portfolio-optimizer',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [53],
+    icon: Target
+  },
+  {
+    id: 'diversification',
+    title: 'Diversification Analysis',
+    description: 'HHI calculations, diversification scoring, correlation metrics, and concentration risk analysis for optimal portfolio balance',
+    path: '/demos/diversification',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [54],
+    icon: PieChart
+  },
+  {
+    id: 'consolidation',
+    title: 'Position Consolidation Tools',
+    description: 'Consolidation opportunities identification with NPV analysis, cost-benefit evaluation, and execution planning',
+    path: '/demos/consolidation',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [55],
+    icon: Layers
+  },
+  {
+    id: 'portfolio-reporting',
+    title: 'Portfolio Reporting Suite',
+    description: 'Multi-format export (PDF, Excel, CSV, JSON) with professional templates, scheduled reporting, and automated distribution',
+    path: '/demos/portfolio-reporting',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [56],
+    icon: FileText
+  },
+  {
+    id: 'batch-operations',
+    title: 'Batch Operations Engine',
+    description: 'Transaction optimization with rollback mechanisms, performance tracking, and 33%+ efficiency improvements',
+    path: '/demos/batch-operations',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [62],
+    icon: Zap
+  }
+]
+
+const PHASE_4_WEEK_7_DEMOS: Demo[] = [
+  {
+    id: 'memory-optimization',
+    title: 'Memory Optimization System',
+    description: 'Advanced memory management with leak detection, automated cleanup, and 30%+ memory usage reduction',
+    path: '/demos/memory-optimization',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [63],
+    icon: Brain
+  },
+  {
+    id: 'network-optimization',
+    title: 'Network Optimization Layer',
+    description: 'Connection pooling, request coalescing, and adaptive prioritization for 45%+ latency reduction',
+    path: '/demos/network-optimization',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [64],
+    icon: Globe
+  },
+  {
+    id: 'response-optimization',
+    title: 'Response Time Optimization',
+    description: 'Predictive prefetching, progressive loading, and response streaming for sub-100ms responses',
+    path: '/demos/response-optimization',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [65],
+    icon: Zap
+  },
+  {
+    id: 'multi-tenant',
+    title: 'Multi-Tenant Support System',
+    description: 'Enterprise-grade tenant isolation with resource management, access control, and usage-based billing',
+    path: '/demos/multi-tenant',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [67],
+    icon: Building2
+  },
+  {
+    id: 'advanced-security',
+    title: 'Advanced Security Framework',
+    description: 'End-to-end encryption, real-time threat detection, and comprehensive audit logging for enterprise security',
+    path: '/demos/advanced-security',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [68],
+    icon: Shield
+  }
+]
+
+const PHASE_4_WEEK_8_DEMOS: Demo[] = [
+  {
+    id: 'api-platform',
+    title: 'API Integration Platform',
+    description: 'Third-party service integrations with health monitoring, rate limiting, and webhook management',
+    path: '/demos/api-platform',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [69],
+    icon: Globe
+  },
+  {
+    id: 'data-prefetching',
+    title: 'Data Prefetching System',
+    description: 'Predictive loading, cache warming, and intelligent preloading for instant user experience',
+    path: '/demos/data-prefetching',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [66],
+    icon: Zap
+  },
+  {
+    id: 'portfolio-alerts',
+    title: 'Portfolio Alerts System',
+    description: 'Real-time risk alerts, performance notifications, and threshold monitoring',
+    path: '/demos/portfolio-alerts',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [57],
+    icon: Bell
+  },
+  {
+    id: 'tax-optimization',
+    title: 'Tax Optimization Suite',
+    description: 'Tax-loss harvesting, gain/loss optimization, and compliance reporting for crypto taxes',
+    path: '/demos/tax-optimization',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [59],
+    icon: DollarSign
+  },
+  {
+    id: 'migration-analytics-dashboard',
+    title: 'Migration Analytics Dashboard',
+    description: 'Performance tracking, success metrics, and impact analysis for position migrations',
+    path: '/demos/migration-analytics-dashboard',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'advanced',
+    sdkFeatures: [45],
+    icon: BarChart3
   }
 ]
 
@@ -406,7 +611,7 @@ export default function DemosPage() {
   const [filter, setFilter] = useState<'all' | 'core' | 'oracle' | 'analytics' | 'advanced'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'beta' | 'planned'>('all')
 
-  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS, ...PHASE_3_DEMOS]
+  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS, ...PHASE_3_DEMOS, ...PHASE_4_WEEK_7_DEMOS, ...PHASE_4_WEEK_8_DEMOS]
 
   const filteredDemos = allDemos.filter(demo => {
     if (filter !== 'all' && demo.category !== filter) return false
