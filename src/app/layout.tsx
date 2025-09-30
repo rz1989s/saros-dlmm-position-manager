@@ -9,7 +9,11 @@ import { Toaster } from '@/components/ui/toaster'
 import { CriticalErrorBoundary } from '@/components/error-boundary'
 import { SkipLinks } from '@/components/accessibility/accessible-components'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap', // Prevent invisible text during font load
+  preload: true
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://saros-dlmm-position-manager.vercel.app'),
@@ -73,6 +77,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Performance: Preconnect to critical origins */}
+        <link rel="preconnect" href="https://api.mainnet-beta.solana.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://hermes.pyth.network" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.devnet.solana.com" />
+        <link rel="dns-prefetch" href="https://saros.finance" />
+
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
