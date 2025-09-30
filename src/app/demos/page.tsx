@@ -38,7 +38,10 @@ import {
   FileText,
   Building2,
   Bell,
-  DollarSign
+  DollarSign,
+  Database,
+  Droplets,
+  Coins
 } from 'lucide-react'
 
 interface Demo {
@@ -53,6 +56,177 @@ interface Demo {
   sdkFeatures: number[]
   icon: React.ComponentType<{ className?: string }>
 }
+
+const PHASE_0_DEMOS: Demo[] = [
+  {
+    id: 'pool-data',
+    title: 'Pool Data Loading',
+    description: 'Real-time DLMM pool data with liquidity and bin information',
+    path: '/demos/pool-data',
+    status: 'live',
+    category: 'core',
+    priority: 'high',
+    complexity: 'basic',
+    sdkFeatures: [1],
+    icon: Database
+  },
+  {
+    id: 'position-discovery',
+    title: 'Position Discovery',
+    description: 'User position discovery with wallet integration',
+    path: '/demos/position-discovery',
+    status: 'live',
+    category: 'core',
+    priority: 'high',
+    complexity: 'basic',
+    sdkFeatures: [2],
+    icon: Search
+  },
+  {
+    id: 'liquidity-operations',
+    title: 'Liquidity Operations',
+    description: 'Add and remove liquidity from DLMM pools with impact simulation',
+    path: '/demos/liquidity-operations',
+    status: 'live',
+    category: 'core',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [3],
+    icon: Droplets
+  },
+  {
+    id: 'bin-data',
+    title: 'Bin Data Operations',
+    description: 'Real-time bin liquidity data with interactive visualization',
+    path: '/demos/bin-data',
+    status: 'live',
+    category: 'core',
+    priority: 'high',
+    complexity: 'basic',
+    sdkFeatures: [4],
+    icon: BarChart3
+  },
+  {
+    id: 'multi-provider-oracle',
+    title: 'Multi-Provider Oracle System',
+    description: 'Unified oracle system with automatic failover across multiple providers',
+    path: '/demos/multi-provider-oracle',
+    status: 'live',
+    category: 'oracle',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [7],
+    icon: Globe
+  },
+  {
+    id: 'price-feed-caching',
+    title: 'ML-Powered Price Feed Caching',
+    description: 'Advanced caching with machine learning for 40% RPC reduction',
+    path: '/demos/price-feed-caching',
+    status: 'live',
+    category: 'oracle',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [56],
+    icon: Zap
+  },
+  {
+    id: 'pnl-tracking',
+    title: 'P&L Tracking System',
+    description: 'Comprehensive profit and loss tracking with historical charts',
+    path: '/demos/pnl-tracking',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [12],
+    icon: TrendingUp
+  },
+  {
+    id: 'portfolio-overview',
+    title: 'Portfolio Overview',
+    description: 'Portfolio-wide analysis with allocation charts and risk metrics',
+    path: '/demos/portfolio-overview',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [13],
+    icon: PieChart
+  },
+  {
+    id: 'basic-portfolio-aggregation',
+    title: 'Basic Portfolio Aggregation',
+    description: 'Portfolio aggregation with core metrics and basic analytics',
+    path: '/demos/basic-portfolio-aggregation',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'basic',
+    sdkFeatures: [53],
+    icon: Layers
+  },
+  {
+    id: 'analytics-dashboard',
+    title: 'Analytics Dashboard',
+    description: 'Complete analytics dashboard with real-time metrics and insights',
+    path: '/demos/analytics-dashboard',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [48],
+    icon: BarChart3
+  },
+  {
+    id: 'performance-tracking',
+    title: 'Performance Tracking',
+    description: 'Real-time position performance monitoring and tracking',
+    path: '/demos/performance-tracking',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'basic',
+    sdkFeatures: [50],
+    icon: Activity
+  },
+  {
+    id: 'fee-collection',
+    title: 'Fee Collection',
+    description: 'Automated fee collection transaction flow with SDK integration',
+    path: '/demos/fee-collection',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [45],
+    icon: Coins
+  },
+  {
+    id: 'fee-tier-analysis',
+    title: 'Fee Tier Analysis',
+    description: 'Comprehensive fee tier analysis and optimization recommendations',
+    path: '/demos/fee-tier-analysis',
+    status: 'live',
+    category: 'advanced',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [51],
+    icon: Target
+  },
+  {
+    id: 'position-liquidity-analytics',
+    title: 'Position Liquidity Analytics',
+    description: 'Advanced liquidity concentration analysis and metrics',
+    path: '/demos/position-liquidity-analytics',
+    status: 'live',
+    category: 'analytics',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [55],
+    icon: BarChart3
+  }
+]
 
 const PHASE_1_DEMOS: Demo[] = [
   {
@@ -117,32 +291,6 @@ const PHASE_1_DEMOS: Demo[] = [
   }
 ]
 
-const EXISTING_DEMOS: Demo[] = [
-  {
-    id: 'pool-data',
-    title: 'Pool Data Loading',
-    description: 'Real-time DLMM pool data with liquidity and bin information',
-    path: '/positions',
-    status: 'live',
-    category: 'core',
-    priority: 'high',
-    complexity: 'basic',
-    sdkFeatures: [1],
-    icon: Activity
-  },
-  {
-    id: 'position-discovery',
-    title: 'Position Discovery',
-    description: 'User position discovery with wallet integration',
-    path: '/positions',
-    status: 'live',
-    category: 'core',
-    priority: 'high',
-    complexity: 'basic',
-    sdkFeatures: [2],
-    icon: Search
-  }
-]
 
 const PHASE_2_DEMOS: Demo[] = [
   {
@@ -611,7 +759,7 @@ export default function DemosPage() {
   const [filter, setFilter] = useState<'all' | 'core' | 'oracle' | 'analytics' | 'advanced'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'beta' | 'planned'>('all')
 
-  const allDemos = [...EXISTING_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS, ...PHASE_3_DEMOS, ...PHASE_4_WEEK_7_DEMOS, ...PHASE_4_WEEK_8_DEMOS]
+  const allDemos = [...PHASE_0_DEMOS, ...PHASE_1_DEMOS, ...PHASE_2_DEMOS, ...PHASE_3_DEMOS, ...PHASE_4_WEEK_7_DEMOS, ...PHASE_4_WEEK_8_DEMOS]
 
   const filteredDemos = allDemos.filter(demo => {
     if (filter !== 'all' && demo.category !== filter) return false
