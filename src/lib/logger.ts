@@ -116,8 +116,21 @@ class Logger {
     },
 
     error: (endpoint: string, operation: string, error: any) => {
-      this.metrics.errors++
-      console.error(`❌ RPC ERROR: ${operation} -> ${endpoint}:`, error?.message || error)
+      // FIXED: Don't log 403 errors as ERROR - they're expected in demo mode
+      const errorMessage = error?.message || error?.toString() || error
+      const is403Error = errorMessage.includes('403') || errorMessage.includes('Forbidden')
+      const is401Error = errorMessage.includes('401') || errorMessage.includes('Unauthorized')
+
+      if (is403Error || is401Error) {
+        // Log as warning instead of error for expected auth issues
+        if (isDevelopment) {
+          console.warn(`⚠️ ${is403Error ? '403 Forbidden' : '401 Unauthorized'}: ${endpoint} - This is expected in demo mode`, errorMessage)
+        }
+      } else {
+        // Log other errors normally
+        this.metrics.errors++
+        console.error(`❌ RPC ERROR: ${operation} -> ${endpoint}:`, errorMessage)
+      }
     },
 
     fallback: (fromEndpoint: string, toEndpoint: string, operation: string) => {

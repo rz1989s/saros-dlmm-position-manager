@@ -150,15 +150,55 @@ export function BacktestingDashboard() {
     } catch (error: any) {
       console.error('❌ Failed to fetch pools:', error)
 
-      // Provide user-friendly error message for pool fetching
-      let errorMessage = 'Failed to load trading pools. Using fallback options.'
+      // FIXED: Add fallback pools when RPC fails
+      const fallbackPools = [
+        {
+          pair: {
+            tokenX: { symbol: 'SOL' },
+            tokenY: { symbol: 'USDC' }
+          } as any,
+          address: new PublicKey('58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2')
+        },
+        {
+          pair: {
+            tokenX: { symbol: 'RAY' },
+            tokenY: { symbol: 'SOL' }
+          } as any,
+          address: new PublicKey('Cx4xoCsJbvFLLH61MPdUp6CvEeaUKgUnpWzTRZC81rXG')
+        },
+        {
+          pair: {
+            tokenX: { symbol: 'ORCA' },
+            tokenY: { symbol: 'USDC' }
+          } as any,
+          address: new PublicKey('61R1ndXxvsWXXkWSyNkCxnzwd3zUNB8Q2ibmkiLPC8ht')
+        },
+        {
+          pair: {
+            tokenX: { symbol: 'JUP' },
+            tokenY: { symbol: 'SOL' }
+          } as any,
+          address: new PublicKey('H4snTKK9adiU15gP22ErfZYtro4aqPNtVU4zrb5NVSnA')
+        }
+      ]
 
-      if (error.message?.includes('network') || error.message?.includes('RPC')) {
-        errorMessage = 'Network issue while loading pools. Some pools may not be available.'
-      } else if (error.message?.includes('wallet')) {
-        errorMessage = 'Wallet connection required to load pools. Please connect your wallet.'
+      setAvailablePools(fallbackPools)
+
+      // Auto-select first fallback pool
+      if (fallbackPools.length > 0 && !selectedPool) {
+        setSelectedPool(fallbackPools[0])
       }
 
+      // Provide user-friendly error message for pool fetching
+      let errorMessage = 'Using demo pools for testing. Real-time pool data unavailable.'
+
+      if (error.message?.includes('network') || error.message?.includes('RPC') || error.message?.includes('403')) {
+        errorMessage = 'Network issue detected. Using demo pools for backtesting.'
+      } else if (error.message?.includes('wallet')) {
+        errorMessage = 'Wallet connection issue. Using demo pools for testing.'
+      }
+
+      console.log('✅ Loaded', fallbackPools.length, 'fallback pools for backtesting')
       setValidationErrors(prev => ({ ...prev, pools: errorMessage }))
     } finally {
       setPoolsLoading(false)

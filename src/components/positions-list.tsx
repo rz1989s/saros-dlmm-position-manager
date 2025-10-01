@@ -25,6 +25,7 @@ import { useWalletState } from '@/hooks/use-wallet-integration'
 import { useDataSource } from '@/contexts/data-source-context'
 import { DLMMPosition, PositionAnalytics } from '@/lib/types'
 import { calculatePositionAnalytics } from '@/lib/dlmm/utils'
+import { getMockPositionAnalytics } from '@/lib/dlmm/mock-positions'
 
 interface PositionsListProps {
   onCreatePosition?: () => void
@@ -55,20 +56,15 @@ const PositionsList = memo(function PositionsList({
       const newAnalytics = new Map<string, PositionAnalytics>()
 
       positions.forEach(position => {
-        // Generate stable mock data based on position ID to prevent hydration mismatches
-        const positionSeed = position.id.slice(-8) // Use last 8 chars as seed
-        const seedNumber = parseInt(positionSeed, 16) || 1 // Convert to number
+        // Use getMockPositionAnalytics for realistic, varied position data
+        const mockAnalytics = getMockPositionAnalytics(position)
 
-        // Create deterministic values based on position ID
-        const currentValue = (seedNumber % 10000) + 1000
-        const initialValue = currentValue * (0.8 + ((seedNumber % 100) / 250)) // Deterministic ratio
-        const totalFeesEarned = (seedNumber % 100) + 10
-
+        // Convert mock analytics to PositionAnalytics format
         const positionAnalytics = calculatePositionAnalytics(
           position,
-          currentValue,
-          initialValue,
-          totalFeesEarned
+          mockAnalytics.currentValue,
+          mockAnalytics.initialValue,
+          mockAnalytics.totalFeesUsd
         )
 
         newAnalytics.set(position.id, positionAnalytics)
