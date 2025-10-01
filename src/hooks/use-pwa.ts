@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useIsClient } from '@/lib/utils/client-only'
 import {
   PWAInstallState,
@@ -314,14 +314,15 @@ export function usePWAStatus() {
   const isPWAEnabled = serviceWorker.registration !== null
   const isAppLike = installState.isStandalone || installState.isInstalled
 
-  return {
+  // Memoize the return value to prevent infinite re-renders in PWAProvider
+  return useMemo(() => ({
     install: installState,
     isOnline,
     serviceWorker,
     notifications,
     isPWAEnabled,
     isAppLike
-  }
+  }), [installState, isOnline, serviceWorker, notifications, isPWAEnabled, isAppLike])
 }
 
 // Update Prompt Hook
