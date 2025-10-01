@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,8 +12,6 @@ import { MarketIntelligence } from '@/components/fees/market-intelligence'
 import { HistoricalAnalysis } from '@/components/fees/historical-analysis'
 
 export default function FeesPage() {
-  const [activeTab, setActiveTab] = useState('overview')
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Header */}
@@ -51,7 +48,7 @@ export default function FeesPage() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="optimizer">Optimizer</TabsTrigger>

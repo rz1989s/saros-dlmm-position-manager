@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,8 +11,6 @@ import { StressTestingPanel } from '@/components/risk/stress-testing-panel'
 import { AlertConfigurator } from '@/components/risk/alert-configurator'
 
 export default function RiskPage() {
-  const [activeTab, setActiveTab] = useState('overview')
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
       {/* Header */}
@@ -50,7 +47,7 @@ export default function RiskPage() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="assessment">Assessment</TabsTrigger>

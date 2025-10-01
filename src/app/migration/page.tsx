@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,8 +12,6 @@ import { AutomationPanel } from '@/components/migration/automation-panel'
 import { MigrationHistory } from '@/components/migration/migration-history'
 
 export default function MigrationPage() {
-  const [activeTab, setActiveTab] = useState('discovery')
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50">
       {/* Header */}
@@ -51,7 +48,7 @@ export default function MigrationPage() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs defaultValue="discovery" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
             <TabsTrigger value="discovery">Discovery</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
