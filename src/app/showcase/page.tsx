@@ -12,7 +12,8 @@ import {
   Code,
   FileText,
   Zap,
-  Award
+  Award,
+  PlayCircle
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -228,6 +229,34 @@ export default function ShowcasePage() {
           transition={{ delay: 1.3 }}
         >
           <DeveloperResources />
+        </motion.div>
+
+        {/* Explore More */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="bg-white rounded-xl border-2 border-gray-200 p-8 max-w-4xl mx-auto"
+        >
+          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+            Explore More
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link href="/demos">
+              <Button variant="outline" className="w-full" size="lg">
+                <PlayCircle className="mr-2 h-5 w-5" />
+                69 Interactive Demos
+                <Trophy className="ml-auto h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/app">
+              <Button variant="outline" className="w-full" size="lg">
+                <Monitor className="mr-2 h-5 w-5" />
+                Live Applications
+                <Trophy className="ml-auto h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </motion.div>
 
       </div>

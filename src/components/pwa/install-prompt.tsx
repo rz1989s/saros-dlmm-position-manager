@@ -28,6 +28,20 @@ export function InstallPrompt({
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
+  // Check localStorage for dismissal state on mount
+  useEffect(() => {
+    const dismissedUntil = localStorage.getItem('pwa-install-dismissed-until')
+    if (dismissedUntil) {
+      const expiryTime = parseInt(dismissedUntil, 10)
+      if (Date.now() < expiryTime) {
+        setIsDismissed(true)
+      } else {
+        // Expired, remove the item
+        localStorage.removeItem('pwa-install-dismissed-until')
+      }
+    }
+  }, [])
+
   useEffect(() => {
     if (canPrompt && !isDismissed && !isInstalled) {
       const timer = setTimeout(() => {
@@ -52,6 +66,11 @@ export function InstallPrompt({
   const handleDismiss = () => {
     setIsDismissed(true)
     setIsVisible(false)
+
+    // Persist dismissal for 7 days
+    const dismissUntil = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
+    localStorage.setItem('pwa-install-dismissed-until', dismissUntil.toString())
+
     onDismiss?.()
   }
 

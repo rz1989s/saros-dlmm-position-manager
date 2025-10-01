@@ -151,7 +151,7 @@ export default function RootLayout({
             <DataSourceProvider>
               <JudgeModeProvider>
                 <PWAProvider
-                  enableInstallPrompt={true}
+                  enableInstallPrompt={false}
                   enableUpdatePrompt={true}
                   enableOfflineIndicator={true}
                   installPromptDelay={5000}

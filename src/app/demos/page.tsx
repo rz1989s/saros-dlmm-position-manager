@@ -42,7 +42,8 @@ import {
   Database,
   Droplets,
   Coins,
-  Award
+  Award,
+  Trophy
 } from 'lucide-react'
 
 interface Demo {
@@ -1117,6 +1118,29 @@ export default function DemosPage() {
             )
           })}
         </StaggerList>
+
+        {/* Explore More */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 p-8 max-w-4xl mx-auto mt-12">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+            Explore More
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link href="/app">
+              <Button variant="outline" className="w-full" size="lg">
+                <Layers className="mr-2 h-5 w-5" />
+                Live Applications
+                <Trophy className="ml-auto h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/showcase">
+              <Button variant="outline" className="w-full" size="lg">
+                <Trophy className="mr-2 h-5 w-5" />
+                SDK Showcase
+                <Trophy className="ml-auto h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )
