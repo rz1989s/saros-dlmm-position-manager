@@ -282,7 +282,7 @@ export function AlertPreferences() {
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm">
               <span className="font-medium">Status: </span>
-              {typeof window !== 'undefined' && 'Notification' in window
+              {typeof window !== 'undefined' && 'Notification' in window && typeof Notification !== 'undefined'
                 ? Notification.permission === 'granted'
                   ? 'Granted ✓'
                   : Notification.permission === 'denied'
@@ -292,6 +292,7 @@ export function AlertPreferences() {
             </p>
             {typeof window !== 'undefined' &&
               'Notification' in window &&
+              typeof Notification !== 'undefined' &&
               Notification.permission === 'denied' && (
                 <p className="text-sm text-orange-600 mt-2">
                   Please enable notifications in your browser settings to receive alerts

@@ -176,14 +176,18 @@ export class NotificationManager {
 
   public getState(): NotificationState {
     return {
-      permission: typeof window !== 'undefined' ? Notification.permission : 'default',
-      isSupported: typeof window !== 'undefined' && 'Notification' in window,
+      permission: typeof window !== 'undefined' && typeof Notification !== 'undefined'
+        ? Notification.permission
+        : 'default',
+      isSupported: typeof window !== 'undefined' && 'Notification' in window && typeof Notification !== 'undefined',
       registration: this.registration
     }
   }
 
   public async requestPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' ||
+        !('Notification' in window) ||
+        typeof Notification === 'undefined') {
       console.warn('[PWA] Notifications not supported')
       return 'denied'
     }
