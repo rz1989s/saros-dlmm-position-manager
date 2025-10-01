@@ -7,28 +7,31 @@ import { Button } from '@/components/ui/button'
 import { PositionCard } from '@/components/position-card'
 import { WalletStatus } from '@/components/wallet-status'
 import { AddLiquidityModal } from '@/components/modals/add-liquidity-modal-simple'
+import { FeatureIdentifier } from '@/components/sdk/feature-identifier'
+import { SDK_FEATURES } from '@/lib/sdk-showcase/feature-registry'
 import { PositionCardSkeleton } from '@/components/ui/loading-states'
 import { StaggerList } from '@/components/animations/stagger-list'
-import { motion } from 'framer-motion'
-import { fadeInUp } from '@/lib/animations'
+import { DataSourceToggle } from '@/components/ui/data-source-toggle'
 import { 
-  RefreshCw, 
-  Plus, 
-  Filter, 
-  Search, 
-  Loader2,
+  RefreshCw,
+  Plus,
+  Filter,
+  Search,
   AlertCircle,
   Wallet
 } from 'lucide-react'
 import { useUserPositions } from '@/hooks/use-dlmm'
 import { useWalletState } from '@/hooks/use-wallet-integration'
+import { useDataSource } from '@/contexts/data-source-context'
 import { DLMMPosition, PositionAnalytics } from '@/lib/types'
 import { calculatePositionAnalytics } from '@/lib/dlmm/utils'
+import { getMockPositionAnalytics } from '@/lib/dlmm/mock-positions'
 
 interface PositionsListProps {
   onCreatePosition?: () => void
   onManagePosition?: (position: DLMMPosition) => void
   onRebalancePosition?: (position: DLMMPosition) => void
+  onCollectFees?: (position: DLMMPosition) => void
   onClosePosition?: (position: DLMMPosition) => void
 }
 
@@ -36,36 +39,37 @@ const PositionsList = memo(function PositionsList({
   onCreatePosition,
   onManagePosition,
   onRebalancePosition,
+  onCollectFees,
   onClosePosition,
 }: PositionsListProps) {
   const { isConnected } = useWalletState()
+  const { isMockDataMode } = useDataSource()
   const { positions, loading, refreshing, refreshPositions } = useUserPositions()
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [analytics, setAnalytics] = useState<Map<string, PositionAnalytics>>(new Map())
   const [showAddLiquidity, setShowAddLiquidity] = useState(false)
 
-  // Calculate analytics for each position
+  // Calculate analytics for each position with stable values
   useEffect(() => {
     if (positions.length > 0) {
       const newAnalytics = new Map<string, PositionAnalytics>()
-      
+
       positions.forEach(position => {
-        // Mock data for current value and fees - in real app, this would come from API
-        const currentValue = Math.random() * 10000 + 1000
-        const initialValue = currentValue * (0.8 + Math.random() * 0.4) // Random initial value
-        const totalFeesEarned = Math.random() * 100 + 10
-        
+        // Use getMockPositionAnalytics for realistic, varied position data
+        const mockAnalytics = getMockPositionAnalytics(position)
+
+        // Convert mock analytics to PositionAnalytics format
         const positionAnalytics = calculatePositionAnalytics(
           position,
-          currentValue,
-          initialValue,
-          totalFeesEarned
+          mockAnalytics.currentValue,
+          mockAnalytics.initialValue,
+          mockAnalytics.totalFeesUsd
         )
-        
+
         newAnalytics.set(position.id, positionAnalytics)
       })
-      
+
       setAnalytics(newAnalytics)
     }
   }, [positions])
@@ -128,7 +132,8 @@ const PositionsList = memo(function PositionsList({
     setShowAddLiquidity(false)
   }, [])
 
-  if (!isConnected) {
+  // Show wallet connection prompt only in real data mode when not connected
+  if (!isConnected && !isMockDataMode) {
     return (
       <div className="space-y-6">
         <Card className="border-dashed">
@@ -148,7 +153,11 @@ const PositionsList = memo(function PositionsList({
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <FeatureIdentifier
+        feature={SDK_FEATURES[18]}
+        badgePosition="top-right"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -188,10 +197,15 @@ const PositionsList = memo(function PositionsList({
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </FeatureIdentifier>
 
       {/* Controls */}
-      <Card>
+      <FeatureIdentifier
+        feature={SDK_FEATURES[2]}
+        badgePosition="top-left"
+      >
+        <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Your Positions</CardTitle>
@@ -246,6 +260,11 @@ const PositionsList = memo(function PositionsList({
             </div>
           </div>
 
+          {/* Data Source Toggle */}
+          <div className="border-t pt-4">
+            <DataSourceToggle />
+          </div>
+
           {/* Loading State */}
           {loading && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -261,7 +280,7 @@ const PositionsList = memo(function PositionsList({
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Positions Found</h3>
               <p className="text-muted-foreground text-center mb-6 max-w-md">
-                You don't have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
+                You don&apos;t have any DLMM positions yet. Create your first position to start earning fees from liquidity provision.
               </p>
               <Button onClick={handleCreatePosition}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -305,6 +324,7 @@ const PositionsList = memo(function PositionsList({
                     analytics={positionAnalytics}
                     onManage={onManagePosition}
                     onRebalance={onRebalancePosition}
+                    onCollectFees={onCollectFees}
                     onClose={onClosePosition}
                   />
                 )
@@ -314,7 +334,8 @@ const PositionsList = memo(function PositionsList({
 
           {/* Pagination could be added here if needed */}
         </CardContent>
-      </Card>
+        </Card>
+      </FeatureIdentifier>
 
       {/* Add Liquidity Modal */}
       <AddLiquidityModal

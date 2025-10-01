@@ -1,8 +1,8 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { ReactNode, Children, isValidElement, cloneElement } from 'react'
-import { staggerContainer, fadeInUp } from '@/lib/animations'
+import { ReactNode, Children, isValidElement } from 'react'
+import { fadeInUp } from '@/lib/animations'
 
 interface StaggerListProps {
   children: ReactNode
@@ -20,7 +20,6 @@ export function StaggerList({
   className = '',
   variant = 'slideUp',
   duration = 0.3,
-  once = true,
   onAnimationComplete
 }: StaggerListProps) {
   const getItemVariant = () => {

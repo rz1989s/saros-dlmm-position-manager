@@ -11,7 +11,7 @@ import {
   ToastAction,
 } from '@/components/ui/toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, AlertCircle, AlertTriangle, Info, Loader2, X } from 'lucide-react'
+import { CheckCircle, AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react'
 
 interface ToasterProps {
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center'
@@ -57,11 +57,6 @@ export function Toaster({ position = 'top-right', className }: ToasterProps) {
     }
   }
 
-  const containerVariants = {
-    initial: {},
-    animate: {},
-    exit: {}
-  }
 
   const toastVariants = {
     initial: (position: string) => {

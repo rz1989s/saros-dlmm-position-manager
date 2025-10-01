@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { WifiOff, Wifi, RefreshCw, AlertTriangle } from 'lucide-react'
+import { WifiOff, Wifi, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -53,7 +53,7 @@ export function OfflineIndicator({
             <WifiOff className="h-5 w-5 text-red-600 dark:text-red-400" />
             <div>
               <p className="font-medium text-sm text-red-900 dark:text-red-100">
-                You're offline
+                You&apos;re offline
               </p>
               <p className="text-xs text-red-700 dark:text-red-200">
                 Some features may be limited. Cached data is being used.

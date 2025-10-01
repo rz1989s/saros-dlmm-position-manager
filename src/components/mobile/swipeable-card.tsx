@@ -2,7 +2,7 @@
 
 import { motion, PanInfo, useMotionValue, useTransform } from 'framer-motion'
 import { ReactNode, useState, useRef } from 'react'
-import { Trash2, Archive, Star, MoreHorizontal, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Trash2, Archive, Star, ArrowLeft, ArrowRight } from 'lucide-react'
 
 interface SwipeAction {
   icon: ReactNode
@@ -58,7 +58,7 @@ export function SwipeableCard({
     setIsDragging(true)
   }
 
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDrag = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (disabled) return
 
     const { offset } = info
@@ -72,7 +72,7 @@ export function SwipeableCard({
     }
   }
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (disabled) return
 
     setIsDragging(false)
@@ -285,7 +285,7 @@ export function SwipeToReveal({
   const [isRevealed, setIsRevealed] = useState(false)
   const x = useMotionValue(0)
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset } = info
     const shouldReveal = side === 'right' ? offset.x > threshold : offset.x < -threshold
 
@@ -346,7 +346,7 @@ export function SwipeableListItem({
   const leftOpacity = useTransform(x, [0, threshold], [0, 1])
   const rightOpacity = useTransform(x, [-threshold, 0], [1, 0])
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info
 
     if (Math.abs(offset.x) > threshold || Math.abs(velocity.x) > 500) {

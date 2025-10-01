@@ -1,5 +1,6 @@
 import { Connection } from '@solana/web3.js'
 import { RPC_ENDPOINTS, RPC_CONFIG } from '@/lib/constants'
+import { logger } from '@/lib/logger'
 
 interface ConnectionAttempt {
   url: string
@@ -11,7 +12,6 @@ interface ConnectionAttempt {
 class ConnectionManager {
   private connections: Map<string, Connection> = new Map()
   private connectionStatus: Map<string, ConnectionAttempt> = new Map()
-  private currentConnectionIndex: number = 0
   private requestQueue: Array<{ resolve: Function; reject: Function; request: Function }> = []
   private requestCount: number = 0
   private lastResetTime: number = Date.now()
@@ -36,9 +36,9 @@ class ConnectionManager {
           failures: 0,
           isBlacklisted: false
         })
-        console.log(`✅ Initialized RPC connection: ${url}`)
+        logger.info(`✅ Initialized RPC connection: ${url}`)
       } catch (error) {
-        console.error(`❌ Failed to initialize RPC connection: ${url}`, error)
+        logger.error(`❌ Failed to initialize RPC connection: ${url}`, error)
       }
     })
   }
@@ -75,8 +75,9 @@ class ConnectionManager {
         const connection = this.connections.get(connectionStatus.url)
         if (!connection) continue
 
-        console.log(`🔄 Attempting RPC call to: ${connectionStatus.url}`)
+        logger.rpc.start(connectionStatus.url, 'RPC Call')
 
+        const startTime = Date.now()
         const result = await Promise.race([
           operation(connection),
           new Promise<never>((_, reject) =>
@@ -88,7 +89,8 @@ class ConnectionManager {
         connectionStatus.failures = 0
         connectionStatus.lastAttempt = Date.now()
 
-        console.log(`✅ RPC call successful: ${connectionStatus.url}`)
+        const duration = Date.now() - startTime
+        logger.rpc.success(connectionStatus.url, 'RPC Call', duration)
         return result
 
       } catch (error: any) {
@@ -96,7 +98,7 @@ class ConnectionManager {
         connectionStatus.failures++
         connectionStatus.lastAttempt = Date.now()
 
-        console.error(`❌ RPC call failed: ${connectionStatus.url}`, error.message)
+        logger.rpc.error(connectionStatus.url, 'RPC Call', error)
 
         // Blacklist endpoint if too many failures
         if (connectionStatus.failures >= RPC_CONFIG.maxRetries) {
@@ -104,10 +106,20 @@ class ConnectionManager {
           console.warn(`🚫 Blacklisted RPC endpoint: ${connectionStatus.url}`)
         }
 
-        // If it's a 403 (rate limit), wait before next attempt
-        if (error.message?.includes('403') || error.message?.includes('rate limit')) {
+        // Handle specific error types gracefully
+        if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
+          console.warn(`⚠️ 403 Forbidden: ${connectionStatus.url} - This is expected in demo mode`)
           await new Promise(resolve =>
             setTimeout(resolve, RPC_CONFIG.retryDelayMs * connectionStatus.failures)
+          )
+        } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+          console.warn(`⚠️ 401 Unauthorized: ${connectionStatus.url} - API key may be required`)
+          // Don't retry 401 errors as much
+          connectionStatus.failures += 2
+        } else if (error.message?.includes('rate limit') || error.message?.includes('Too Many Requests')) {
+          console.warn(`⚠️ Rate limited: ${connectionStatus.url} - Backing off`)
+          await new Promise(resolve =>
+            setTimeout(resolve, RPC_CONFIG.retryDelayMs * Math.min(connectionStatus.failures, 5))
           )
         }
       }

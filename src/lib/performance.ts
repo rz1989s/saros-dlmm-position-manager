@@ -1,4 +1,4 @@
-import React, { DependencyList, EffectCallback, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { DependencyList, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
@@ -24,6 +24,7 @@ export function useThrottle<T>(value: T, interval: number): T {
     if (Date.now() >= lastExecuted.current + interval) {
       lastExecuted.current = Date.now()
       setThrottledValue(value)
+      return undefined
     } else {
       const timerId = setTimeout(() => {
         lastExecuted.current = Date.now()
@@ -89,6 +90,7 @@ export function useAsyncEffect(
       if (!cancelled && typeof result === 'function') {
         return result
       }
+      return undefined
     }
 
     cleanup()
@@ -107,7 +109,7 @@ export function useIntersectionObserver(
 
   useEffect(() => {
     const element = elementRef.current
-    if (!element) return
+    if (!element) return undefined
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -165,23 +167,19 @@ export const PerformanceOptimizer = {
   memoizeComponent: <T extends React.ComponentType<any>>(
     Component: T,
     propsAreEqual?: (prev: any, next: any) => boolean
-  ): T => {
-    return React.memo(Component, propsAreEqual) as T
+  ): React.MemoExoticComponent<T> => {
+    return React.memo(Component, propsAreEqual)
   },
 
-  createStableCallback: <T extends (...args: any[]) => any>(
-    callback: T,
-    deps: DependencyList
-  ): T => {
-    return useCallback(callback, deps)
-  },
+  // Moved to standalone hooks below to follow React Hook rules
+}
 
-  memoizeValue: <T>(
-    factory: () => T,
-    deps: DependencyList
-  ): T => {
-    return useMemo(factory, deps)
-  }
+// Proper React hook replacements for removed object methods
+export function useStableCallback<T extends (...args: any[]) => any>(
+  callback: T,
+  deps: DependencyList
+): T {
+  return useCallback(callback, deps)
 }
 
 export function useStableRef<T>(value: T) {

@@ -1,4 +1,5 @@
 import { PublicKey, Transaction } from '@solana/web3.js'
+import { BN } from '@coral-xyz/anchor'
 import { DLMMOperations } from '../../../src/lib/dlmm/operations'
 
 // Mock the dlmmClient
@@ -55,8 +56,25 @@ describe('DLMMOperations', () => {
     }
 
     it('should add liquidity successfully', async () => {
-      const mockPairData = { activeBinId: 123 }
-      const mockTransaction = { signature: 'mock-tx' }
+      const mockPairData = {
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
+        bump: [1],
+        liquidityBookConfig: 'liquidityBookConfig11111111111111111',
+        binStepSeed: [1, 0, 0],
+        staticFeeParameters: { baseFactor: 0, filterPeriod: 0, decayPeriod: 0, reductionFactor: 0, variableFeeControl: 0, protocolShare: 0, maxVolatilityAccumulator: 0, space: [0, 0] as [number, number] },
+        variableFeeParameters: { volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, timeOfLastUpdate: 0 },
+        dynamicFeeParameters: { timeLastUpdated: new BN(0), volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, space: [0, 0, 0, 0] as [number, number, number, number] },
+        oraclePriceX64: '0',
+        oraclePriceLastUpdatedAt: '0',
+        feeOwner: 'So11111111111111111111111111111111111111112',
+        protocolFeesX: '0',
+        protocolFeesY: '0',
+        hook: 'So11111111111111111111111111111111111111112'
+      }
+      const mockTransaction = new Transaction()
       const mockDistribution = [
         { binId: 122, xAmount: 500, yAmount: 1000 },
         { binId: 123, xAmount: 500, yAmount: 1000 },
@@ -88,7 +106,24 @@ describe('DLMMOperations', () => {
     })
 
     it('should handle transaction creation errors', async () => {
-      const mockPairData = { activeBinId: 123 }
+      const mockPairData = {
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
+        bump: [1],
+        liquidityBookConfig: 'liquidityBookConfig11111111111111111',
+        binStepSeed: [1, 0, 0],
+        staticFeeParameters: { baseFactor: 0, filterPeriod: 0, decayPeriod: 0, reductionFactor: 0, variableFeeControl: 0, protocolShare: 0, maxVolatilityAccumulator: 0, space: [0, 0] as [number, number] },
+        variableFeeParameters: { volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, timeOfLastUpdate: 0 },
+        dynamicFeeParameters: { timeLastUpdated: new BN(0), volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, space: [0, 0, 0, 0] as [number, number, number, number] },
+        oraclePriceX64: '0',
+        oraclePriceLastUpdatedAt: '0',
+        feeOwner: 'So11111111111111111111111111111111111111112',
+        protocolFeesX: '0',
+        protocolFeesY: '0',
+        hook: 'So11111111111111111111111111111111111111112'
+      }
       mockDlmmClient.getLbPair.mockResolvedValue(mockPairData)
       mockCalculateLiquidityDistribution.mockReturnValue([])
       mockDlmmClient.createAddLiquidityTransaction.mockRejectedValue(
@@ -112,6 +147,13 @@ describe('DLMMOperations', () => {
     it('should remove liquidity successfully', async () => {
       const mockUserPositions = [
         {
+          pair: mockPoolAddress.toString(),
+          positionMint: 'PositionMint1111111111111111111111111',
+          position: 'Position1111111111111111111111111111',
+          liquidityShares: ['3000'],
+          lowerBinId: 120,
+          upperBinId: 126,
+          space: [32],
           poolAddress: {
             equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
             toString: () => mockPoolAddress.toString()
@@ -156,6 +198,13 @@ describe('DLMMOperations', () => {
 
     it('should rebalance position successfully', async () => {
       const mockPosition = {
+        pair: mockPoolAddress.toString(),
+        positionMint: 'PositionMint1111111111111111111111111',
+        position: 'Position1111111111111111111111111111',
+        liquidityShares: ['1300'],
+        lowerBinId: 118,
+        upperBinId: 124,
+        space: [32],
         poolAddress: {
           equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
           toString: () => mockPoolAddress.toString()
@@ -204,8 +253,25 @@ describe('DLMMOperations', () => {
     }
 
     it('should create limit order successfully', async () => {
-      const mockPairData = { activeBinId: 123 }
-      const mockTransaction = { signature: 'limit-order-tx' }
+      const mockPairData = {
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
+        bump: [1],
+        liquidityBookConfig: 'liquidityBookConfig11111111111111111',
+        binStepSeed: [1, 0, 0],
+        staticFeeParameters: { baseFactor: 0, filterPeriod: 0, decayPeriod: 0, reductionFactor: 0, variableFeeControl: 0, protocolShare: 0, maxVolatilityAccumulator: 0, space: [0, 0] as [number, number] },
+        variableFeeParameters: { volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, timeOfLastUpdate: 0 },
+        dynamicFeeParameters: { timeLastUpdated: new BN(0), volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, space: [0, 0, 0, 0] as [number, number, number, number] },
+        oraclePriceX64: '0',
+        oraclePriceLastUpdatedAt: '0',
+        feeOwner: 'So11111111111111111111111111111111111111112',
+        protocolFeesX: '0',
+        protocolFeesY: '0',
+        hook: 'So11111111111111111111111111111111111111112'
+      }
+      const mockTransaction = new Transaction()
 
       mockDlmmClient.getLbPair.mockResolvedValue(mockPairData)
       mockDlmmClient.createAddLiquidityTransaction.mockResolvedValue(mockTransaction)
@@ -229,6 +295,13 @@ describe('DLMMOperations', () => {
   describe('optimizePosition', () => {
     it('should optimize position successfully', async () => {
       const mockPosition = {
+        pair: mockPoolAddress.toString(),
+        positionMint: 'PositionMint1111111111111111111111111',
+        position: 'Position1111111111111111111111111111',
+        liquidityShares: ['1300'],
+        lowerBinId: 118,
+        upperBinId: 124,
+        space: [32],
         poolAddress: {
           equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
           toString: () => mockPoolAddress.toString()
@@ -236,7 +309,24 @@ describe('DLMMOperations', () => {
         binLiquidity: { 120: '500', 121: '800' },
         totalValue: '2000',
       }
-      const mockPoolData = { activeBin: { binId: 123 } }
+      const mockPoolData = {
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
+        bump: [1],
+        liquidityBookConfig: 'liquidityBookConfig11111111111111111',
+        binStepSeed: [1, 0, 0],
+        staticFeeParameters: { baseFactor: 0, filterPeriod: 0, decayPeriod: 0, reductionFactor: 0, variableFeeControl: 0, protocolShare: 0, maxVolatilityAccumulator: 0, space: [0, 0] as [number, number] },
+        variableFeeParameters: { volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, timeOfLastUpdate: 0 },
+        dynamicFeeParameters: { timeLastUpdated: new BN(0), volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, space: [0, 0, 0, 0] as [number, number, number, number] },
+        oraclePriceX64: '0',
+        oraclePriceLastUpdatedAt: '0',
+        feeOwner: 'So11111111111111111111111111111111111111112',
+        protocolFeesX: '0',
+        protocolFeesY: '0',
+        hook: 'So11111111111111111111111111111111111111112'
+      }
       const mockOptimalBins = [122, 123, 124]
       const mockRebalanceTransactions = [new Transaction()]
 
@@ -256,6 +346,13 @@ describe('DLMMOperations', () => {
 
     it('should return empty array when no optimization needed', async () => {
       const mockPosition = {
+        pair: mockPoolAddress.toString(),
+        positionMint: 'PositionMint1111111111111111111111111',
+        position: 'Position1111111111111111111111111111',
+        liquidityShares: ['2000'],
+        lowerBinId: 120,
+        upperBinId: 126,
+        space: [32],
         poolAddress: {
           equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
           toString: () => mockPoolAddress.toString()
@@ -263,7 +360,24 @@ describe('DLMMOperations', () => {
         binLiquidity: { 122: '500', 123: '800', 124: '700' },
         totalValue: '2000',
       }
-      const mockPoolData = { activeBin: { binId: 123 } }
+      const mockPoolData = {
+        activeId: 123,
+        tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        tokenMintY: 'So11111111111111111111111111111111111111112',
+        binStep: 100,
+        bump: [1],
+        liquidityBookConfig: 'liquidityBookConfig11111111111111111',
+        binStepSeed: [1, 0, 0],
+        staticFeeParameters: { baseFactor: 0, filterPeriod: 0, decayPeriod: 0, reductionFactor: 0, variableFeeControl: 0, protocolShare: 0, maxVolatilityAccumulator: 0, space: [0, 0] as [number, number] },
+        variableFeeParameters: { volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, timeOfLastUpdate: 0 },
+        dynamicFeeParameters: { timeLastUpdated: new BN(0), volatilityAccumulator: 0, volatilityReference: 0, idReference: 0, space: [0, 0, 0, 0] as [number, number, number, number] },
+        oraclePriceX64: '0',
+        oraclePriceLastUpdatedAt: '0',
+        feeOwner: 'So11111111111111111111111111111111111111112',
+        protocolFeesX: '0',
+        protocolFeesY: '0',
+        hook: 'So11111111111111111111111111111111111111112'
+      }
       const mockOptimalBins = [122, 123, 124] // Same as current bins
 
       mockDlmmClient.getUserPositions.mockResolvedValue([mockPosition])
@@ -283,6 +397,13 @@ describe('DLMMOperations', () => {
   describe('estimateRebalanceProfit', () => {
     it('should estimate rebalance profit with recommendation', async () => {
       const mockPosition = {
+        pair: mockPoolAddress.toString(),
+        positionMint: 'PositionMint1111111111111111111111111',
+        position: 'Position1111111111111111111111111111',
+        liquidityShares: ['10000'],
+        lowerBinId: 118,
+        upperBinId: 124,
+        space: [32],
         poolAddress: {
           equals: jest.fn().mockImplementation((other) => other === mockPoolAddress),
           toString: () => mockPoolAddress.toString()

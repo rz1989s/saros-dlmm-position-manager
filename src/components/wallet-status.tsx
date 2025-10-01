@@ -1,24 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useIsClient } from '@/lib/utils/client-only'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Wallet, Copy, ExternalLink, Loader2 } from 'lucide-react'
 import { useWalletState, useWalletIntegration } from '@/hooks/use-wallet-integration'
-import { formatNumber, formatAddress } from '@/lib/utils/format'
+import { formatNumber } from '@/lib/utils/format'
 import { copyToClipboard } from '@/lib/utils'
 
 export function WalletStatus() {
+  const isClient = useIsClient()
   const { isConnected, isConnecting, address, shortAddress, walletName, walletIcon } = useWalletState()
   const { getBalance, getNetworkInfo } = useWalletIntegration()
-  
+
   const [balance, setBalance] = useState<number>(0)
   const [networkInfo, setNetworkInfo] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (isConnected && address) {
+    if (isClient && isConnected && address) {
       setLoading(true)
       Promise.all([
         getBalance(),
@@ -30,10 +33,10 @@ export function WalletStatus() {
         setLoading(false)
       })
     }
-  }, [isConnected, address, getBalance, getNetworkInfo])
+  }, [isClient, isConnected, address, getBalance, getNetworkInfo])
 
   const handleCopyAddress = async () => {
-    if (address) {
+    if (isClient && address) {
       const success = await copyToClipboard(address)
       if (success) {
         setCopied(true)
@@ -43,8 +46,8 @@ export function WalletStatus() {
   }
 
   const openInExplorer = () => {
-    if (address) {
-      const explorerUrl = networkInfo?.rpcEndpoint?.includes('devnet') 
+    if (isClient && address) {
+      const explorerUrl = networkInfo?.rpcEndpoint?.includes('devnet')
         ? `https://explorer.solana.com/address/${address}?cluster=devnet`
         : `https://explorer.solana.com/address/${address}`
       window.open(explorerUrl, '_blank')
@@ -74,7 +77,7 @@ export function WalletStatus() {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {walletIcon ? (
-              <img src={walletIcon} alt={walletName} className="w-8 h-8 rounded" />
+              <Image src={walletIcon} alt={walletName} width={32} height={32} className="w-8 h-8 rounded" />
             ) : (
               <Wallet className="h-8 w-8 text-saros-primary" />
             )}

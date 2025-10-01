@@ -1,0 +1,950 @@
+import { renderHook, act, waitFor } from '@testing-library/react'
+import { PublicKey } from '@solana/web3.js'
+import {
+  useFeeOptimization,
+  useAvailableFeeTiers,
+  useFeeRecommendations,
+  useMigrationImpact,
+  useCustomFeeTier,
+  useFeeTierCache,
+  useComprehensiveFeeManagement
+} from '@/hooks/use-fee-optimization'
+
+// Mock the wallet adapter
+const mockUseWallet = {
+  publicKey: new PublicKey('11111111111111111111111111111112'),
+  connected: true,
+}
+
+jest.mock('@solana/wallet-adapter-react', () => ({
+  useWallet: () => mockUseWallet,
+}))
+
+// Mock the fee tier manager
+jest.mock('@/lib/dlmm/fee-tiers', () => ({
+  feeTierManager: {
+    analyzeFeeOptimization: jest.fn(),
+    getAvailableFeeTiers: jest.fn(),
+    getMarketBasedRecommendations: jest.fn(),
+    calculateMigrationImpact: jest.fn(),
+    createCustomFeeTier: jest.fn(),
+    getCacheStats: jest.fn(),
+    clearCache: jest.fn(),
+  },
+}))
+
+// Get the mocked manager for type checking
+import { feeTierManager } from '@/lib/dlmm/fee-tiers'
+const mockFeeTierManager = feeTierManager as jest.Mocked<typeof feeTierManager>
+
+// Mock constants
+jest.mock('@/lib/constants', () => ({
+  REFRESH_INTERVALS: {
+    prices: 1000,
+    analytics: 2000,
+    positions: 3000,
+  },
+}))
+
+describe('Fee Optimization Hooks', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    jest.clearAllTimers()
+    jest.useFakeTimers()
+
+    // Setup default mock returns
+    mockFeeTierManager.getCacheStats.mockReturnValue({
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
+    })
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+  })
+
+  describe('useFeeOptimization', () => {
+    const mockPoolAddress = new PublicKey('33333333333333333333333333333333')
+    const mockAnalysis = {
+      currentTier: {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Standard fee tier for volatile pairs',
+        recommendedFor: ['volatile pairs', 'medium volume'],
+        minLiquidity: '10000',
+        maxLiquidity: '100000',
+        isActive: true,
+      },
+      recommendedTier: {
+        id: 'premium-tier',
+        name: 'Premium',
+        baseFeeBps: 20,
+        protocolFeeBps: 3,
+        totalFeeBps: 23,
+        category: 'stable' as const,
+        description: 'Premium fee tier for stable pairs',
+        recommendedFor: ['stable pairs', 'high volume'],
+        minLiquidity: '50000',
+        isActive: true,
+      },
+      potentialSavings: 150.75,
+      savingsPercentage: 12.5,
+      analysisReason: 'Current tier has higher fees than optimal for this volume and volatility profile',
+      optimization: {
+        timeToBreakeven: 7,
+        projectedAnnualSavings: 1800.25,
+        riskLevel: 'low' as const,
+      },
+    }
+
+    const mockSettings = {
+      riskTolerance: 'moderate' as const,
+      liquidityRange: 'moderate' as const,
+      rebalanceFrequency: 'daily' as const,
+      maxSlippage: 0.01,
+      prioritizeFees: true,
+    }
+
+    it('should initialize with correct default state', () => {
+      const { result } = renderHook(() => useFeeOptimization())
+
+      expect(result.current.analysis).toBeNull()
+      expect(result.current.loading).toBe(false)
+      expect(result.current.error).toBeNull()
+      expect(result.current.lastUpdate).toBeNull()
+    })
+
+    it('should fetch fee optimization analysis successfully', async () => {
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockAnalysis)
+
+      const { result } = renderHook(() =>
+        useFeeOptimization(mockPoolAddress, '1000', 'USDC/SOL', mockSettings)
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.analysis).toEqual(mockAnalysis)
+      expect(result.current.lastUpdate).toBeDefined()
+      expect(mockFeeTierManager.analyzeFeeOptimization).toHaveBeenCalledWith(
+        mockPoolAddress,
+        '1000',
+        'USDC/SOL',
+        mockSettings
+      )
+    })
+
+    it('should handle string pool address', async () => {
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockAnalysis)
+
+      const { result } = renderHook(() =>
+        useFeeOptimization('33333333333333333333333333333333', '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(mockFeeTierManager.analyzeFeeOptimization).toHaveBeenCalledWith(
+        expect.objectContaining({
+          toString: expect.any(Function),
+          toBase58: expect.any(Function)
+        }),
+        '1000',
+        'USDC/SOL',
+        expect.any(Object) // Default settings
+      )
+    })
+
+    it('should use default settings when not provided', async () => {
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockAnalysis)
+
+      const { result } = renderHook(() =>
+        useFeeOptimization(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(mockFeeTierManager.analyzeFeeOptimization).toHaveBeenCalledWith(
+        mockPoolAddress,
+        '1000',
+        'USDC/SOL',
+        {
+          riskTolerance: 'moderate',
+          liquidityRange: 'moderate',
+          rebalanceFrequency: 'daily',
+          maxSlippage: 0.01,
+          prioritizeFees: true,
+        }
+      )
+    })
+
+    it('should handle missing parameters', async () => {
+      const { result } = renderHook(() => useFeeOptimization())
+
+      await waitFor(() => {
+        expect(result.current.analysis).toBeNull()
+      })
+
+      expect(mockFeeTierManager.analyzeFeeOptimization).not.toHaveBeenCalled()
+    })
+
+    it('should handle API errors gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.analyzeFeeOptimization.mockRejectedValue(new Error('Analysis failed'))
+
+      const { result } = renderHook(() =>
+        useFeeOptimization(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current.error).toBe('Analysis failed')
+        expect(result.current.analysis).toBeNull()
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should refresh analysis manually', async () => {
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockAnalysis)
+
+      const { result } = renderHook(() =>
+        useFeeOptimization(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.refreshAnalysis()
+      })
+
+      expect(mockFeeTierManager.analyzeFeeOptimization).toHaveBeenCalledTimes(2)
+    })
+
+    it('should handle non-Error exceptions', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.analyzeFeeOptimization.mockRejectedValue('String error')
+
+      const { result } = renderHook(() =>
+        useFeeOptimization(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current.error).toBe('Failed to analyze fee optimization')
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+  })
+
+  describe('useAvailableFeeTiers', () => {
+    const mockFeeTiers = [
+      {
+        id: 'low-fee-tier',
+        name: 'Low Fee',
+        baseFeeBps: 10,
+        protocolFeeBps: 2,
+        totalFeeBps: 12,
+        category: 'stable' as const,
+        description: 'Low volatility pairs',
+        recommendedFor: ['stablecoins'],
+        minLiquidity: '1000',
+        isActive: true,
+      },
+      {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Most trading pairs',
+        recommendedFor: ['general'],
+        minLiquidity: '500',
+        isActive: true,
+      },
+    ]
+
+    it('should initialize with correct default state', () => {
+      const { result } = renderHook(() => useAvailableFeeTiers())
+
+      expect(result.current.feeTiers).toEqual([])
+      expect(result.current.loading).toBe(false)
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should fetch available fee tiers successfully', async () => {
+      mockFeeTierManager.getAvailableFeeTiers.mockReturnValue(mockFeeTiers)
+
+      const { result } = renderHook(() => useAvailableFeeTiers('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.feeTiers).toEqual(mockFeeTiers)
+      expect(mockFeeTierManager.getAvailableFeeTiers).toHaveBeenCalledWith('USDC/SOL', '1000')
+    })
+
+    it('should handle missing parameters', async () => {
+      const { result } = renderHook(() => useAvailableFeeTiers())
+
+      await waitFor(() => {
+        expect(result.current.feeTiers).toEqual([])
+      })
+
+      expect(mockFeeTierManager.getAvailableFeeTiers).not.toHaveBeenCalled()
+    })
+
+    it('should handle errors gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.getAvailableFeeTiers.mockImplementation(() => {
+        throw new Error('Fetch failed')
+      })
+
+      const { result } = renderHook(() => useAvailableFeeTiers('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.error).toBe('Fetch failed')
+        expect(result.current.feeTiers).toEqual([])
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should refresh fee tiers manually', async () => {
+      mockFeeTierManager.getAvailableFeeTiers.mockReturnValue(mockFeeTiers)
+
+      const { result } = renderHook(() => useAvailableFeeTiers('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      act(() => {
+        result.current.refreshFeeTiers()
+      })
+
+      expect(mockFeeTierManager.getAvailableFeeTiers).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('useFeeRecommendations', () => {
+    const mockRecommendations = [
+      {
+        tier: {
+          id: 'premium-tier',
+          name: 'Premium',
+          baseFeeBps: 20,
+          protocolFeeBps: 3,
+          totalFeeBps: 23,
+          category: 'stable' as const,
+          description: 'Premium tier for stable pairs',
+          recommendedFor: ['high volume pairs'],
+          minLiquidity: '1000',
+          isActive: true,
+        },
+        confidence: 95.5,
+        reasoning: 'High volume pair with stable liquidity',
+      },
+      {
+        tier: {
+          id: 'standard-tier',
+          name: 'Standard',
+          baseFeeBps: 30,
+          protocolFeeBps: 5,
+          totalFeeBps: 35,
+          category: 'volatile' as const,
+          description: 'Standard tier for general use',
+          recommendedFor: ['moderate volume pairs'],
+          minLiquidity: '500',
+          isActive: true,
+        },
+        confidence: 75.0,
+        reasoning: 'Good balance for moderate volume',
+      },
+    ]
+
+    it('should initialize with correct default state', () => {
+      const { result } = renderHook(() => useFeeRecommendations())
+
+      expect(result.current.recommendations).toEqual([])
+      expect(result.current.loading).toBe(false)
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should fetch fee recommendations successfully', async () => {
+      mockFeeTierManager.getMarketBasedRecommendations.mockResolvedValue(mockRecommendations)
+
+      const { result } = renderHook(() => useFeeRecommendations('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.recommendations).toEqual(mockRecommendations)
+      expect(mockFeeTierManager.getMarketBasedRecommendations).toHaveBeenCalledWith('USDC/SOL', '1000')
+    })
+
+    it('should handle missing parameters', async () => {
+      const { result } = renderHook(() => useFeeRecommendations())
+
+      await waitFor(() => {
+        expect(result.current.recommendations).toEqual([])
+      })
+
+      expect(mockFeeTierManager.getMarketBasedRecommendations).not.toHaveBeenCalled()
+    })
+
+    it('should handle API errors gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.getMarketBasedRecommendations.mockRejectedValue(new Error('Recommendations failed'))
+
+      const { result } = renderHook(() => useFeeRecommendations('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.error).toBe('Recommendations failed')
+        expect(result.current.recommendations).toEqual([])
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should refresh recommendations manually', async () => {
+      mockFeeTierManager.getMarketBasedRecommendations.mockResolvedValue(mockRecommendations)
+
+      const { result } = renderHook(() => useFeeRecommendations('USDC/SOL', '1000'))
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.refreshRecommendations()
+      })
+
+      expect(mockFeeTierManager.getMarketBasedRecommendations).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('useMigrationImpact', () => {
+    const mockCurrentTier = {
+      id: 'standard',
+      name: 'Standard',
+      baseFeeBps: 30,
+      protocolFeeBps: 5,
+      totalFeeBps: 35,
+      category: 'stable' as const,
+      description: 'Standard fee tier for stable pairs',
+      recommendedFor: ['stable', 'moderate'],
+      minLiquidity: '1000',
+      isActive: true,
+    }
+
+    const mockTargetTier = {
+      id: 'premium',
+      name: 'Premium',
+      baseFeeBps: 20,
+      protocolFeeBps: 3,
+      totalFeeBps: 23,
+      category: 'volatile' as const,
+      description: 'Premium fee tier for volatile pairs',
+      recommendedFor: ['volatile', 'high-activity'],
+      minLiquidity: '5000',
+      isActive: true,
+    }
+
+    const mockImpact = {
+      migrationCost: 50.0,
+      dailySavings: 5.25,
+      breakEvenDays: 9.5,
+      annualBenefit: 1916.25,
+    }
+
+    it('should initialize with correct default state', () => {
+      const { result } = renderHook(() => useMigrationImpact())
+
+      expect(result.current.impact).toBeNull()
+      expect(result.current.loading).toBe(false)
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should calculate migration impact successfully', async () => {
+      mockFeeTierManager.calculateMigrationImpact.mockResolvedValue(mockImpact)
+
+      const { result } = renderHook(() =>
+        useMigrationImpact(mockCurrentTier, mockTargetTier, '10000', '5000')
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.impact).toEqual(mockImpact)
+      expect(mockFeeTierManager.calculateMigrationImpact).toHaveBeenCalledWith(
+        mockCurrentTier,
+        mockTargetTier,
+        '10000',
+        '5000'
+      )
+    })
+
+    it('should handle missing parameters', async () => {
+      const { result } = renderHook(() => useMigrationImpact())
+
+      await waitFor(() => {
+        expect(result.current.impact).toBeNull()
+      })
+
+      expect(mockFeeTierManager.calculateMigrationImpact).not.toHaveBeenCalled()
+    })
+
+    it('should handle API errors gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.calculateMigrationImpact.mockRejectedValue(new Error('Calculation failed'))
+
+      const { result } = renderHook(() =>
+        useMigrationImpact(mockCurrentTier, mockTargetTier, '10000', '5000')
+      )
+
+      await waitFor(() => {
+        expect(result.current.error).toBe('Calculation failed')
+        expect(result.current.impact).toBeNull()
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should refresh impact calculation manually', async () => {
+      mockFeeTierManager.calculateMigrationImpact.mockResolvedValue(mockImpact)
+
+      const { result } = renderHook(() =>
+        useMigrationImpact(mockCurrentTier, mockTargetTier, '10000', '5000')
+      )
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.refreshImpact()
+      })
+
+      expect(mockFeeTierManager.calculateMigrationImpact).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('useCustomFeeTier', () => {
+    const mockCustomTier = {
+      id: 'custom',
+      name: 'Custom Tier',
+      baseFeeBps: 25,
+      protocolFeeBps: 4,
+      totalFeeBps: 29,
+      category: 'custom' as const,
+      description: 'Custom tier for specific needs',
+      recommendedFor: ['custom'],
+      minLiquidity: '2000',
+      isActive: true,
+    }
+
+    it('should initialize with correct default state', () => {
+      const { result } = renderHook(() => useCustomFeeTier())
+
+      expect(result.current.isCreating).toBe(false)
+      expect(result.current.error).toBeNull()
+    })
+
+    it('should create custom fee tier successfully', async () => {
+      mockFeeTierManager.createCustomFeeTier.mockReturnValue(mockCustomTier)
+
+      const { result } = renderHook(() => useCustomFeeTier())
+
+      let createdTier: any
+      await act(async () => {
+        createdTier = await result.current.createCustomTier(
+          'Custom Tier',
+          25,
+          4,
+          'Custom tier for specific needs',
+          ['custom'],
+          '2000'
+        )
+      })
+
+      expect(createdTier).toEqual(mockCustomTier)
+      expect(mockFeeTierManager.createCustomFeeTier).toHaveBeenCalledWith(
+        'Custom Tier',
+        25,
+        4,
+        'Custom tier for specific needs',
+        ['custom'],
+        '2000'
+      )
+      expect(result.current.isCreating).toBe(false)
+    })
+
+    it('should handle creation errors', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.createCustomFeeTier.mockImplementation(() => {
+        throw new Error('Creation failed')
+      })
+
+      const { result } = renderHook(() => useCustomFeeTier())
+
+      await act(async () => {
+        try {
+          await result.current.createCustomTier('Test', 25, 4, 'Test tier', ['test'], '1000')
+        } catch (error) {
+          // Expected to throw
+        }
+      })
+
+      expect(result.current.error).toBe('Creation failed')
+      expect(result.current.isCreating).toBe(false)
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should handle loading state during creation', async () => {
+      // Since the actual feeTierManager.createCustomFeeTier is synchronous,
+      // we need to simulate the loading state properly
+      mockFeeTierManager.createCustomFeeTier.mockImplementation(() => {
+        return {
+          ...mockCustomTier,
+          name: 'Test',
+          baseFeeBps: 25,
+          protocolFeeBps: 4,
+          totalFeeBps: 29,
+          description: 'Test tier',
+          recommendedFor: ['test'],
+          minLiquidity: '1000',
+        }
+      })
+
+      const { result } = renderHook(() => useCustomFeeTier())
+
+      // The loading state will be true during the synchronous call
+      await act(async () => {
+        const promise = result.current.createCustomTier('Test', 25, 4, 'Test tier', ['test'], '1000')
+        // Loading state is briefly true during the call but resets quickly
+        await promise
+      })
+
+      expect(result.current.isCreating).toBe(false)
+      expect(mockFeeTierManager.createCustomFeeTier).toHaveBeenCalledWith(
+        'Test',
+        25,
+        4,
+        'Test tier',
+        ['test'],
+        '1000'
+      )
+    })
+  })
+
+  describe('useFeeTierCache', () => {
+    const mockCacheStats = {
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
+    }
+
+    beforeEach(() => {
+      // Ensure mock is properly setup before each test
+      mockFeeTierManager.getCacheStats.mockReturnValue(mockCacheStats)
+    })
+
+    it('should initialize with cache stats', () => {
+      const { result } = renderHook(() => useFeeTierCache())
+
+      expect(result.current).toBeDefined()
+      expect(result.current.cacheStats).toEqual(mockCacheStats)
+      expect(result.current.refreshCacheStats).toBeDefined()
+      expect(result.current.clearCache).toBeDefined()
+    })
+
+    it('should refresh cache stats', () => {
+      const { result } = renderHook(() => useFeeTierCache())
+
+      act(() => {
+        result.current.refreshCacheStats()
+      })
+
+      expect(mockFeeTierManager.getCacheStats).toHaveBeenCalledTimes(2) // Initial + refresh
+    })
+
+    it('should clear cache', () => {
+      const { result } = renderHook(() => useFeeTierCache())
+
+      act(() => {
+        result.current.clearCache()
+      })
+
+      expect(mockFeeTierManager.clearCache).toHaveBeenCalled()
+      expect(mockFeeTierManager.getCacheStats).toHaveBeenCalledTimes(2) // Initial + after clear
+    })
+
+    it('should refresh cache stats periodically', () => {
+      renderHook(() => useFeeTierCache())
+
+      act(() => {
+        jest.advanceTimersByTime(30000) // 30 seconds
+      })
+
+      expect(mockFeeTierManager.getCacheStats).toHaveBeenCalledTimes(2) // Initial + periodic
+    })
+
+    it('should cleanup interval on unmount', () => {
+      const { unmount } = renderHook(() => useFeeTierCache())
+
+      unmount()
+
+      act(() => {
+        jest.advanceTimersByTime(30000)
+      })
+
+      expect(mockFeeTierManager.getCacheStats).toHaveBeenCalledTimes(1) // Only initial
+    })
+  })
+
+  describe('useComprehensiveFeeManagement', () => {
+    const mockPoolAddress = new PublicKey('33333333333333333333333333333333')
+
+    const mockAnalysis = {
+      currentTier: {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Most trading pairs',
+        recommendedFor: ['general'],
+        minLiquidity: '500',
+        isActive: true,
+      },
+      recommendedTier: {
+        id: 'premium-tier',
+        name: 'Premium',
+        baseFeeBps: 20,
+        protocolFeeBps: 3,
+        totalFeeBps: 23,
+        category: 'stable' as const,
+        description: 'Premium tier for stable pairs',
+        recommendedFor: ['stable pairs'],
+        minLiquidity: '1000',
+        isActive: true,
+      },
+      potentialSavings: 150,
+      savingsPercentage: 12.0,
+      analysisReason: 'Lower fees available for this volume and volatility profile',
+      optimization: {
+        timeToBreakeven: 5,
+        projectedAnnualSavings: 1800,
+        riskLevel: 'low' as const,
+      },
+    }
+
+    const mockFeeTiers = [
+      {
+        id: 'low-fee-tier',
+        name: 'Low Fee',
+        baseFeeBps: 10,
+        protocolFeeBps: 2,
+        totalFeeBps: 12,
+        category: 'stable' as const,
+        description: 'Low volatility pairs',
+        recommendedFor: ['stablecoins'],
+        minLiquidity: '1000',
+        isActive: true,
+      },
+      {
+        id: 'standard-tier',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'volatile' as const,
+        description: 'Most trading pairs',
+        recommendedFor: ['general'],
+        minLiquidity: '500',
+        isActive: true,
+      },
+    ]
+
+    const mockRecommendations = [
+      {
+        tier: {
+          id: 'premium-tier',
+          name: 'Premium',
+          baseFeeBps: 20,
+          protocolFeeBps: 3,
+          totalFeeBps: 23,
+          category: 'stable' as const,
+          description: 'Premium tier for stable pairs',
+          recommendedFor: ['stable pairs'],
+          minLiquidity: '1000',
+          isActive: true,
+        },
+        confidence: 95,
+        reasoning: 'Better fee structure for current volume and volatility',
+      },
+    ]
+
+    const mockCacheStats = {
+      count: 75,
+      keys: ['tier1', 'tier2', 'tier3'],
+    }
+
+    beforeEach(() => {
+      // Reset all mocks and setup fresh returns
+      jest.clearAllMocks()
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockAnalysis)
+      mockFeeTierManager.getAvailableFeeTiers.mockReturnValue(mockFeeTiers)
+      mockFeeTierManager.getMarketBasedRecommendations.mockResolvedValue(mockRecommendations)
+      mockFeeTierManager.getCacheStats.mockReturnValue(mockCacheStats)
+    })
+
+    it('should combine all fee management data', async () => {
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(result.current.loading).toBe(false)
+      }, { timeout: 3000 })
+
+      expect(result.current.analysis).toEqual(mockAnalysis)
+      expect(result.current.feeTiers).toEqual(mockFeeTiers)
+      expect(result.current.recommendations).toEqual(mockRecommendations)
+      expect(result.current.cacheStats).toEqual(mockCacheStats)
+      expect(result.current.hasData).toBe(true)
+    })
+
+    it('should handle loading states correctly', () => {
+      mockFeeTierManager.analyzeFeeOptimization.mockImplementation(
+        () => new Promise(resolve => setTimeout(() => resolve(mockAnalysis), 100))
+      )
+
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      expect(result.current).toBeDefined()
+      expect(result.current.loading).toBe(true)
+      expect(result.current.hasData).toBe(false)
+    })
+
+    it('should handle error states from any component', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      mockFeeTierManager.analyzeFeeOptimization.mockRejectedValue(new Error('Analysis error'))
+
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(result.current.error).toBe('Analysis error')
+      }, { timeout: 3000 })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should indicate hasData correctly when all data is present', async () => {
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(result.current.hasData).toBe(true)
+      }, { timeout: 3000 })
+    })
+
+    it('should indicate no data when analysis is missing', async () => {
+      const mockCurrentTierLocal = {
+        id: 'standard',
+        name: 'Standard',
+        baseFeeBps: 30,
+        protocolFeeBps: 5,
+        totalFeeBps: 35,
+        category: 'stable' as const,
+        description: 'Standard fee tier for stable pairs',
+        recommendedFor: ['stable', 'moderate'],
+        minLiquidity: '1000',
+        isActive: true,
+      }
+      const mockNullAnalysis = {
+        currentTier: mockCurrentTierLocal,
+        recommendedTier: null,
+        potentialSavings: 0,
+        savingsPercentage: 0,
+        analysisReason: 'No optimization available',
+        optimization: {
+          timeToBreakeven: 0,
+          projectedAnnualSavings: 0,
+          riskLevel: 'low' as const,
+        },
+      }
+      mockFeeTierManager.analyzeFeeOptimization.mockResolvedValue(mockNullAnalysis)
+
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(result.current.hasData).toBe(false)
+      }, { timeout: 3000 })
+    })
+
+    it('should indicate no data when fee tiers are empty', async () => {
+      mockFeeTierManager.getAvailableFeeTiers.mockReturnValue([])
+
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL')
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(result.current.hasData).toBe(false)
+      }, { timeout: 3000 })
+    })
+
+    it('should pass custom settings to fee optimization', async () => {
+      const customSettings = {
+        riskTolerance: 'aggressive' as const,
+        liquidityRange: 'wide' as const,
+        rebalanceFrequency: 'weekly' as const,
+        maxSlippage: 0.02,
+        prioritizeFees: false,
+      }
+
+      const { result } = renderHook(() =>
+        useComprehensiveFeeManagement(mockPoolAddress, '1000', 'USDC/SOL', customSettings)
+      )
+
+      await waitFor(() => {
+        expect(result.current).toBeDefined()
+        expect(mockFeeTierManager.analyzeFeeOptimization).toHaveBeenCalledWith(
+          mockPoolAddress,
+          '1000',
+          'USDC/SOL',
+          customSettings
+        )
+      }, { timeout: 3000 })
+    })
+  })
+})

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart3 } from 'lucide-react'
 
-// Mock data for bin visualization
-const mockBins = Array.from({ length: 20 }, (_, i) => ({
+// Mock data generator for bin visualization
+const generateMockBins = () => Array.from({ length: 20 }, (_, i) => ({
   binId: i - 10,
   price: 100 + (i - 10) * 5,
   liquidityX: Math.random() * 1000,
@@ -15,18 +15,23 @@ const mockBins = Array.from({ length: 20 }, (_, i) => ({
 }))
 
 export function BinVisualization() {
-  const [bins, setBins] = useState(mockBins)
+  const [bins, setBins] = useState<any[]>([])
   const [selectedBin, setSelectedBin] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    // Mark as client-side rendered and initialize data
+    setIsClient(true)
+    setBins(generateMockBins())
+
     const timer = setTimeout(() => setIsLoading(false), 800)
     return () => clearTimeout(timer)
   }, [])
 
-  const maxLiquidity = Math.max(...bins.map(b => b.liquidityX + b.liquidityY))
+  const maxLiquidity = bins.length > 0 ? Math.max(...bins.map(b => b.liquidityX + b.liquidityY)) : 0
 
-  if (isLoading) {
+  if (isLoading || !isClient || bins.length === 0) {
     return (
       <Card className="chart-container">
         <CardHeader className="pb-4">

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useIsClient } from '@/lib/utils/client-only'
 import {
   PWAInstallState,
   NotificationState,
@@ -15,6 +16,7 @@ import {
 
 // Install Prompt Hook
 export function useInstallPrompt() {
+  const isClient = useIsClient()
   const [state, setState] = useState<PWAInstallState>({
     isInstallable: false,
     isInstalled: false,
@@ -24,7 +26,7 @@ export function useInstallPrompt() {
   })
 
   useEffect(() => {
-    if (!installManager) return
+    if (!isClient || !installManager) return
 
     const unsubscribe = installManager.subscribe(setState)
     setState(installManager.getState())
@@ -32,7 +34,7 @@ export function useInstallPrompt() {
     return () => {
       unsubscribe()
     }
-  }, [])
+  }, [isClient])
 
   const promptInstall = useCallback(async () => {
     if (!installManager) return false
@@ -57,10 +59,11 @@ export function useInstallPrompt() {
 
 // Offline Status Hook
 export function useOffline() {
+  const isClient = useIsClient()
   const [isOnline, setIsOnline] = useState(true)
 
   useEffect(() => {
-    if (!offlineManager) return
+    if (!isClient || !offlineManager) return
 
     const unsubscribe = offlineManager.subscribe(setIsOnline)
     setIsOnline(offlineManager.getState())
@@ -68,21 +71,24 @@ export function useOffline() {
     return () => {
       unsubscribe()
     }
-  }, [])
+  }, [isClient])
 
   return isOnline
 }
 
 // Service Worker Hook
 export function useServiceWorker() {
+  const isClient = useIsClient()
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null)
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
+    if (!isClient) return
+
     let mounted = true
 
-    const handleUpdateAvailable = (event: any) => {
+    const handleUpdateAvailable = (_event: any) => {
       if (mounted) {
         setUpdateAvailable(true)
         trackPWAEvent('sw_update_available')
@@ -123,7 +129,7 @@ export function useServiceWorker() {
       window.removeEventListener('sw-update-available', handleUpdateAvailable)
       window.removeEventListener('sw-cached', handleCached)
     }
-  }, [])
+  }, [isClient])
 
   const updateApp = useCallback(async () => {
     if (!registration || !updateAvailable) return
@@ -308,14 +314,15 @@ export function usePWAStatus() {
   const isPWAEnabled = serviceWorker.registration !== null
   const isAppLike = installState.isStandalone || installState.isInstalled
 
-  return {
+  // Memoize the return value to prevent infinite re-renders in PWAProvider
+  return useMemo(() => ({
     install: installState,
     isOnline,
     serviceWorker,
     notifications,
     isPWAEnabled,
     isAppLike
-  }
+  }), [installState, isOnline, serviceWorker, notifications, isPWAEnabled, isAppLike])
 }
 
 // Update Prompt Hook

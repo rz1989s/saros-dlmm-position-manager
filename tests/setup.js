@@ -1,18 +1,33 @@
 // Jest setup file
 import '@testing-library/jest-dom'
 
+// Add TextEncoder/TextDecoder for Node.js environment
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util')
+  global.TextEncoder = TextEncoder
+  global.TextDecoder = TextDecoder
+}
+
 // Mock Solana Web3.js modules
 jest.mock('@solana/web3.js', () => ({
   Connection: jest.fn(() => ({
-    getAccountInfo: jest.fn(),
-    getBalance: jest.fn(),
+    getAccountInfo: jest.fn().mockResolvedValue(null),
+    getBalance: jest.fn().mockResolvedValue(1000000000),
+    getLatestBlockhash: jest.fn().mockResolvedValue({ blockhash: 'test', lastValidBlockHeight: 123 }),
+    sendTransaction: jest.fn().mockResolvedValue('test-signature'),
+    confirmTransaction: jest.fn().mockResolvedValue({ value: { err: null } }),
   })),
   PublicKey: jest.fn((key) => ({
     toString: () => key,
     equals: jest.fn(),
+    toBase58: () => key,
   })),
   Transaction: jest.fn(),
   TransactionInstruction: jest.fn(),
+  SystemProgram: {
+    transfer: jest.fn(),
+  },
+  LAMPORTS_PER_SOL: 1000000000,
 }))
 
 // Mock Solana Wallet Adapter
@@ -27,6 +42,74 @@ jest.mock('@solana/wallet-adapter-react', () => ({
     select: jest.fn(),
   }),
 }))
+
+// Mock @saros-finance/dlmm-sdk
+jest.mock('@saros-finance/dlmm-sdk', () => ({
+  DLMM: jest.fn(() => ({
+    getLbPair: jest.fn().mockResolvedValue({
+      pubkey: 'test-pair-key',
+      account: {
+        tokenX: 'test-token-x',
+        tokenY: 'test-token-y',
+        binStep: 100,
+        activeBin: { binId: 0, liquidityX: '0', liquidityY: '0', price: 0 },
+      }
+    }),
+    getUserPositions: jest.fn().mockResolvedValue([]),
+    getBinArrayInfo: jest.fn().mockResolvedValue([]),
+    getBinReserves: jest.fn().mockResolvedValue({ binIdToReserve: new Map() }),
+    addLiquidityToPosition: jest.fn().mockResolvedValue({ ixs: [], luts: [] }),
+    removeMultipleLiquidity: jest.fn().mockResolvedValue({ ixs: [], luts: [] }),
+    initializePositionAndAddLiquidity: jest.fn().mockResolvedValue({ ixs: [], luts: [] }),
+    getConnection: jest.fn(),
+  })),
+  getAllLbPairs: jest.fn().mockResolvedValue([]),
+}))
+
+// Mock @coral-xyz/anchor
+jest.mock('@coral-xyz/anchor', () => ({
+  BN: jest.fn((value) => ({
+    toString: () => value?.toString() || '0',
+    toNumber: () => Number(value) || 0,
+    add: jest.fn().mockReturnThis(),
+    sub: jest.fn().mockReturnThis(),
+    mul: jest.fn().mockReturnThis(),
+    div: jest.fn().mockReturnThis(),
+    eq: jest.fn(() => true),
+    gt: jest.fn(() => false),
+    lt: jest.fn(() => false),
+    gte: jest.fn(() => true),
+    lte: jest.fn(() => true),
+  })),
+  Program: jest.fn(),
+  AnchorProvider: jest.fn(),
+  web3: {
+    PublicKey: jest.fn(),
+    Connection: jest.fn(),
+  },
+}))
+
+// Mock Node.js crypto for browser environment
+Object.defineProperty(global, 'crypto', {
+  value: {
+    getRandomValues: (arr) => {
+      for (let i = 0; i < arr.length; i++) {
+        arr[i] = Math.floor(Math.random() * 256)
+      }
+      return arr
+    },
+    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
+  },
+})
+
+// Mock fetch for API calls
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  })
+)
 
 // Mock Next.js router
 jest.mock('next/router', () => ({
@@ -59,13 +142,19 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 }
 
-// Suppress console errors in tests
+// Mock timers for interval-based operations
+jest.useFakeTimers()
+
+// Suppress console errors in tests but allow explicit error testing
 const originalError = console.error
 beforeAll(() => {
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
-      (args[0].includes('Warning') || args[0].includes('validateDOMNesting'))
+      (args[0].includes('Warning') ||
+       args[0].includes('validateDOMNesting') ||
+       args[0].includes('Failed to fetch pool data') ||
+       args[0].includes('Arbitrage monitoring error'))
     ) {
       return
     }
@@ -75,4 +164,66 @@ beforeAll(() => {
 
 afterAll(() => {
   console.error = originalError
+  jest.useRealTimers()
+})
+
+// Memory management for heavy tests
+const activeTimers = new Set()
+const activeIntervals = new Set()
+
+// Override setInterval to track active intervals
+const originalSetInterval = global.setInterval
+global.setInterval = (...args) => {
+  const id = originalSetInterval(...args)
+  activeIntervals.add(id)
+  return id
+}
+
+// Override setTimeout to track active timeouts
+const originalSetTimeout = global.setTimeout
+global.setTimeout = (...args) => {
+  const id = originalSetTimeout(...args)
+  activeTimers.add(id)
+  return id
+}
+
+// Override clearInterval to track cleanup
+const originalClearInterval = global.clearInterval
+global.clearInterval = (id) => {
+  activeIntervals.delete(id)
+  return originalClearInterval(id)
+}
+
+// Override clearTimeout to track cleanup
+const originalClearTimeout = global.clearTimeout
+global.clearTimeout = (id) => {
+  activeTimers.delete(id)
+  return originalClearTimeout(id)
+}
+
+// Enhanced global test cleanup with memory management
+afterEach(() => {
+  // Clear all Jest mocks
+  jest.clearAllMocks()
+  jest.clearAllTimers()
+
+  // Clear all tracked timers and intervals
+  activeTimers.forEach(id => {
+    try { clearTimeout(id) } catch {}
+  })
+  activeIntervals.forEach(id => {
+    try { clearInterval(id) } catch {}
+  })
+  activeTimers.clear()
+  activeIntervals.clear()
+
+  // Force garbage collection if available (for Node.js)
+  if (global.gc && typeof global.gc === 'function') {
+    global.gc()
+  }
+
+  // Clear DOM if in JSDOM environment
+  if (global.document && typeof global.document.body?.innerHTML === 'string') {
+    global.document.body.innerHTML = ''
+  }
 })

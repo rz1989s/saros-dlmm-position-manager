@@ -15,7 +15,7 @@ const mockData = {
 }
 
 export function PositionOverview() {
-  const [data, setData] = useState(mockData)
+  const [data] = useState(mockData)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

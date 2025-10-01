@@ -3,17 +3,14 @@
 // Force mainnet-beta always - devnet has no real DLMM pools
 export const SOLANA_NETWORK = 'mainnet-beta';
 
-// Multiple RPC endpoints for fallback and load balancing
+// Primary RPC with single fallback for reliability
 export const RPC_ENDPOINTS = {
-  mainnet: process.env.NEXT_PUBLIC_RPC_MAINNET || 'https://solana-rpc.publicnode.com',
+  mainnet: process.env.NEXT_PUBLIC_RPC_MAINNET || 'https://mainnet.helius-rpc.com/?api-key=142fb48a-aa24-4083-99c8-249df5400b30',
   fallbacks: [
-    'https://api.mainnet-beta.solana.com',
-    'https://solana-api.syndica.io/access-token/your-token-here',
-    'https://rpc.ankr.com/solana',
-    'https://solana.blockdaemon.com',
-    'https://solana-mainnet.rpc.extrnode.com'
+    'https://solana-rpc.publicnode.com'
   ]
 };
+
 
 // RPC Configuration for rate limiting and retries
 export const RPC_CONFIG = {

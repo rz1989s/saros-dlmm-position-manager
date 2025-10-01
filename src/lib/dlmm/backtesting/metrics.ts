@@ -1,4 +1,4 @@
-import { BacktestMetrics, TimeSeriesPoint, StrategyAction, PositionSnapshot } from '@/lib/types'
+import { BacktestMetrics, TimeSeriesPoint, StrategyAction } from '@/lib/types'
 
 export interface MetricsCalculator {
   calculateBacktestMetrics(
@@ -158,7 +158,7 @@ export class BacktestMetricsCalculator implements MetricsCalculator {
   /**
    * Calculate benchmark total return
    */
-  private calculateBenchmarkReturn(benchmarkReturns: number[], initialCapital: number): number {
+  private calculateBenchmarkReturn(benchmarkReturns: number[], _initialCapital: number): number {
     return this.calculateCompoundReturn(benchmarkReturns)
   }
 

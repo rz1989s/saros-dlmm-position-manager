@@ -13,24 +13,25 @@ interface BinChartProps {
   bins: BinInfo[]
   activeBinId: number
   userBins?: number[]
-  onBinClick?: (binId: number) => void
-  onZoomRange?: (minBin: number, maxBin: number) => void
+  // eslint-disable-next-line no-unused-vars
+  onBinClick?: (_binId: number) => void
+  // eslint-disable-next-line no-unused-vars
+  onZoomRange?: (_minBin: number, _maxBin: number) => void
   height?: number
 }
 
-interface BinChartData extends BinInfo {
+interface BinChartData extends Omit<BinInfo, 'totalLiquidity'> {
   totalLiquidity: number
   userLiquidity?: number
   isUserBin: boolean
 }
 
-export function BinChart({ 
-  bins, 
-  activeBinId, 
-  userBins = [], 
-  onBinClick, 
-  onZoomRange,
-  height = 400 
+export function BinChart({
+  bins,
+  activeBinId,
+  userBins = [],
+  onBinClick,
+  height = 400
 }: BinChartProps) {
   const [zoomLevel, setZoomLevel] = useState(1)
   const [centerBin, setCenterBin] = useState(activeBinId)
@@ -54,9 +55,9 @@ export function BinChart({
       .sort((a, b) => a.binId - b.binId)
   }, [bins, centerBin, zoomLevel, userBins, showUserOnly, activeBinId])
 
-  const maxLiquidity = Math.max(...chartData.map(d => d.totalLiquidity))
+  // const maxLiquidity = Math.max(...chartData.map(d => d.totalLiquidity))
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as BinChartData
       return (

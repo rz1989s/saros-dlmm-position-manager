@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, TrendingDown, Activity, Clock } from 'lucide-react'
+import { TrendingUp, Activity, Clock } from 'lucide-react'
 import { formatCurrency, formatPercentage, formatDuration } from '@/lib/utils/format'
 
-const mockAnalytics = {
+const getMockAnalytics = () => ({
   totalVolume24h: 125678.45,
   totalFees24h: 1234.67,
   avgAPR: 0.1245,
@@ -21,18 +21,23 @@ const mockAnalytics = {
     { type: 'fees', amount: 25.45, pool: 'RAY/SOL', time: new Date(Date.now() - 7200000) },
     { type: 'rebalance', amount: 0, pool: 'ORCA/USDC', time: new Date(Date.now() - 10800000) },
   ]
-}
+})
 
 export function AnalyticsPanel() {
-  const [analytics, setAnalytics] = useState(mockAnalytics)
+  const [analytics, setAnalytics] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    // Mark as client-side rendered and initialize data
+    setIsClient(true)
+    setAnalytics(getMockAnalytics())
+
     const timer = setTimeout(() => setIsLoading(false), 600)
     return () => clearTimeout(timer)
   }, [])
 
-  if (isLoading) {
+  if (isLoading || !isClient || !analytics) {
     return (
       <Card className="chart-container">
         <CardHeader>
@@ -117,7 +122,7 @@ export function AnalyticsPanel() {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">Recent Activity</p>
           <div className="space-y-2">
-            {analytics.recentActivity.map((activity, i) => (
+            {analytics.recentActivity.map((activity: any, i: number) => (
               <div key={i} className="flex items-center justify-between p-2 rounded border">
                 <div className="flex items-center gap-2">
                   {activity.type === 'deposit' && <TrendingUp className="h-4 w-4 text-green-600" />}

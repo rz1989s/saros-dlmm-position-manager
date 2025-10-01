@@ -2,7 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { AlertTriangle, RefreshCw, Home, FileText, Bug } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -110,8 +110,17 @@ export class ErrorBoundary extends Component<Props, State> {
   private getErrorSeverity(error: Error) {
     const message = error.message.toLowerCase()
 
-    if (message.includes('network') || message.includes('fetch')) {
+    if (message.includes('network') || message.includes('fetch') || message.includes('rpc')) {
       return 'network'
+    }
+    if (message.includes('403') || message.includes('forbidden')) {
+      return 'rpc-forbidden'
+    }
+    if (message.includes('401') || message.includes('unauthorized')) {
+      return 'rpc-unauthorized'
+    }
+    if (message.includes('rate limit') || message.includes('429')) {
+      return 'rate-limit'
     }
     if (message.includes('permission') || message.includes('unauthorized')) {
       return 'permission'
@@ -121,6 +130,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
     if (message.includes('chunk') || message.includes('loading')) {
       return 'loading'
+    }
+    if (message.includes('manifest') || message.includes('service worker')) {
+      return 'pwa'
     }
 
     return 'unknown'

@@ -92,7 +92,6 @@ export function AnimatedCounter({
   className = '',
   onComplete
 }: CounterProps) {
-  const [count, setCount] = useState(from)
   const springValue = useSpring(from, {
     duration: duration * 1000
   })
@@ -104,12 +103,12 @@ export function AnimatedCounter({
 
   useEffect(() => {
     springValue.set(to)
-    setCount(to)
 
     if (onComplete) {
       const timer = setTimeout(onComplete, duration * 1000)
       return () => clearTimeout(timer)
     }
+    return undefined
   }, [to, springValue, onComplete, duration])
 
   return (
@@ -148,7 +147,7 @@ export function ProgressNumber({
     duration: animated ? 800 : 0
   })
 
-  const displayValue = useTransform(springValue, (latest) => {
+  useTransform(springValue, (latest) => {
     const rounded = Math.round(latest)
     setDisplayPercentage(rounded)
     return rounded

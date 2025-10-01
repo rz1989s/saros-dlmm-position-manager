@@ -139,7 +139,7 @@ export function ExpandableFAB({
       opacity: 0,
       y: 20
     },
-    visible: (i: number) => ({
+    visible: () => ({
       scale: 1,
       opacity: 1,
       y: 0

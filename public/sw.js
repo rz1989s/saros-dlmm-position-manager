@@ -1,42 +1,76 @@
-const CACHE_NAME = 'saros-dlmm-v1.0.0'
-const STATIC_CACHE = 'saros-static-v1.0.0'
-const DYNAMIC_CACHE = 'saros-dynamic-v1.0.0'
-const API_CACHE = 'saros-api-v1.0.0'
+const CACHE_NAME = 'saros-dlmm-v1.1.0'
+const STATIC_CACHE = 'saros-static-v1.1.0'
+const DYNAMIC_CACHE = 'saros-dynamic-v1.1.0'
+const API_CACHE = 'saros-api-v1.1.0'
+const ERROR_CACHE = 'saros-error-v1.1.0'
 
 const STATIC_ASSETS = [
   '/',
   '/analytics',
   '/strategies',
   '/manifest.json',
-  '/_next/static/css/',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/favicon.svg',
+  '/icons/icon-192x192.svg',
+  '/icons/icon-512x512.svg'
 ]
 
 const API_ROUTES = [
   '/api/',
-  'https://api.mainnet-beta.solana.com',
+  'https://mainnet.helius-rpc.com',
+  'https://solana-rpc.publicnode.com',
   'https://api.devnet.solana.com',
   'https://api.saros.finance'
 ]
 
-// Install event - cache static assets
+// Install event - cache static assets with enhanced error handling
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...')
+  console.log('[SW] Installing service worker v1.1.0...')
 
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => {
-        console.log('[SW] Caching static assets')
-        return cache.addAll(STATIC_ASSETS)
-      })
-      .then(() => {
-        console.log('[SW] Installation complete')
-        return self.skipWaiting()
-      })
-      .catch((error) => {
-        console.error('[SW] Installation failed:', error)
-      })
+    Promise.all([
+      // Cache static assets with fallback handling
+      caches.open(STATIC_CACHE)
+        .then(async (cache) => {
+          console.log('[SW] Caching static assets')
+
+          // Cache assets one by one to handle individual failures
+          const successfulCaches = []
+          const failedCaches = []
+
+          for (const asset of STATIC_ASSETS) {
+            try {
+              await cache.add(asset)
+              successfulCaches.push(asset)
+            } catch (error) {
+              console.warn(`[SW] Failed to cache asset: ${asset}`, error.message)
+              failedCaches.push({ asset, error: error.message })
+            }
+          }
+
+          console.log(`[SW] Successfully cached ${successfulCaches.length}/${STATIC_ASSETS.length} assets`)
+          if (failedCaches.length > 0) {
+            console.warn('[SW] Failed to cache assets:', failedCaches)
+          }
+
+          return { successfulCaches, failedCaches }
+        }),
+
+      // Initialize error cache
+      caches.open(ERROR_CACHE)
+        .then((cache) => {
+          console.log('[SW] Error cache initialized')
+          return cache
+        })
+    ])
+    .then(() => {
+      console.log('[SW] Installation complete - skipping waiting')
+      return self.skipWaiting()
+    })
+    .catch((error) => {
+      console.error('[SW] Installation failed:', error)
+      // Don't fail the installation for cache errors in demo mode
+      return self.skipWaiting()
+    })
   )
 })
 
@@ -123,9 +157,38 @@ async function cacheFirst(request, cacheName) {
   return networkResponse
 }
 
-// Network First with Fallback - for API calls
+// Enhanced error classification
+function classifyError(error, url) {
+  const message = error.message.toLowerCase()
+  const status = error.status || 0
+
+  if (status === 403 || message.includes('forbidden')) {
+    return { type: 'rpc-forbidden', severity: 'expected', shouldRetry: false }
+  }
+
+  if (status === 401 || message.includes('unauthorized')) {
+    return { type: 'rpc-unauthorized', severity: 'expected', shouldRetry: false }
+  }
+
+  if (status === 429 || message.includes('rate limit')) {
+    return { type: 'rate-limit', severity: 'temporary', shouldRetry: true }
+  }
+
+  if (status >= 500) {
+    return { type: 'server-error', severity: 'high', shouldRetry: true }
+  }
+
+  if (message.includes('network') || message.includes('timeout')) {
+    return { type: 'network', severity: 'medium', shouldRetry: true }
+  }
+
+  return { type: 'unknown', severity: 'medium', shouldRetry: true }
+}
+
+// Network First with Enhanced Error Handling - for API calls
 async function networkFirstWithFallback(request, cacheName) {
   const cache = await caches.open(cacheName)
+  const errorCache = await caches.open(ERROR_CACHE)
 
   try {
     const networkResponse = await fetch(request, {
@@ -142,22 +205,65 @@ async function networkFirstWithFallback(request, cacheName) {
       }
 
       cache.put(request, new Response(JSON.stringify(cacheWithExpiry)))
+      console.log(`[SW] ✅ Cached successful API response: ${request.url}`)
+    } else {
+      // Handle non-200 responses gracefully
+      const errorInfo = classifyError({ status: networkResponse.status }, request.url)
+
+      if (errorInfo.severity === 'expected') {
+        console.warn(`[SW] ⚠️ Expected error (${networkResponse.status}): ${request.url} - This is normal in demo mode`)
+      } else {
+        console.error(`[SW] ❌ API error (${networkResponse.status}): ${request.url}`)
+      }
     }
 
     return networkResponse
   } catch (error) {
-    // Network failed, try cache
+    const errorInfo = classifyError(error, request.url)
+
+    // Log appropriate message based on error type
+    if (errorInfo.severity === 'expected') {
+      console.warn(`[SW] ⚠️ Expected network error: ${request.url} - ${error.message}`)
+    } else {
+      console.error(`[SW] ❌ Network error: ${request.url} - ${error.message}`)
+    }
+
+    // Try cache first
     const cachedResponse = await cache.match(request)
-
     if (cachedResponse) {
-      const cachedData = await cachedResponse.json()
+      try {
+        const cachedData = await cachedResponse.json()
 
-      // Check if cache is still valid
-      if (Date.now() - cachedData.timestamp < cachedData.ttl) {
-        return new Response(JSON.stringify(cachedData.response), {
-          headers: { 'Content-Type': 'application/json' }
-        })
+        // Check if cache is still valid
+        if (Date.now() - cachedData.timestamp < cachedData.ttl) {
+          console.log(`[SW] 💾 Serving from cache: ${request.url}`)
+          return new Response(JSON.stringify(cachedData.response), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        }
+      } catch (cacheError) {
+        console.warn(`[SW] Cache parse error: ${cacheError.message}`)
       }
+    }
+
+    // If it's an expected error (403/401), return a graceful response
+    if (errorInfo.severity === 'expected') {
+      const gracefulResponse = {
+        error: true,
+        message: `This is expected in demo mode (${errorInfo.type})`,
+        type: errorInfo.type,
+        status: error.status || 0
+      }
+
+      return new Response(JSON.stringify(gracefulResponse), {
+        status: 200, // Return 200 to prevent error propagation
+        statusText: 'OK (Demo Mode)',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Demo-Mode': 'true',
+          'X-Original-Error': errorInfo.type
+        }
+      })
     }
 
     throw error

@@ -16,11 +16,10 @@ import {
   DollarSign,
   Clock
 } from 'lucide-react'
-import { PublicKey } from '@solana/web3.js'
 import { useWalletIntegration } from '@/hooks/use-wallet-integration'
 import { dlmmOperations } from '@/lib/dlmm/operations'
 import { DLMMPosition } from '@/lib/types'
-import { formatCurrency, formatPercentage, formatDuration } from '@/lib/utils/format'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface RebalanceModalProps {
   isOpen: boolean

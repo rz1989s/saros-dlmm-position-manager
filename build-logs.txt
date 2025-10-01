@@ -1,0 +1,209 @@
+
+> saros-dlmm-position-manager@0.8.0 build
+> next build
+
+   ▲ Next.js 14.1.0
+   - Experiments (use at your own risk):
+     · optimizeCss
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatPercentage' is not exported from '@/lib/utils' (imported as 'formatPercentage').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatPercentage' is not exported from '@/lib/utils' (imported as 'formatPercentage').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatPercentage' is not exported from '@/lib/utils' (imported as 'formatPercentage').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatCurrency' is not exported from '@/lib/utils' (imported as 'formatCurrency').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+./src/components/oracle/price-display.tsx
+Attempted import error: 'formatPercentage' is not exported from '@/lib/utils' (imported as 'formatPercentage').
+
+Import trace for requested module:
+./src/components/oracle/price-display.tsx
+./src/components/position-card.tsx
+./src/components/positions-list.tsx
+
+   Skipping validation of types
+   Linting ...
+   Collecting page data ...
+   Generating static pages (0/8) ...
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✅ Initialized RPC connection: https://mainnet.helius-rpc.com/?api-key=142fb48a-aa24-4083-99c8-249df5400b30
+✅ Initialized RPC connection: https://solana-rpc.publicnode.com
+🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready
+  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management
+  Instance Created: 2025-09-25T20:57:50.915Z
+🚀 DLMMClient Initialized:
+  Network: mainnet-beta
+  SDK Version: v1.4.0 (LiquidityBookServices)
+  Cache Duration: 30 seconds
+  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✅ Initialized RPC connection: https://mainnet.helius-rpc.com/?api-key=142fb48a-aa24-4083-99c8-249df5400b30
+✅ Initialized RPC connection: https://solana-rpc.publicnode.com
+🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready
+  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management
+  Instance Created: 2025-09-25T20:57:50.973Z
+✅ Initialized RPC connection: https://mainnet.helius-rpc.com/?api-key=142fb48a-aa24-4083-99c8-249df5400b30
+✅ Initialized RPC connection: https://solana-rpc.publicnode.com
+🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready
+  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management
+  Instance Created: 2025-09-25T20:57:50.981Z
+🚀 DLMMClient Initialized:
+  Network: mainnet-beta
+  SDK Version: v1.4.0 (LiquidityBookServices)
+  Cache Duration: 30 seconds
+  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling
+Time 3.10075
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+   Generating static pages (2/8) 
+🔍 usePoolList hook initialized, pools.length: 2
+🪝 usePoolAnalytics HOOK CALLED with: {
+  poolAddress: '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2',
+  enableRealtime: true,
+  dataMode: 'MOCK'
+}
+🎭 generateMockChartData: Generating mock chart data
+🐛 Analytics Page Debug: {
+  poolsCount: 2,
+  pools: [
+    {
+      name: 'SOL/USDC',
+      address: '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2',
+      addressType: 'object'
+    },
+    {
+      name: 'RAY/SOL',
+      address: 'Cx4xoCsJbvFLLH61MPdUp6CvEeaUKgUnpWzTRZC81rXG',
+      addressType: 'object'
+    }
+  ],
+  selectedPoolIndex: 0,
+  selectedPoolAddress: '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2',
+  selectedPoolAddressType: 'string',
+  selectedPoolValid: 'YES',
+  activeTab: 'pnl',
+  analyticsData: null,
+  metrics: null,
+  isLoading: false,
+  analyticsError: null
+}
+🎯 TAB STATE DEBUG: {
+  currentActiveTab: 'pnl',
+  tabValid: true,
+  timestamp: '2025-09-25T20:57:51.010Z'
+}
+🔍 Pool Address Verification: {
+  poolsAvailable: true,
+  indexValid: true,
+  poolAtIndex: 'SOL/USDC',
+  originalAddressType: 'object',
+  finalAddress: '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2',
+  finalAddressType: 'string',
+  isStringConversion: 'SUCCESS'
+}
+🚀 DLMMClient Initialized:
+  Network: mainnet-beta
+  SDK Version: v1.4.0 (LiquidityBookServices)
+  Cache Duration: 30 seconds
+  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling
+🧠 PredictiveCacheManager: Initializing AI-driven cache preloading
+✅ Initialized RPC connection: https://mainnet.helius-rpc.com/?api-key=142fb48a-aa24-4083-99c8-249df5400b30
+✅ Initialized RPC connection: https://solana-rpc.publicnode.com
+🚀 DLMMClient: Enhanced SDK v1.4.0 Integration Ready
+  Features: ✅ Caching, ✅ Type Safety, ✅ Error Handling, ✅ Position Management
+  Instance Created: 2025-09-25T20:57:51.022Z
+🚀 DLMMClient Initialized:
+  Network: mainnet-beta
+  SDK Version: v1.4.0 (LiquidityBookServices)
+  Cache Duration: 30 seconds
+  Enhanced Features: ✅ Type Safety, ✅ Caching, ✅ Error Handling
+🔮 OraclePriceFeeds: Initialized with multi-provider support
+Time 3.166125
+   Generating static pages (4/8) 
+   Generating static pages (6/8) 
+ ✓ Generating static pages (8/8) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                            Size     First Load JS
+┌ ○ /                                  186 B          1.79 MB
+├ ○ /_not-found                        183 B          1.57 MB
+├ ○ /analytics                         178 B          1.79 MB
+├ ○ /backtesting                       12.4 kB         1.8 MB
+├ ○ /showcase                          3.46 kB        1.61 MB
+└ ○ /strategies                        174 B          1.77 MB
++ First Load JS shared by all          1.57 MB
+  └ chunks/vendor-820d0c3862be38db.js  1.57 MB
+  └ other shared chunks (total)        2.32 kB
+
+
+○  (Static)  prerendered as static content
+

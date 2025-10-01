@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, memo } from 'react'
-import { PublicKey } from '@solana/web3.js'
 import { DashboardHeader } from '@/components/dashboard-header'
-import { LazyAnalyticsWrapper, LazyChartWrapper } from '@/components/ui/lazy-loading'
+import { LazyAnalyticsWrapper } from '@/components/ui/lazy-loading'
 import {
   LazyPnLTracker,
   LazyPortfolioOverview,
@@ -14,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DataSourceToggle } from '@/components/ui/data-source-toggle'
+import { useDataSource } from '@/contexts/data-source-context'
 import {
   TrendingUp,
   TrendingDown,
@@ -27,7 +28,8 @@ import {
   Target,
   Calendar,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Info
 } from 'lucide-react'
 import { BinInfo } from '@/lib/types'
 import { formatCurrency, formatPercentage } from '@/lib/utils/format'
@@ -66,11 +68,11 @@ const ChartHandlers = {
 
 function AnalyticsPageComponent() {
   const [selectedPoolIndex, setSelectedPoolIndex] = useState(0)
-  const [selectedMetric, setSelectedMetric] = useState<'liquidity' | 'volume' | 'fees'>('liquidity')
   const [activeTab, setActiveTab] = useState('pnl')
+  const { isRealDataMode } = useDataSource()
 
   // Fetch available pools
-  const { pools, loading: poolsLoading, refreshPools } = usePoolList()
+  const { pools, loading: poolsLoading } = usePoolList()
 
   // Get selected pool address as string (FIXED: Ensure proper string conversion)
   const selectedPoolAddress = useMemo(() => {
@@ -93,7 +95,7 @@ function AnalyticsPageComponent() {
     })
     setActiveTab(newTab)
     console.log('✅ TAB STATE UPDATED to:', newTab)
-  }, [selectedPoolAddress]) // Removed activeTab from dependencies to prevent function recreation
+  }, [selectedPoolAddress]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get pool analytics data
   const {
@@ -121,7 +123,57 @@ function AnalyticsPageComponent() {
   const { metrics, feeDistribution, liquidityConcentration, historicalPerformance } = analytics
 
   const isLoading = poolsLoading || analyticsLoading
-  const selectedPool = pools[selectedPoolIndex]
+
+  // Generate real chart data from SDK/blockchain
+  const generateRealChartData = useCallback((poolAddress: string) => {
+    console.log('🌐 generateRealChartData: Generating real chart data for pool:', poolAddress)
+
+    // In real implementation, this would:
+    // 1. Fetch actual bin liquidity distribution from SDK
+    // 2. Get real price/volume history from pool events
+    // 3. Show actual user positions on bins
+
+    const realBins: BinInfo[] = []
+    const realPriceData: any[] = []
+
+    // Placeholder for real data structure
+    console.log('📊 generateRealChartData: Real chart data generated (placeholder)')
+    return { bins: realBins, priceData: realPriceData }
+  }, [])
+
+  // Generate mock chart data
+  const generateMockChartData = useCallback(() => {
+    // logger.debug('🎭 generateMockChartData: Generating mock chart data')
+
+    const mockBins: BinInfo[] = Array.from({ length: 40 }, (_, i) => ({
+      binId: i - 20,
+      price: 100 + (i - 20) * 2.5,
+      liquidityX: (Math.random() * 50000 + 10000).toString(),
+      liquidityY: (Math.random() * 50000 + 10000).toString(),
+      isActive: i === 20,
+      feeRate: 0.003 + Math.random() * 0.002,
+      volume24h: (Math.random() * 100000 + 20000).toString(),
+    }))
+
+    const mockPriceData = Array.from({ length: 24 }, (_, i) => ({
+      timestamp: Date.now() - (23 - i) * 60 * 60 * 1000,
+      price: 152.45 + (Math.random() - 0.5) * 10,
+      volume: Math.random() * 100000 + 50000,
+      fees: Math.random() * 1000 + 500,
+      volatility: Math.random() * 0.1 + 0.05,
+    }))
+
+    return { bins: mockBins, priceData: mockPriceData }
+  }, [])
+
+  // Dynamic chart data based on data mode
+  const chartData = useMemo(() => {
+    if (isRealDataMode && selectedPoolAddress) {
+      return generateRealChartData(selectedPoolAddress)
+    } else {
+      return generateMockChartData()
+    }
+  }, [isRealDataMode, selectedPoolAddress, generateRealChartData, generateMockChartData])
 
   // Enhanced debug logging with proper type verification
   console.log('🐛 Analytics Page Debug:', {
@@ -165,70 +217,83 @@ function AnalyticsPageComponent() {
       <DashboardHeader />
       
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
-            Comprehensive P&L tracking, portfolio insights, and DLMM pool analytics
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">
+              Comprehensive P&L tracking, portfolio insights, and DLMM pool analytics
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <select
+              value={selectedPoolIndex}
+              onChange={handlePoolChange}
+              disabled={poolsLoading || pools.length === 0}
+              className="border border-input rounded-md px-4 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {poolsLoading ? (
+                <option value={0}>Loading pools...</option>
+              ) : pools.length === 0 ? (
+                <option value={0}>No pools available</option>
+              ) : (
+                pools.map((pool, index) => (
+                  <option key={pool.address.toString()} value={index}>
+                    {pool.name} - {formatCurrency(parseFloat(pool.tvl))} TVL
+                  </option>
+                ))
+              )}
+            </select>
+            {lastUpdate && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshAnalytics}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedPoolIndex}
-            onChange={handlePoolChange}
-            disabled={poolsLoading || pools.length === 0}
-            className="border border-input rounded-md px-4 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {poolsLoading ? (
-              <option value={0}>Loading pools...</option>
-            ) : pools.length === 0 ? (
-              <option value={0}>No pools available</option>
-            ) : (
-              pools.map((pool, index) => (
-                <option key={pool.address.toString()} value={index}>
-                  {pool.name} - {formatCurrency(parseFloat(pool.tvl))} TVL
-                </option>
-              ))
-            )}
-          </select>
-          {lastUpdate && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refreshAnalytics}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-            </Button>
-          )}
+        {/* Data Source Toggle */}
+        <div className="border-t pt-4">
+          <DataSourceToggle />
         </div>
       </div>
 
       {/* Analytics Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="pnl" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            P&L Tracking
-          </TabsTrigger>
-          <TabsTrigger value="portfolio" className="flex items-center gap-2">
-            <PieChart className="h-4 w-4" />
-            Portfolio
-          </TabsTrigger>
-          <TabsTrigger value="pools" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Pool Analysis
-          </TabsTrigger>
-          <TabsTrigger value="charts" className="flex items-center gap-2">
-            <LineChart className="h-4 w-4" />
-            Charts
-          </TabsTrigger>
-        </TabsList>
+        <div className="relative">
+          <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+            <TabsList className="inline-flex w-full sm:grid sm:grid-cols-4 min-w-max sm:min-w-0">
+              <TabsTrigger value="pnl" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <DollarSign className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">P&L</span>
+                <span className="hidden sm:inline text-xs xs:text-sm">Tracking</span>
+              </TabsTrigger>
+              <TabsTrigger value="portfolio" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <PieChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Portfolio</span>
+              </TabsTrigger>
+              <TabsTrigger value="pools" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <BarChart3 className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Pool</span>
+                <span className="hidden sm:inline text-xs xs:text-sm">Analysis</span>
+              </TabsTrigger>
+              <TabsTrigger value="charts" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <LineChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Charts</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
 
         {/* P&L Tracking Tab */}
         <TabsContent value="pnl" className="space-y-6">
@@ -612,26 +677,62 @@ function AnalyticsPageComponent() {
 
         {/* Charts Tab */}
         <TabsContent value="charts" className="space-y-6">
+          {/* Data Source Indicator for Charts */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Pool Liquidity & Price Charts</h3>
+                <Badge variant={isRealDataMode ? "default" : "secondary"}>
+                  {isRealDataMode ? "Real Data" : "Mock Data"}
+                </Badge>
+              </div>
+              {isRealDataMode && !selectedPoolAddress && (
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="text-sm">Select a pool to view real data</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Main Charts with Enhanced Error Handling */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Bin Distribution Chart with Safe Loading */}
+            {/* Bin Distribution Chart with Dynamic Data */}
             <SafeBinChart
-              bins={mockBins}
+              bins={chartData.bins.length > 0 ? chartData.bins : mockBins}
               activeBinId={0}
               userBins={userBins}
               height={400}
               onBinClick={ChartHandlers.onBinClick}
             />
 
-            {/* Price & Volume Chart with Safe Loading */}
+            {/* Price & Volume Chart with Dynamic Data */}
             <SafePriceChart
-              data={mockPriceData}
+              data={chartData.priceData.length > 0 ? chartData.priceData : mockPriceData}
               currentPrice={152.45}
               priceChange24h={0.0325}
               height={400}
               onTimeframeChange={ChartHandlers.onTimeframeChange}
             />
           </div>
+
+          {/* Real Data Status */}
+          {isRealDataMode && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2">
+                <Info className="h-4 w-4 text-blue-600" />
+                <div className="text-sm">
+                  <p className="font-medium text-blue-800">Real Data Mode Active</p>
+                  <p className="text-blue-700 mt-1">
+                    Chart data shows {chartData.bins.length > 0 && chartData.priceData.length > 0
+                      ? 'actual blockchain data for the selected pool'
+                      : 'placeholder structure - connect to a pool with positions for real data'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

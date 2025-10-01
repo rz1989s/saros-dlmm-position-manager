@@ -507,7 +507,7 @@ export const chartLine: Variants = {
 
 // Utility functions for creating custom animations
 export const createStaggeredAnimation = (
-  childVariant: Variants,
+  _childVariant: Variants,
   staggerDelay: number = 0.1
 ): Variants => ({
   initial: {},
@@ -521,7 +521,7 @@ export const createStaggeredAnimation = (
 
 export const createDelayedAnimation = (
   baseVariant: Variants,
-  delay: number
+  _delay: number
 ): Variants => ({
   ...baseVariant,
   animate: {

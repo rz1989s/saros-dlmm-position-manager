@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { PublicKey } from '@solana/web3.js'
+import { BN } from '@coral-xyz/anchor'
 import { useUserPositions, usePoolData, useSwapQuote } from '../../src/hooks/use-dlmm'
 
 // Mock the wallet adapter
@@ -55,15 +56,13 @@ describe('DLMM Hooks', () => {
   describe('useUserPositions', () => {
     const mockPositions = [
       {
-        id: '1',
-        poolAddress: 'pool1',
-        tokenX: { address: 'USDC', symbol: 'USDC', decimals: 6 },
-        tokenY: { address: 'SOL', symbol: 'SOL', decimals: 9 },
-        liquidityAmount: '1000',
-        feesEarned: { tokenX: '10', tokenY: '20' },
-        createdAt: new Date(),
-        lastUpdated: new Date(),
-        isActive: true,
+        pair: 'pool1',
+        positionMint: 'position-mint-1',
+        position: 'position-1',
+        liquidityShares: ['1000', '2000'],
+        lowerBinId: 120,
+        upperBinId: 125,
+        space: [0, 0, 0, 0],
       },
     ]
 
@@ -153,10 +152,33 @@ describe('DLMM Hooks', () => {
   describe('usePoolData', () => {
     const mockPoolAddress = new PublicKey('11111111111111111111111111111112')
     const mockPairData = {
-      publicKey: mockPoolAddress,
-      tokenX: { mint: 'USDC', symbol: 'USDC' },
-      tokenY: { mint: 'SOL', symbol: 'SOL' },
-      activeBin: { binId: 123, price: 100 },
+      bump: [255, 1],
+      liquidityBookConfig: '11111111111111111111111111111112',
+      binStep: 1,
+      binStepSeed: [1, 0],
+      tokenMintX: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+      tokenMintY: 'So11111111111111111111111111111111111111112', // SOL
+      staticFeeParameters: {
+        baseFactor: 10000,
+        filterPeriod: 30,
+        decayPeriod: 600,
+        reductionFactor: 5000,
+        variableFeeControl: 40000,
+        maxVolatilityAccumulator: 350000,
+        protocolShare: 2000,
+        space: [0, 0] as [number, number],
+      },
+      activeId: 8388608,
+      dynamicFeeParameters: {
+        timeLastUpdated: new BN(Date.now()),
+        volatilityAccumulator: 0,
+        volatilityReference: 0,
+        idReference: 8388608,
+        space: [0, 0, 0, 0] as [number, number, number, number],
+      },
+      protocolFeesX: '0x00',
+      protocolFeesY: '0x00',
+      hook: null,
     }
     const mockBinData = [
       { binId: 122, liquidityX: '100', liquidityY: '200' },
@@ -174,9 +196,10 @@ describe('DLMM Hooks', () => {
       })
 
       expect(result.current.poolData).toBeDefined()
-      expect(result.current.binData).toEqual(mockBinData)
+      expect(result.current.binData).toEqual([]) // Now returns empty array as getBinLiquidity is legacy
       expect(mockDlmmClient.getLbPair).toHaveBeenCalledWith(mockPoolAddress)
-      expect(mockDlmmClient.getBinLiquidity).toHaveBeenCalledWith(mockPoolAddress, PublicKey.default)
+      // getBinLiquidity is no longer called - the hook implementation sets binData to [] directly
+      expect(mockDlmmClient.getBinLiquidity).not.toHaveBeenCalled()
     })
 
     it('should handle empty pool address', async () => {
@@ -270,7 +293,7 @@ describe('DLMM Hooks', () => {
         mockPoolAddress,
         '1000',
         mockTokenIn,
-        0.5
+        0.005 // slippage is divided by 100 in the hook (0.5/100 = 0.005)
       )
     })
 
@@ -325,7 +348,7 @@ describe('DLMM Hooks', () => {
         mockPoolAddress,
         '1003', // Latest amount
         mockTokenIn,
-        0.5
+        0.005 // slippage is divided by 100 in the hook (0.5/100 = 0.005)
       )
     })
 

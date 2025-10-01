@@ -11,7 +11,7 @@ import {
 } from '@/lib/types'
 import { historicalDataService } from './historical-data'
 import { metricsCalculator } from './metrics'
-import { strategyManager, StrategyConfig } from '../strategies'
+import { strategyManager } from '../strategies'
 
 export interface BacktestProgress {
   phase: 'initializing' | 'fetching_data' | 'simulating' | 'calculating_metrics' | 'completed' | 'error'
@@ -305,29 +305,86 @@ export class BacktestEngine {
   }
 
   /**
-   * Update position value based on current market conditions
+   * Update position value based on current market conditions using proper DLMM mechanics
    */
   private updatePositionValue(
     position: PositionSnapshot,
     pricePoint: HistoricalPricePoint
   ): PositionSnapshot {
-    // Simulate fee earning (simplified)
-    const feeEarningRate = 0.003 / (24 * 60) // 0.3% daily fees distributed per minute
-    const newFeesUsd = position.totalValue * feeEarningRate
+    const currentPrice = pricePoint.close
+    const volume = parseFloat(pricePoint.volume)
 
-    // Update position value with fees and price changes
+    // Calculate new position value based on current bin distribution and price
+    let newTotalValue = 0
+    const updatedBinDistribution = position.binDistribution.map(bin => {
+      // Simulate bin price range (simplified - assuming $1 per bin)
+      const binLowerPrice = bin.binId
+      const binUpperPrice = bin.binId + 1
+
+      // Check if current price is in this bin's range
+      const isActive = currentPrice >= binLowerPrice && currentPrice < binUpperPrice
+
+      if (isActive) {
+        // Active bin earns fees from trading volume
+        const volumeInBin = volume * 0.1 * Math.random() // Random portion of volume in this bin
+        const feeRate = 0.003 // 0.3% fee rate
+        const feesEarned = volumeInBin * feeRate
+
+        // Update bin liquidity (fees are added as liquidity)
+        const newLiquidityX = parseFloat(bin.liquidityX) + feesEarned / 2 / currentPrice
+        const newLiquidityY = parseFloat(bin.liquidityY) + feesEarned / 2
+
+        const binValue = newLiquidityX * currentPrice + newLiquidityY
+        newTotalValue += binValue
+
+        return {
+          ...bin,
+          liquidityX: newLiquidityX.toString(),
+          liquidityY: newLiquidityY.toString(),
+          value: binValue,
+        }
+      } else {
+        // Inactive bin - just revalue existing liquidity
+        const binValue = parseFloat(bin.liquidityX) * currentPrice + parseFloat(bin.liquidityY)
+        newTotalValue += binValue
+
+        return {
+          ...bin,
+          value: binValue,
+        }
+      }
+    })
+
+    // Calculate total fees earned
+    const previousFeesUsd = position.feesEarned.usdValue
+    const newFeesUsd = this.calculateFeesEarned(position, volume, currentPrice)
+    const totalFeesUsd = previousFeesUsd + newFeesUsd
+
+    // Calculate impermanent loss
+    const impermanentLoss = this.calculateImpermanentLoss(position, currentPrice)
+
+    // Calculate utilization (what percentage of liquidity is in active bins)
+    const activeBins = updatedBinDistribution.filter(bin => {
+      const binLowerPrice = bin.binId
+      const binUpperPrice = bin.binId + 1
+      return currentPrice >= binLowerPrice && currentPrice < binUpperPrice
+    })
+    const utilization = activeBins.length / updatedBinDistribution.length
+
     const updatedPosition: PositionSnapshot = {
       ...position,
       timestamp: pricePoint.timestamp,
-      totalValue: position.totalValue * (1 + (Math.random() - 0.5) * 0.001), // Small random drift
+      totalValue: newTotalValue,
+      binDistribution: updatedBinDistribution,
       feesEarned: {
-        tokenX: (parseFloat(position.feesEarned.tokenX) + newFeesUsd / 2 / pricePoint.close).toString(),
-        tokenY: (parseFloat(position.feesEarned.tokenY) + newFeesUsd / 2).toString(),
-        usdValue: position.feesEarned.usdValue + newFeesUsd,
+        tokenX: (totalFeesUsd / 2 / currentPrice).toString(),
+        tokenY: (totalFeesUsd / 2).toString(),
+        usdValue: totalFeesUsd,
       },
       metrics: {
-        ...position.metrics,
         apr: this.calculateCurrentAPR(position, newFeesUsd),
+        impermanentLoss,
+        utilization,
       },
     }
 
@@ -357,7 +414,7 @@ export class BacktestEngine {
     config: BacktestConfig,
     position: PositionSnapshot,
     pricePoint: HistoricalPricePoint,
-    historicalData: HistoricalData
+    _historicalData: HistoricalData
   ): Promise<StrategyAction | null> {
     // Convert position to DLMMPosition format for strategy evaluation
     const mockDLMMPosition = {
@@ -417,7 +474,7 @@ export class BacktestEngine {
     position: PositionSnapshot,
     action: StrategyAction,
     pricePoint: HistoricalPricePoint,
-    config: BacktestConfig
+    _config: BacktestConfig
   ): PositionSnapshot {
     // Apply costs and update position
     const totalCosts = action.costs.gas + action.costs.slippage + action.costs.fees
@@ -485,14 +542,8 @@ export class BacktestEngine {
     }
   }
 
-  private calculateCurrentAPR(position: PositionSnapshot, newFees: number): number {
-    // Simplified APR calculation based on recent fees
-    const dailyFees = newFees * 24 * 60 // Convert per-minute to daily
-    const annualFees = dailyFees * 365
-    return position.totalValue > 0 ? annualFees / position.totalValue : 0
-  }
 
-  private calculateUtilization(position: PositionSnapshot, pricePoint: HistoricalPricePoint): number {
+  private calculateUtilization(_position: PositionSnapshot, _pricePoint: HistoricalPricePoint): number {
     // Simplified utilization based on how close we are to current price
     return Math.max(0.1, 1 - Math.abs(Math.random() - 0.5)) // Mock calculation
   }
@@ -563,6 +614,69 @@ export class BacktestEngine {
       keyInsights: insights,
       recommendations,
     }
+  }
+
+  /**
+   * Calculate fees earned based on volume and position
+   */
+  private calculateFeesEarned(position: PositionSnapshot, volume: number, currentPrice: number): number {
+    // Calculate which bins are active (contain the current price)
+    const activeBins = position.binDistribution.filter(bin => {
+      const binLowerPrice = bin.binId
+      const binUpperPrice = bin.binId + 1
+      return currentPrice >= binLowerPrice && currentPrice < binUpperPrice
+    })
+
+    if (activeBins.length === 0) return 0
+
+    // Total liquidity in active bins (for future use)
+    // const totalActiveLiquidity = activeBins.reduce((sum, bin) => {
+    //   return sum + parseFloat(bin.liquidityX) * currentPrice + parseFloat(bin.liquidityY)
+    // }, 0)
+
+    // Assume this position represents some percentage of the pool's liquidity
+    const poolShareEstimate = 0.001 + Math.random() * 0.01 // 0.1% to 1.1% of pool
+    const feesFromVolume = volume * poolShareEstimate * 0.003 // 0.3% fee rate
+
+    return feesFromVolume
+  }
+
+  /**
+   * Calculate impermanent loss compared to holding the original tokens
+   */
+  private calculateImpermanentLoss(position: PositionSnapshot, currentPrice: number): number {
+    // Get initial state (approximate from first bin)
+    // const initialPrice = position.binDistribution[0]?.binId // Simplified - using bin ID as initial price
+
+    // Calculate what the value would be if just holding the tokens
+    const initialTokenX = position.binDistribution.reduce((sum, bin) =>
+      sum + parseFloat(bin.liquidityX), 0)
+    const initialTokenY = position.binDistribution.reduce((sum, bin) =>
+      sum + parseFloat(bin.liquidityY), 0)
+
+    const holdValue = initialTokenX * currentPrice + initialTokenY
+
+    // Calculate current actual value
+    const currentValue = position.totalValue
+
+    // Impermanent loss is the difference
+    const impermanentLoss = (holdValue - currentValue) / holdValue
+
+    return Math.max(0, impermanentLoss) // Only positive values are true IL
+  }
+
+  /**
+   * Calculate current APR based on recent fee earnings
+   */
+  private calculateCurrentAPR(position: PositionSnapshot, recentFeesUsd: number): number {
+    if (position.totalValue <= 0 || recentFeesUsd <= 0) return 0
+
+    // Annualize the recent fees (assuming this represents 1 period of many in a year)
+    const periodsPerYear = 365 * 24 // Assuming hourly updates
+    const annualizedFees = recentFeesUsd * periodsPerYear
+    const apr = annualizedFees / position.totalValue
+
+    return Math.min(10, apr) // Cap at 1000% APR to avoid unrealistic values
   }
 
   private updateProgress(

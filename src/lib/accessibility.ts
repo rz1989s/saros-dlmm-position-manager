@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 // Screen reader announcements
 export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {

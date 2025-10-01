@@ -102,3 +102,17 @@ export function copyToClipboard(text: string): Promise<boolean> {
     .then(() => true)
     .catch(() => false)
 }
+
+// Re-export formatting utilities
+export {
+  formatNumber,
+  formatCurrency,
+  formatPercentage,
+  formatTokenAmount,
+  formatAddress,
+  formatTime,
+  formatDate,
+  formatDuration,
+  formatLargeNumber,
+  formatPriceChange
+} from './format'

@@ -1,6 +1,6 @@
-# Component Documentation (v0.3.0 - Phase 4 Complete)
+# Component Documentation (v0.6.0 - Complete Implementation)
 
-This document provides detailed documentation for all React components in the Saros DLMM Position Manager application, including the new Phase 4 UI/UX Excellence components.
+This document provides detailed documentation for all React components in the Saros DLMM Position Manager application, including all advanced v0.6.0 features with Oracle integration, fee optimization, position migration, and portfolio aggregation components.
 
 ## Core Components
 
@@ -765,3 +765,424 @@ Comprehensive touch gesture detection including:
 - Haptic feedback
 
 This comprehensive component documentation ensures developers can understand, maintain, and extend the application effectively, including all the new Phase 4 UI/UX Excellence features.
+
+## 🔮 Oracle Components (v0.6.0)
+
+### PriceDisplay
+**Location:** `src/components/oracle/price-display.tsx`
+
+Real-time token price display with Oracle integration and confidence indicators.
+
+**Features:**
+- Multi-provider Oracle support (Pyth, Switchboard)
+- Real-time price updates with 10-second caching
+- Confidence level indicators and data source display
+- Multiple layout options and customization
+
+**Props:**
+```typescript
+interface PriceDisplayProps {
+  symbol: string
+  enableRealtime?: boolean
+  showSource?: boolean
+  showConfidence?: boolean
+  className?: string
+}
+```
+
+**Example Usage:**
+```typescript
+<PriceDisplay
+  symbol="SOL"
+  enableRealtime={true}
+  showSource={true}
+  showConfidence={true}
+  className="text-lg font-semibold"
+/>
+```
+
+### MultiPriceDisplay
+**Location:** `src/components/oracle/price-display.tsx`
+
+Display multiple token prices in grid, horizontal, or vertical layouts.
+
+**Features:**
+- Multiple layout options (horizontal, vertical, grid)
+- Bulk price fetching for efficiency
+- Individual price status indicators
+- Responsive design for all screen sizes
+
+### PriceCard
+**Location:** `src/components/oracle/price-display.tsx`
+
+Detailed price card with comprehensive Oracle data.
+
+**Features:**
+- Full price details with timestamp and confidence
+- Data source transparency
+- Update frequency indicators
+- Error state handling
+
+### PriceComparison
+**Location:** `src/components/oracle/price-display.tsx`
+
+Compare prices between two tokens with ratio calculations.
+
+**Features:**
+- Real-time ratio calculations
+- Bidirectional conversion display
+- Price trend indicators
+- Historical comparison data
+
+## 💰 Fee Optimization Components (v0.6.0)
+
+### FeeTierSelector
+**Location:** `src/components/fee-optimization/fee-tier-selector.tsx`
+
+Interactive fee tier selection with optimization recommendations and migration analysis.
+
+**Features:**
+- Available fee tiers with intelligent filtering
+- AI-powered recommendations with confidence scoring
+- Migration impact analysis with cost-benefit calculations
+- Interactive tier comparison and selection
+
+**Props:**
+```typescript
+interface FeeTierSelectorProps {
+  poolAddress?: string
+  liquidityAmount?: string
+  tokenPair?: string
+  currentTier?: FeeTier
+  onTierSelect?: (tier: FeeTier) => void
+  className?: string
+}
+```
+
+**Key Features:**
+- **Tabbed Interface**: Available Tiers, Recommendations, Settings
+- **Migration Analysis**: Real-time cost-benefit analysis
+- **Confidence Scoring**: AI-powered recommendations with reliability metrics
+- **Risk Assessment**: Color-coded risk indicators and warnings
+- **Settings Panel**: User preferences for optimization strategies
+
+**Example Usage:**
+```typescript
+<FeeTierSelector
+  poolAddress={poolAddress}
+  liquidityAmount="10000"
+  tokenPair="SOL/USDC"
+  currentTier={currentTier}
+  onTierSelect={handleTierSelection}
+/>
+```
+
+### FeeTierCard
+**Location:** `src/components/fee-optimization/fee-tier-selector.tsx`
+
+Individual fee tier display card with detailed information.
+
+**Features:**
+- Fee tier category visualization
+- Current tier highlighting
+- Recommendation badges
+- Interactive selection state
+
+### MigrationDialog
+**Location:** `src/components/fee-optimization/fee-tier-selector.tsx`
+
+Migration confirmation dialog with impact analysis.
+
+**Features:**
+- Detailed cost breakdown
+- Break-even time calculation
+- Annual benefit projections
+- Risk warnings and confirmations
+
+## 🔄 Migration Components (v0.6.0)
+
+### MigrationOpportunityCard
+Cross-pool migration opportunity display with comprehensive analysis.
+
+**Features:**
+- Migration benefit metrics
+- APR improvement indicators
+- Cost-benefit analysis
+- Recommendation confidence scores
+
+### MigrationPlanViewer
+Step-by-step migration plan visualization.
+
+**Features:**
+- Sequential step display
+- Time estimates and dependencies
+- Cost breakdown per step
+- Risk level indicators
+
+### MigrationProgressTracker
+Real-time migration execution progress tracking.
+
+**Features:**
+- Live step progress indicators
+- Error handling and recovery
+- Time estimation updates
+- Success/failure notifications
+
+### MigrationWizard
+Multi-step migration planning and execution wizard.
+
+**Features:**
+- Guided migration setup
+- Parameter validation
+- Preview and confirmation
+- One-click execution
+
+## 📊 Portfolio Aggregation Components (v0.6.0)
+
+### PortfolioSummaryCard
+Comprehensive portfolio overview with key metrics.
+
+**Features:**
+- Total value and P&L tracking
+- Asset allocation visualization
+- Performance metrics dashboard
+- Risk distribution analysis
+
+### ConsolidationOpportunityList
+Display list of position consolidation opportunities.
+
+**Features:**
+- Priority-based sorting
+- Benefit calculations
+- One-click consolidation
+- Cost analysis
+
+### DiversificationScoreCard
+Portfolio diversification analysis and scoring.
+
+**Features:**
+- Overall diversification score (0-100)
+- Token, pair, and pool diversification breakdown
+- Improvement recommendations
+- Warning indicators for concentration risks
+
+### PortfolioPositionCard
+Aggregated position display by token pair.
+
+**Features:**
+- Multi-position aggregation
+- Combined metrics calculation
+- Individual position drill-down
+- Optimization recommendations
+
+### AllocationChart
+Visual representation of portfolio asset allocation.
+
+**Features:**
+- Interactive pie charts
+- Asset percentage breakdown
+- Color-coded categories
+- Responsive design
+
+### RiskMetricsDisplay
+Portfolio risk analysis with detailed metrics.
+
+**Features:**
+- Concentration risk analysis
+- Correlation risk assessment
+- Liquidity risk evaluation
+- Overall risk scoring
+
+## 🔧 Advanced Bin Components (v0.6.0)
+
+### BinAnalysisChart
+Advanced bin liquidity analysis with interactive visualization.
+
+**Features:**
+- Real-time bin data visualization
+- Liquidity distribution analysis
+- Price range optimization
+- Interactive bin selection
+
+### BinLiquidityMetrics
+Detailed bin liquidity metrics display.
+
+**Features:**
+- Active bin count tracking
+- Liquidity concentration analysis
+- Utilization rate indicators
+- Performance benchmarking
+
+### BinEfficiencyIndicator
+Bin efficiency scoring and recommendations.
+
+**Features:**
+- High/medium/low activity analysis
+- Efficiency percentage display
+- Optimization recommendations
+- Historical trend tracking
+
+### OptimalRangeSelector
+Interactive optimal price range selection tool.
+
+**Features:**
+- Conservative, balanced, aggressive strategies
+- Visual price range indicators
+- Expected returns calculation
+- Risk level assessment
+
+## 🏗️ Enhanced Hooks (v0.6.0)
+
+### useTokenPrice
+Oracle price feed integration for single tokens.
+
+**Features:**
+- Multi-provider fallback strategy
+- Real-time updates with caching
+- Confidence level tracking
+- Error handling and recovery
+
+### useMultipleTokenPrices
+Efficient bulk token price fetching.
+
+**Features:**
+- Batched price requests
+- Individual token error handling
+- Cache optimization
+- Performance monitoring
+
+### useFeeOptimization
+Fee tier optimization analysis and recommendations.
+
+**Features:**
+- Dynamic fee analysis
+- Market-based recommendations
+- Migration impact calculations
+- User preference integration
+
+### useMigrationOpportunities
+Cross-pool migration opportunity analysis.
+
+**Features:**
+- Automated opportunity detection
+- Cost-benefit analysis
+- Risk assessment
+- Priority scoring
+
+### usePortfolioAggregation
+Multi-position portfolio analysis and management.
+
+**Features:**
+- Position aggregation by pairs
+- Portfolio-wide analytics
+- Diversification analysis
+- Consolidation opportunities
+
+### useAdvancedBinAnalysis
+Enhanced bin data analysis with intelligent caching.
+
+**Features:**
+- Comprehensive bin analysis
+- Liquidity distribution calculations
+- Price range optimization
+- Real-time updates
+
+## 🎯 Cache Management Components (v0.6.0)
+
+### CacheStatsDisplay
+Real-time cache performance monitoring.
+
+**Features:**
+- Hit/miss rate tracking
+- Memory usage indicators
+- Cache key management
+- Performance metrics
+
+### CacheInvalidationPanel
+Manual cache management controls.
+
+**Features:**
+- Selective cache clearing
+- Type-based invalidation
+- Batch cache operations
+- Performance impact analysis
+
+## 📱 Enhanced Mobile Components (v0.6.0)
+
+### MobileOptimizedCharts
+Touch-optimized chart components for mobile devices.
+
+**Features:**
+- Gesture-based interactions
+- Responsive sizing
+- Touch-friendly controls
+- Haptic feedback
+
+### SwipeablePositionCard
+Mobile-optimized position cards with swipe actions.
+
+**Features:**
+- Left/right swipe actions
+- Configurable action buttons
+- Visual feedback indicators
+- Haptic response
+
+### PullToRefreshContainer
+Pull-to-refresh functionality for data updates.
+
+**Features:**
+- Native-like pull gesture
+- Custom refresh indicators
+- Loading state management
+- Error handling
+
+## 🎨 Advanced Animation Components (v0.6.0)
+
+### StaggeredReveal
+Orchestrated animation sequences for complex UIs.
+
+**Features:**
+- Sequential element reveals
+- Customizable timing
+- Spring physics
+- Reduced motion support
+
+### TransitionGroup
+Smooth transitions between different component states.
+
+**Features:**
+- Enter/exit animations
+- Layout transitions
+- Performance optimization
+- Accessibility compliance
+
+### LoadingOrchestrator
+Coordinated loading states across multiple components.
+
+**Features:**
+- Synchronized loading indicators
+- Progressive disclosure
+- Performance optimization
+- User experience enhancement
+
+## 📊 Performance Monitoring Components (v0.6.0)
+
+### PerformanceMetricsDisplay
+Real-time application performance monitoring.
+
+**Features:**
+- API response time tracking
+- Cache hit rate monitoring
+- Component render performance
+- Network request analytics
+
+### ErrorAnalyticsDashboard
+Comprehensive error tracking and analysis.
+
+**Features:**
+- Error frequency monitoring
+- Error source identification
+- Recovery success rates
+- Performance impact analysis
+
+This comprehensive v0.6.0 component documentation ensures developers have complete understanding of all advanced features, from Oracle integration to portfolio management, enabling effective maintenance and extension of the application.

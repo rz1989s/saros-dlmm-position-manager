@@ -178,7 +178,7 @@ export function UpdatePrompt({
               </div>
 
               <div className="text-left space-y-2">
-                <p className="text-sm font-medium">What's New:</p>
+                <p className="text-sm font-medium">What&apos;s New:</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>

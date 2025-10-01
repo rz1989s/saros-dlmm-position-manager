@@ -28,6 +28,20 @@ export function InstallPrompt({
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
 
+  // Check localStorage for dismissal state on mount
+  useEffect(() => {
+    const dismissedUntil = localStorage.getItem('pwa-install-dismissed-until')
+    if (dismissedUntil) {
+      const expiryTime = parseInt(dismissedUntil, 10)
+      if (Date.now() < expiryTime) {
+        setIsDismissed(true)
+      } else {
+        // Expired, remove the item
+        localStorage.removeItem('pwa-install-dismissed-until')
+      }
+    }
+  }, [])
+
   useEffect(() => {
     if (canPrompt && !isDismissed && !isInstalled) {
       const timer = setTimeout(() => {
@@ -36,6 +50,9 @@ export function InstallPrompt({
 
       return () => clearTimeout(timer)
     }
+
+    // Return undefined for the else case to satisfy TS7030
+    return undefined
   }, [canPrompt, isDismissed, isInstalled, showDelay])
 
   const handleInstall = async () => {
@@ -49,6 +66,11 @@ export function InstallPrompt({
   const handleDismiss = () => {
     setIsDismissed(true)
     setIsVisible(false)
+
+    // Persist dismissal for 7 days
+    const dismissUntil = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
+    localStorage.setItem('pwa-install-dismissed-until', dismissUntil.toString())
+
     onDismiss?.()
   }
 
@@ -331,24 +353,25 @@ export function InstallStatus() {
     return null
   }
 
+  const getStatusIcon = () => {
+    switch (platform) {
+      case 'android':
+      case 'ios':
+        return <Smartphone className="h-3 w-3" />
+      case 'windows':
+      case 'macos':
+      case 'linux':
+        return <Monitor className="h-3 w-3" />
+      default:
+        return <Tablet className="h-3 w-3" />
+    }
+  }
+
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      {getPlatformIcon(platform)}
+      {getStatusIcon()}
       <span>Running as installed app</span>
     </div>
   )
 }
 
-function getPlatformIcon(platform: string | null) {
-  switch (platform) {
-    case 'android':
-    case 'ios':
-      return <Smartphone className="h-3 w-3" />
-    case 'windows':
-    case 'macos':
-    case 'linux':
-      return <Monitor className="h-3 w-3" />
-    default:
-      return <Tablet className="h-3 w-3" />
-  }
-}

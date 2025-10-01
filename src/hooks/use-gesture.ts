@@ -39,7 +39,7 @@ export function useSwipeGesture({
     distance: 0,
     velocity: 0
   })
-  const [isSwipng, setIsSwiping] = useState(false)
+  const [isSwiping, setIsSwiping] = useState(false)
   const startTime = useRef<number>(0)
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -125,7 +125,7 @@ export function useSwipeGesture({
     handleTouchMove,
     handleTouchEnd,
     swipeDirection,
-    isSwipng,
+    isSwiping,
     touchEvents: {
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
@@ -166,7 +166,7 @@ export function useLongPress({
     }, delay)
   }, [delay, onLongPress])
 
-  const handleEnd = useCallback((e: TouchEvent | MouseEvent) => {
+  const handleEnd = useCallback((_e: TouchEvent | MouseEvent) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -301,7 +301,7 @@ export interface UsePullToRefreshOptions {
 export function usePullToRefresh({
   threshold = 80,
   onRefresh,
-  refreshingMessage = 'Refreshing...',
+  refreshingMessage: _refreshingMessage = 'Refreshing...',
   disabled = false
 }: UsePullToRefreshOptions = {}) {
   const [isRefreshing, setIsRefreshing] = useState(false)

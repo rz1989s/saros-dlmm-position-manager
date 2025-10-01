@@ -1,4 +1,4 @@
-import { PublicKey } from '@solana/web3.js'
+// import { PublicKey } from '@solana/web3.js' // Currently unused
 import { BinInfo, DLMMPosition, PoolInfo, PositionAnalytics } from '@/lib/types'
 import { calculatePNL, calculateAPR } from '@/lib/utils'
 
@@ -140,7 +140,7 @@ export function calculatePositionAnalytics(
 
 export function findOptimalBins(
   poolData: PoolInfo,
-  priceRange: { min: number; max: number },
+  _priceRange: { min: number; max: number },
   strategy: 'maximize_fees' | 'minimize_il' | 'balanced'
 ): number[] {
   const activeBinId = poolData.activeBin.binId
