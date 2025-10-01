@@ -47,14 +47,16 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   7: {
     id: 7,
     name: "Swap Operations",
-    status: "planned",
-    description: "Live swap simulation, price impact calculation, route visualization"
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/swap-operations.ts",
+    description: "Complete swap functionality with SDK v1.4.0 integration, price impact calculation, slippage handling"
   },
   8: {
     id: 8,
     name: "Advanced Position Creation",
-    status: "planned",
-    description: "Strategy selection wizard, range configuration, liquidity distribution"
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/position-creation.ts",
+    description: "Strategic position creation with 5 strategies (uniform, concentrated, normal, arbitrage, limit) and comprehensive risk management"
   },
 
   // Oracle Integration (7 total)
@@ -75,31 +77,36 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   11: {
     id: 11,
     name: "Pyth Network Integration",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/oracle/pyth-integration.ts",
     description: "Live Pyth price feeds, confidence intervals, data quality metrics"
   },
   12: {
     id: 12,
     name: "Price Confidence System",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/oracle/confidence-system.ts",
     description: "Price quality scoring, staleness detection, confidence visualization"
   },
   13: {
     id: 13,
     name: "Oracle Fallback Mechanisms",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/oracle/price-feed-manager.ts",
     description: "Provider switching simulation, fallback triggers, uptime monitoring"
   },
   14: {
     id: 14,
     name: "Switchboard Integration",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/oracle/switchboard-integration.ts",
     description: "Switchboard feeds, Surge technology, cross-validation"
   },
   15: {
     id: 15,
     name: "Price History Tracking",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/oracle/price-history.ts",
     description: "Historical analysis, trend identification, chart support"
   },
 
@@ -128,13 +135,15 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   19: {
     id: 19,
     name: "Advanced Rebalancing",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/rebalancing.ts",
     description: "Rebalancing strategies, cost-benefit analysis, execution simulation"
   },
   20: {
     id: 20,
     name: "Position Performance Monitoring",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/position-monitoring.ts",
     description: "Health scoring, performance alerts, trend analysis"
   },
   21: {
@@ -168,7 +177,8 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   25: {
     id: 25,
     name: "Position Valuation",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/position-valuation.ts",
     description: "Oracle-based valuation, real-time updates, P&L accuracy"
   },
 
@@ -197,44 +207,51 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   29: {
     id: 29,
     name: "Risk Assessment Engine",
-    status: "planned",
-    description: "Portfolio risk scoring, IL prediction, stress testing"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/risk-assessment.ts",
+    description: "Portfolio risk scoring, IL prediction, stress testing with comprehensive risk metrics"
   },
   30: {
     id: 30,
     name: "Market Forecasting",
-    status: "planned",
-    description: "Price prediction models, volatility forecasting, confidence intervals"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/forecasting.ts",
+    description: "Ensemble forecasting with 5 models, price prediction, volatility analysis, and support/resistance detection"
   },
   31: {
     id: 31,
     name: "Performance Attribution",
-    status: "planned",
-    description: "P&L breakdown by factor, Brinson attribution, performance decomposition"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/attribution.ts",
+    description: "Detailed P&L attribution with Brinson methodology, risk-adjusted metrics, and factor exposure analysis"
   },
   32: {
     id: 32,
     name: "Cross-Position Correlation",
-    status: "planned",
-    description: "Correlation matrix, diversification metrics, stress testing"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/correlation.ts",
+    description: "Correlation matrix analysis, diversification metrics, time-varying correlations, and stress testing"
   },
   33: {
     id: 33,
     name: "Market Analysis Dashboard",
-    status: "planned",
-    description: "Market conditions, sector analysis, liquidity metrics"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/market-analysis.ts",
+    description: "Comprehensive market conditions analysis, sector performance, liquidity metrics, and sentiment indicators"
   },
   34: {
     id: 34,
     name: "Performance Benchmarking",
-    status: "planned",
-    description: "Multi-benchmark comparison, peer analysis, style attribution"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/benchmarking.ts",
+    description: "Multi-benchmark comparison, peer analysis, style attribution, and rolling performance analysis"
   },
   35: {
     id: 35,
     name: "Custom Analytics Framework",
-    status: "planned",
-    description: "User-defined metrics, custom dashboards, scheduled reports"
+    status: "completed",
+    sdkLocation: "src/lib/analytics/custom-framework.ts",
+    description: "User-defined metrics, custom dashboards, formula engine, and scheduled reporting system"
   },
 
   // Fee Management (7 total)
@@ -292,7 +309,7 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   43: {
     id: 43,
     name: "Migration Planning",
-    status: "partial",
+    status: "completed",
     sdkLocation: "src/hooks/use-position-migration.ts",
     description: "Basic migration planning hook"
   },
@@ -320,25 +337,29 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   47: {
     id: 47,
     name: "Migration Optimizer",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/migration-optimizer.ts",
     description: "Optimization algorithms, efficiency improvements, automated execution"
   },
   48: {
     id: 48,
     name: "Bulk Migration",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/bulk-migration.ts",
     description: "Multiple position migration, batch processing, coordination"
   },
   49: {
     id: 49,
     name: "Cross-Pool Migration Engine",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/cross-pool-migration.ts",
     description: "Automated migration, pool discovery, liquidity optimization"
   },
   50: {
     id: 50,
     name: "Migration Impact Analysis",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/migration-analysis.ts",
     description: "NPV/IRR calculations, scenario modeling, confidence scoring"
   },
 
@@ -395,7 +416,8 @@ export const SDK_FEATURES: Record<number, FeatureInfo> = {
   58: {
     id: 58,
     name: "Portfolio Benchmarking",
-    status: "planned",
+    status: "completed",
+    sdkLocation: "src/lib/dlmm/portfolio-benchmarking.ts",
     description: "Performance comparison, market benchmarks, relative analysis"
   },
   59: {

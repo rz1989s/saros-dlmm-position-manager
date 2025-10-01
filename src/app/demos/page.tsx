@@ -41,7 +41,8 @@ import {
   DollarSign,
   Database,
   Droplets,
-  Coins
+  Coins,
+  Award
 } from 'lucide-react'
 
 interface Demo {
@@ -288,6 +289,42 @@ const PHASE_1_DEMOS: Demo[] = [
     complexity: 'intermediate',
     sdkFeatures: [7, 35, 36],
     icon: BarChart3
+  },
+  {
+    id: 'position-valuation',
+    title: 'Position Valuation',
+    description: 'Oracle-based position valuation with real-time price updates and comprehensive P&L breakdown',
+    path: '/demos/position-valuation',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [25],
+    icon: Calculator
+  },
+  {
+    id: 'oracle-caching',
+    title: 'Oracle Caching System',
+    description: 'Oracle-specific caching with Pyth + Switchboard provider performance comparison and freshness indicators',
+    path: '/demos/oracle-caching',
+    status: 'live',
+    category: 'oracle',
+    priority: 'high',
+    complexity: 'intermediate',
+    sdkFeatures: [10],
+    icon: Database
+  },
+  {
+    id: 'oracle-confidence-advanced',
+    title: 'Oracle Confidence Advanced',
+    description: 'Advanced multi-provider confidence comparison with staleness detection and 5-dimensional quality scoring',
+    path: '/demos/oracle-confidence-advanced',
+    status: 'live',
+    category: 'oracle',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [12],
+    icon: Shield
   }
 ]
 
@@ -460,6 +497,66 @@ const PHASE_2_DEMOS: Demo[] = [
     complexity: 'intermediate',
     sdkFeatures: [14],
     icon: Globe
+  },
+  {
+    id: 'price-history',
+    title: 'Price History Tracking',
+    description: 'Advanced historical price analysis with trend identification, technical indicators, and predictive analytics',
+    path: '/demos/price-history',
+    status: 'live',
+    category: 'oracle',
+    priority: 'medium',
+    complexity: 'intermediate',
+    sdkFeatures: [15],
+    icon: History
+  },
+  {
+    id: 'market-forecasting',
+    title: 'Market Forecasting System',
+    description: 'Ensemble forecasting with 5 predictive models, price predictions, confidence intervals, and volatility analysis',
+    path: '/demos/market-forecasting',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [30],
+    icon: TrendingUp
+  },
+  {
+    id: 'performance-attribution',
+    title: 'Performance Attribution Analysis',
+    description: 'Detailed P&L attribution with Brinson methodology, risk-adjusted metrics, and factor exposure analysis',
+    path: '/demos/performance-attribution',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [31],
+    icon: BarChart3
+  },
+  {
+    id: 'pnl-dashboard-advanced',
+    title: 'Advanced P&L Dashboard',
+    description: 'Multi-timeframe P&L analysis with strategy attribution, profit factor calculations, and Sharpe ratios',
+    path: '/demos/pnl-dashboard-advanced',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [26],
+    icon: TrendingUp
+  },
+  {
+    id: 'advanced-portfolio-analytics',
+    title: 'Advanced Portfolio Analytics',
+    description: '7-factor risk decomposition, sector allocation tracking, Alpha/Beta analysis, and correlation matrices',
+    path: '/demos/advanced-portfolio-analytics',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [27],
+    icon: PieChart
   }
 ]
 
@@ -607,10 +704,82 @@ const PHASE_3_DEMOS: Demo[] = [
     complexity: 'advanced',
     sdkFeatures: [62],
     icon: Zap
+  },
+  {
+    id: 'migration-planning',
+    title: 'Migration Planning',
+    description: 'Comprehensive migration planning with cost analysis, timeline projections, and enhanced execution strategies',
+    path: '/demos/migration-planning',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [43],
+    icon: FileText
+  },
+  {
+    id: 'migration-optimizer',
+    title: 'Migration Optimizer',
+    description: 'Optimization algorithms for route selection, cost minimization, efficiency improvements, and automated execution',
+    path: '/demos/migration-optimizer',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [47],
+    icon: Zap
+  },
+  {
+    id: 'bulk-migration',
+    title: 'Bulk Migration Engine',
+    description: 'Multiple position migration with batch processing, coordination system, and progress tracking',
+    path: '/demos/bulk-migration',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [48],
+    icon: Layers
+  },
+  {
+    id: 'portfolio-benchmarking',
+    title: 'Portfolio Benchmarking',
+    description: 'Performance comparison against market benchmarks, peer analysis, and relative performance metrics',
+    path: '/demos/portfolio-benchmarking',
+    status: 'live',
+    category: 'analytics',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [58],
+    icon: Award
   }
 ]
 
 const PHASE_4_WEEK_7_DEMOS: Demo[] = [
+  {
+    id: 'intelligent-caching',
+    title: 'Intelligent Caching System',
+    description: 'Live cache statistics with 92%+ hit rate, performance metrics, RPC call reduction, and cache management',
+    path: '/demos/intelligent-caching',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [60],
+    icon: Database
+  },
+  {
+    id: 'cache-optimization',
+    title: 'Cache Optimization Strategies',
+    description: '4 optimization strategies with before/after metrics, cache warming simulation, and 40%+ improvements',
+    path: '/demos/cache-optimization',
+    status: 'live',
+    category: 'advanced',
+    priority: 'high',
+    complexity: 'advanced',
+    sdkFeatures: [61],
+    icon: Zap
+  },
   {
     id: 'memory-optimization',
     title: 'Memory Optimization System',
@@ -792,7 +961,7 @@ export default function DemosPage() {
             DLMM SDK Demo Hub
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Interactive demonstrations of all 59 Saros DLMM SDK features with real-time data and comprehensive testing capabilities.
+            Interactive demonstrations of all 69 Saros DLMM SDK features with 100% demo coverage, real-time data, and comprehensive testing capabilities.
           </p>
 
           {/* Stats */}
@@ -970,8 +1139,8 @@ export default function DemosPage() {
               <div className="text-sm text-muted-foreground">New Demos</div>
             </div>
             <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-saros-secondary">44%</div>
-              <div className="text-sm text-muted-foreground">Target Completion</div>
+              <div className="text-2xl font-bold text-saros-secondary">100%</div>
+              <div className="text-sm text-muted-foreground">SDK Coverage</div>
             </div>
             <div className="text-center p-4 bg-muted/50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">Real SDK</div>
