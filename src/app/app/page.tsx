@@ -15,7 +15,8 @@ import {
   Trophy,
   PieChart,
   Shield,
-  ArrowLeftRight
+  ArrowLeftRight,
+  DollarSign
 } from 'lucide-react'
 
 export default function ApplicationsHub() {
@@ -75,6 +76,15 @@ export default function ApplicationsHub() {
       bgHover: 'group-hover:bg-cyan-50'
     },
     {
+      href: '/fees',
+      icon: DollarSign,
+      title: 'Fee Optimization Center',
+      description: 'AI-powered fee tier optimization, market intelligence, and advanced simulation',
+      color: 'from-green-600 to-emerald-600',
+      hoverColor: 'hover:border-green-500',
+      bgHover: 'group-hover:bg-green-50'
+    },
+    {
       href: '/backtesting',
       icon: TrendingUp,
       title: 'Backtesting Tools',
@@ -116,7 +126,7 @@ export default function ApplicationsHub() {
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
             <Layers className="w-4 h-4 mr-2" />
-            7 Production-Ready Applications
+            8 Production-Ready Applications
           </Badge>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
