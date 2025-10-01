@@ -14,7 +14,8 @@ import {
   PlayCircle,
   Trophy,
   PieChart,
-  Shield
+  Shield,
+  ArrowLeftRight
 } from 'lucide-react'
 
 export default function ApplicationsHub() {
@@ -65,11 +66,20 @@ export default function ApplicationsHub() {
       bgHover: 'group-hover:bg-red-50'
     },
     {
+      href: '/migration',
+      icon: ArrowLeftRight,
+      title: 'Migration Hub',
+      description: 'Cross-pool migration with NPV analysis, Monte Carlo simulation, and automation',
+      color: 'from-cyan-600 to-blue-600',
+      hoverColor: 'hover:border-cyan-500',
+      bgHover: 'group-hover:bg-cyan-50'
+    },
+    {
       href: '/backtesting',
       icon: TrendingUp,
       title: 'Backtesting Tools',
       description: 'Test strategies against historical data before deployment to validate performance',
-      color: 'from-blue-600 to-cyan-600',
+      color: 'from-blue-600 to-teal-600',
       hoverColor: 'hover:border-blue-500',
       bgHover: 'group-hover:bg-blue-50'
     }
@@ -106,7 +116,7 @@ export default function ApplicationsHub() {
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
             <Layers className="w-4 h-4 mr-2" />
-            6 Production-Ready Applications
+            7 Production-Ready Applications
           </Badge>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
