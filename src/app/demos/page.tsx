@@ -1118,37 +1118,6 @@ export default function DemosPage() {
           })}
         </StaggerList>
       </div>
-
-      {/* Phase Information */}
-      <Card className="border-saros-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-saros-primary" />
-            Phase 1: Core Foundations
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">
-            Currently implementing Phase 1 demos focusing on essential missing core operations and oracle integration.
-            This phase adds 10 new interactive demonstrations to showcase comprehensive SDK capabilities.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-saros-primary">{PHASE_1_DEMOS.length}</div>
-              <div className="text-sm text-muted-foreground">New Demos</div>
-            </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-saros-secondary">100%</div>
-              <div className="text-sm text-muted-foreground">SDK Coverage</div>
-            </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">Real SDK</div>
-              <div className="text-sm text-muted-foreground">Integration</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
