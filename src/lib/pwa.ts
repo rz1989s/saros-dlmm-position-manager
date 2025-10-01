@@ -231,8 +231,15 @@ export class NotificationManager {
   ): Promise<void> {
     if (!this.registration) {
       // Fallback to browser notification
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, options)
+      if (typeof window !== 'undefined' &&
+          'Notification' in window &&
+          typeof Notification !== 'undefined' &&
+          Notification.permission === 'granted') {
+        try {
+          new Notification(title, options)
+        } catch (error) {
+          console.warn('[PWA] Browser notification not supported:', error)
+        }
       }
       return
     }

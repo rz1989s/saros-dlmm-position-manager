@@ -16,18 +16,46 @@ export function AlertPreferences() {
   const { toast } = useToast()
 
   const handleTestNotification = () => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Test Notification', {
-        body: 'This is a test notification from Saros DLMM Position Manager',
-        icon: '/favicon.ico',
+    // Check if Notification API is available (not supported on iOS Safari)
+    if (typeof window === 'undefined' ||
+        !('Notification' in window) ||
+        typeof Notification === 'undefined') {
+      toast({
+        title: 'Not Supported',
+        description: 'Browser notifications are not supported on this device',
+        variant: 'destructive',
       })
-    } else if ('Notification' in window && Notification.permission !== 'denied') {
+      return
+    }
+
+    if (Notification.permission === 'granted') {
+      try {
+        new Notification('Test Notification', {
+          body: 'This is a test notification from Saros DLMM Position Manager',
+          icon: '/favicon.ico',
+        })
+      } catch (error) {
+        toast({
+          title: 'Notification Error',
+          description: 'Failed to show notification',
+          variant: 'destructive',
+        })
+      }
+    } else if (Notification.permission !== 'denied') {
       Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
-          new Notification('Test Notification', {
-            body: 'Browser notifications are now enabled!',
-            icon: '/favicon.ico',
-          })
+          try {
+            new Notification('Test Notification', {
+              body: 'Browser notifications are now enabled!',
+              icon: '/favicon.ico',
+            })
+          } catch (error) {
+            toast({
+              title: 'Notification Error',
+              description: 'Failed to show notification',
+              variant: 'destructive',
+            })
+          }
         }
       })
     } else {
