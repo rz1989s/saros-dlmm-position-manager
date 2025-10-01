@@ -13,7 +13,8 @@ import {
   Home,
   PlayCircle,
   Trophy,
-  PieChart
+  PieChart,
+  Shield
 } from 'lucide-react'
 
 export default function ApplicationsHub() {
@@ -53,6 +54,15 @@ export default function ApplicationsHub() {
       color: 'from-purple-600 to-pink-600',
       hoverColor: 'hover:border-purple-500',
       bgHover: 'group-hover:bg-purple-50'
+    },
+    {
+      href: '/risk',
+      icon: Shield,
+      title: 'Risk Management',
+      description: 'Real-time risk monitoring, IL tracking, stress testing, and alert configuration',
+      color: 'from-red-600 to-orange-600',
+      hoverColor: 'hover:border-red-500',
+      bgHover: 'group-hover:bg-red-50'
     },
     {
       href: '/backtesting',
@@ -96,7 +106,7 @@ export default function ApplicationsHub() {
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
             <Layers className="w-4 h-4 mr-2" />
-            5 Production-Ready Applications
+            6 Production-Ready Applications
           </Badge>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
