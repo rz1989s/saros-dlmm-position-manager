@@ -119,20 +119,20 @@ export default function ApplicationsHub() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-shrink">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs xs:text-sm">S</span>
               </div>
-              <h1 className="text-xl font-bold gradient-text">Live Applications</h1>
+              <h1 className="text-base xs:text-lg sm:text-xl font-bold gradient-text truncate">Live Applications</h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Home
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Home</span>
                 </Button>
               </Link>
             </div>

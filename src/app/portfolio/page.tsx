@@ -26,23 +26,24 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
-                <PieChart className="h-5 w-5 text-white" />
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-1">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                <PieChart className="h-4 w-4 xs:h-5 xs:w-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Portfolio Management Center</h1>
-                <p className="text-sm text-gray-500">Multi-position analysis & optimization</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">Portfolio Management Center</h1>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-gray-500 truncate hidden xs:block">Multi-position analysis & optimization</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/app">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Applications
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Applications</span>
+                  <span className="xs:hidden">App</span>
                 </Button>
               </Link>
             </div>
@@ -68,32 +69,36 @@ export default function PortfolioPage() {
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <PieChart className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="analysis" className="flex items-center gap-2">
-              <GitMerge className="h-4 w-4" />
-              Analysis
-            </TabsTrigger>
-            <TabsTrigger value="optimization" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Optimization
-            </TabsTrigger>
-            <TabsTrigger value="diversification" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Diversification
-            </TabsTrigger>
-            <TabsTrigger value="benchmarking" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Benchmarking
-            </TabsTrigger>
-            <TabsTrigger value="consolidation" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Consolidation
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <TabsList className="inline-flex w-full lg:grid lg:grid-cols-6 min-w-max lg:min-w-0 gap-1">
+                <TabsTrigger value="overview" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <PieChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Overview</span>
+                </TabsTrigger>
+                <TabsTrigger value="analysis" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <GitMerge className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Analysis</span>
+                </TabsTrigger>
+                <TabsTrigger value="optimization" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <Target className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Optimization</span>
+                </TabsTrigger>
+                <TabsTrigger value="diversification" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <TrendingUp className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Diversification</span>
+                </TabsTrigger>
+                <TabsTrigger value="benchmarking" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <TrendingUp className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Benchmarking</span>
+                </TabsTrigger>
+                <TabsTrigger value="consolidation" className="flex items-center gap-1.5 whitespace-nowrap px-3 py-2">
+                  <AlertTriangle className="h-3 w-3 xs:h-4 xs:w-4" />
+                  <span className="text-xs xs:text-sm">Consolidation</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">

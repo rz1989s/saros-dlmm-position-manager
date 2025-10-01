@@ -83,23 +83,31 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            {/* Logo and Title */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs sm:text-sm">S</span>
               </div>
-              <h1 className="text-xl font-bold gradient-text">Saros DLMM</h1>
+              <h1 className="text-base sm:text-lg md:text-xl font-bold gradient-text truncate">Saros DLMM</h1>
             </div>
 
             {/* Navigation removed - clean landing page */}
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm">
+            {/* Right side: Live badge + Wallet button */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              {/* Live on Solana - responsive visibility */}
+              <div className="hidden xs:flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                 <div className="pulse-dot"></div>
-                <span className="text-gray-600">Live on Solana</span>
+                <span className="text-gray-600 hidden sm:inline">Live on Solana</span>
+                <span className="text-gray-600 sm:hidden">Live</span>
               </div>
-              <ClientOnlyWalletButton className="!bg-indigo-600 hover:!bg-indigo-700" />
+              {/* Just pulse dot for very small screens */}
+              <div className="xs:hidden flex items-center">
+                <div className="pulse-dot"></div>
+              </div>
+              <ClientOnlyWalletButton className="!bg-indigo-600 hover:!bg-indigo-700 !text-xs sm:!text-sm !px-2 sm:!px-4 !py-1.5 sm:!py-2" />
             </div>
           </div>
         </div>

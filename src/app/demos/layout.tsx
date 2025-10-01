@@ -171,15 +171,15 @@ export default function DemosLayout({ children }: DemoLayoutProps) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 xs:px-4 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 min-w-0 flex-1">
               {!isMainDemoPage && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="lg:hidden"
+                  className="lg:hidden flex-shrink-0 p-1 xs:p-2"
                 >
                   {sidebarOpen ? (
                     <X className="h-4 w-4" />
@@ -189,28 +189,29 @@ export default function DemosLayout({ children }: DemoLayoutProps) {
                 </Button>
               )}
 
-              <Link href="/demos" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="w-8 h-8 rounded-lg bg-saros-primary/10 flex items-center justify-center">
-                  <Zap className="h-4 w-4 text-saros-primary" />
+              <Link href="/demos" className="flex items-center gap-1.5 xs:gap-2 hover:opacity-80 transition-opacity min-w-0 flex-1">
+                <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-saros-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="h-3.5 w-3.5 xs:h-4 xs:w-4 text-saros-primary" />
                 </div>
-                <div>
-                  <h1 className="text-lg font-semibold">DLMM SDK Demos</h1>
-                  <p className="text-xs text-muted-foreground -mt-1">Interactive SDK Showcase</p>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-sm xs:text-base sm:text-lg font-semibold truncate">DLMM SDK Demos</h1>
+                  <p className="text-[10px] xs:text-xs text-muted-foreground -mt-0.5 xs:-mt-1 truncate hidden xs:block">Interactive SDK Showcase</p>
                 </div>
               </Link>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 xs:gap-2 flex-shrink-0">
               {isJudgeMode && (
-                <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">
-                  Judge Mode Active
+                <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200 text-[10px] xs:text-xs px-1.5 xs:px-2 py-0.5 xs:py-1 hidden xs:inline-flex">
+                  Judge Mode
                 </Badge>
               )}
 
               <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Main App
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Main App</span>
+                  <span className="xs:hidden">App</span>
                 </Button>
               </Link>
             </div>
