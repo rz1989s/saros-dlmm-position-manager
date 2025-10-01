@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     title: 'Saros DLMM',
     startupImage: [
       {
-        url: '/icons/icon-512x512.png',
+        url: '/icons/icon-512x512.svg',
         media: '(device-width: 768px) and (device-height: 1024px)'
       }
     ]
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     description: 'Advanced DLMM position management and analytics for Solana',
     images: [
       {
-        url: '/icons/icon-512x512.png',
+        url: '/icons/icon-512x512.svg',
         width: 512,
         height: 512,
         alt: 'Saros DLMM Logo'
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Saros DLMM Position Manager',
     description: 'Advanced DLMM position management and analytics for Solana',
-    images: ['/icons/icon-512x512.png']
+    images: ['/icons/icon-512x512.svg']
   }
 }
 
@@ -83,7 +83,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.devnet.solana.com" />
         <link rel="dns-prefetch" href="https://saros.finance" />
 
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
