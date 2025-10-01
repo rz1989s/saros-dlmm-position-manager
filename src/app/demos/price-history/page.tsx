@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +36,7 @@ export default function PriceHistoryDemo() {
   ]
 
   // Load data
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       // Get statistics
       const statsData = priceHistoryTracker.getStats(selectedSymbol)
@@ -66,7 +66,7 @@ export default function PriceHistoryDemo() {
     } catch (error) {
       console.error('Error loading price history data:', error)
     }
-  }
+  }, [selectedSymbol, selectedTimeframe])
 
   // Convert timeframe to seconds
   const getTimeframeSeconds = (timeframe: string): number => {
@@ -97,7 +97,7 @@ export default function PriceHistoryDemo() {
     loadData()
     const interval = setInterval(loadData, 5000)
     return () => clearInterval(interval)
-  }, [selectedSymbol, selectedTimeframe])
+  }, [loadData])
 
   // Format chart data
   const formattedChartData = chartData?.data.map(point => ({

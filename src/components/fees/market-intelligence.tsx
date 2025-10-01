@@ -346,7 +346,7 @@ export function MarketIntelligence() {
             </ResponsiveContainer>
           </div>
           <div className="mt-4 text-sm text-gray-600">
-            <p>Compare your portfolio's performance against market leaders and averages across key metrics.</p>
+            <p>Compare your portfolio&apos;s performance against market leaders and averages across key metrics.</p>
           </div>
         </CardContent>
       </Card>
@@ -434,7 +434,7 @@ export function MarketIntelligence() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="font-medium text-blue-900 mb-1">💡 Optimization Opportunity</p>
               <p className="text-blue-800">
-                Consider diversifying into 0.25% tier pools. They're showing 20% market share with competitive APRs averaging 28.3%.
+                Consider diversifying into 0.25% tier pools. They&apos;re showing 20% market share with competitive APRs averaging 28.3%.
               </p>
             </div>
 
