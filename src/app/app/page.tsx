@@ -16,7 +16,9 @@ import {
   PieChart,
   Shield,
   ArrowLeftRight,
-  DollarSign
+  DollarSign,
+  Settings,
+  FileText
 } from 'lucide-react'
 
 export default function ApplicationsHub() {
@@ -92,6 +94,24 @@ export default function ApplicationsHub() {
       color: 'from-blue-600 to-teal-600',
       hoverColor: 'hover:border-blue-500',
       bgHover: 'group-hover:bg-blue-50'
+    },
+    {
+      href: '/reports',
+      icon: FileText,
+      title: 'Reports & Exports',
+      description: 'Generate comprehensive reports, tax documents, and export portfolio data in multiple formats',
+      color: 'from-indigo-600 to-purple-600',
+      hoverColor: 'hover:border-indigo-500',
+      bgHover: 'group-hover:bg-indigo-50'
+    },
+    {
+      href: '/settings',
+      icon: Settings,
+      title: 'Settings & Configuration',
+      description: 'Manage preferences, wallet settings, notifications, performance, and integrations',
+      color: 'from-gray-600 to-slate-600',
+      hoverColor: 'hover:border-gray-500',
+      bgHover: 'group-hover:bg-gray-50'
     }
   ]
 
@@ -126,7 +146,7 @@ export default function ApplicationsHub() {
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
             <Layers className="w-4 h-4 mr-2" />
-            8 Production-Ready Applications
+            10 Production-Ready Applications
           </Badge>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">

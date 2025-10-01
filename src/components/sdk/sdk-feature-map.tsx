@@ -16,7 +16,8 @@ import {
   Gauge,
   Sparkles,
   Copy,
-  Code
+  Code,
+  ExternalLink
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,78 @@ import {
   getFeatureStats,
   getFeaturesByCategory
 } from '@/lib/sdk-showcase/feature-registry'
+import Link from 'next/link'
+
+// SDK Feature ID to Demo Path Mapping
+// This maps each SDK feature ID to all demos that demonstrate that feature
+const FEATURE_TO_DEMO_MAP: Record<number, string[]> = {
+  1: ['/demos/pool-data'],
+  2: ['/demos/position-discovery'],
+  3: ['/demos/liquidity-operations', '/demos/position-creation'],
+  4: ['/demos/bin-data', '/demos/position-creation'],
+  5: ['/demos/position-creation'],
+  7: ['/demos/multi-provider-oracle', '/demos/pyth-integration', '/demos/oracle-fallback'],
+  8: ['/demos/swap-operations'],
+  9: ['/demos/swap-operations'],
+  10: ['/demos/oracle-caching'],
+  11: ['/demos/rebalancing'],
+  12: ['/demos/pnl-tracking', '/demos/rebalancing', '/demos/oracle-confidence-advanced'],
+  13: ['/demos/portfolio-overview', '/demos/rebalancing'],
+  14: ['/demos/performance-monitoring', '/demos/switchboard'],
+  15: ['/demos/swap-operations', '/demos/performance-monitoring', '/demos/price-history'],
+  16: ['/demos/performance-monitoring'],
+  17: ['/demos/risk-assessment'],
+  18: ['/demos/risk-assessment'],
+  19: ['/demos/risk-assessment'],
+  20: ['/demos/fee-optimization'],
+  21: ['/demos/fee-optimization', '/demos/cross-pool-migration'],
+  22: ['/demos/fee-optimization', '/demos/cross-pool-migration', '/demos/migration-analysis', '/demos/custom-fee-tiers'],
+  23: ['/demos/fee-migration', '/demos/cross-pool-migration', '/demos/migration-automation'],
+  24: ['/demos/fee-migration', '/demos/migration-risk'],
+  25: ['/demos/custom-fee-tiers', '/demos/market-fee-analysis', '/demos/position-valuation'],
+  26: ['/demos/market-fee-analysis', '/demos/pnl-dashboard-advanced'],
+  27: ['/demos/advanced-portfolio-analytics'],
+  30: ['/demos/market-forecasting'],
+  31: ['/demos/performance-attribution'],
+  32: ['/demos/correlation-analysis'],
+  33: ['/demos/market-analysis', '/demos/pyth-integration'],
+  34: ['/demos/performance-benchmarking', '/demos/pyth-integration', '/demos/price-confidence'],
+  35: ['/demos/custom-analytics', '/demos/oracle-fallback'],
+  36: ['/demos/oracle-fallback'],
+  41: ['/demos/fee-simulation'],
+  42: ['/demos/historical-fee-analysis'],
+  43: ['/demos/migration-planning'],
+  44: ['/demos/migration-simulation'],
+  45: ['/demos/fee-collection', '/demos/migration-analytics-dashboard'],
+  46: ['/demos/migration-rollback'],
+  47: ['/demos/migration-optimizer'],
+  48: ['/demos/bulk-migration'],
+  50: ['/demos/performance-tracking'],
+  51: ['/demos/fee-tier-analysis'],
+  52: ['/demos/multi-position-analysis'],
+  53: ['/demos/portfolio-optimizer', '/demos/basic-portfolio-aggregation'],
+  54: ['/demos/diversification'],
+  55: ['/demos/consolidation', '/demos/position-liquidity-analytics'],
+  56: ['/demos/portfolio-reporting', '/demos/price-feed-caching'],
+  57: ['/demos/portfolio-alerts'],
+  58: ['/demos/portfolio-benchmarking'],
+  59: ['/demos/tax-optimization'],
+  60: ['/demos/intelligent-caching'],
+  61: ['/demos/cache-optimization'],
+  62: ['/demos/batch-operations'],
+  63: ['/demos/memory-optimization'],
+  64: ['/demos/network-optimization'],
+  65: ['/demos/response-optimization'],
+  66: ['/demos/data-prefetching'],
+  67: ['/demos/multi-tenant'],
+  68: ['/demos/advanced-security'],
+  69: ['/demos/api-platform']
+}
+
+// Helper function to get demo paths for a feature
+function getDemosForFeature(featureId: number): string[] {
+  return FEATURE_TO_DEMO_MAP[featureId] || []
+}
 
 // Adapter types to maintain component compatibility
 interface SDKFeature {
@@ -168,18 +241,19 @@ const SDK_CATEGORIES: SDKCategory[] = [
 
 // Convert feature registry data to SDK feature format
 function convertToSDKFeature(feature: typeof SDK_FEATURES[number], categoryId: string): SDKFeature {
+  const description = feature.description || 'SDK feature implementation'
   return {
     id: feature.id.toString(),
     category: categoryId,
     name: feature.name,
-    description: feature.description,
+    description,
     implementation: 'completed' as const,
-    codeLocation: feature.sdkLocation,
+    codeLocation: feature.sdkLocation || 'Implementation pending',
     performanceImpact: 'Optimized implementation',
     complexity: 'intermediate' as const,
     codeExample: {
-      after: `// Real SDK implementation at ${feature.sdkLocation}`,
-      description: feature.description
+      after: `// Real SDK implementation at ${feature.sdkLocation || 'pending'}`,
+      description
     },
     benefits: ['Real SDK integration', 'Production ready', 'Type safe', 'Fully tested']
   }
@@ -311,6 +385,40 @@ function FeatureDetailModal({ feature, isOpen, onClose }: FeatureDetailModalProp
               </CardContent>
             </Card>
           </div>
+
+          {/* Interactive Demos Section */}
+          {getDemosForFeature(parseInt(feature.id)).length > 0 && (
+            <Card className="border-2 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4 text-green-500" />
+                  Interactive Demos (For Judges)
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  See this feature in action with live demonstrations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {getDemosForFeature(parseInt(feature.id)).map((demoPath, idx) => {
+                    const demoName = demoPath.split('/').pop()?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+                    return (
+                      <Link key={idx} href={demoPath}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white dark:bg-gray-900 border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-300"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-2" />
+                          {demoName}
+                        </Button>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Benefits */}
           <div>
@@ -526,6 +634,24 @@ function CategoryCard({ category, features, onFeatureClick }: CategoryCardProps)
                             </span>
                           )}
                         </div>
+                        {getDemosForFeature(parseInt(feature.id)).length > 0 && (
+                          <div className="flex items-start gap-1 pt-1">
+                            <ExternalLink className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex flex-wrap gap-1">
+                              {getDemosForFeature(parseInt(feature.id)).map((demoPath, idx) => (
+                                <Link key={idx} href={demoPath} onClick={(e) => e.stopPropagation()}>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer transition-colors"
+                                  >
+                                    <ExternalLink className="h-2.5 w-2.5 mr-1" />
+                                    Demo {idx + 1}
+                                  </Badge>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

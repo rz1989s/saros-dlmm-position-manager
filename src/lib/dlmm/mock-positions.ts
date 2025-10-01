@@ -2,12 +2,38 @@
 
 import { PublicKey } from '@solana/web3.js'
 import { DLMMPosition } from '@/lib/types'
+import { getRealTimePrices } from '@/lib/utils/real-time-prices'
 
 /**
  * Generate realistic mock DLMM positions for demonstration and testing
+ * Now uses real-time prices from CoinGecko API with fallback to hardcoded values
  */
-export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
+export async function generateMockPositions(userAddress?: PublicKey): Promise<DLMMPosition[]> {
   const defaultUserAddress = userAddress || new PublicKey('11111111111111111111111111111112')
+
+  // Fetch real-time prices for all tokens
+  const tokenSymbols = ['SOL', 'USDC', 'RAY', 'ORCA', 'MNGO', 'JUP']
+  let prices: Map<string, { price: number }> = new Map()
+
+  try {
+    console.log('🔄 Fetching real-time prices for tokens...')
+    prices = await getRealTimePrices(tokenSymbols)
+    console.log('✅ Real-time prices fetched:', Array.from(prices.entries()).map(([s, p]) => `${s}: $${p.price.toFixed(2)}`).join(', '))
+  } catch (error) {
+    console.warn('⚠️ Failed to fetch real-time prices, using fallbacks:', error)
+    // Set fallback prices if API fails
+    prices.set('SOL', { price: 165.45 })
+    prices.set('USDC', { price: 1.00 })
+    prices.set('RAY', { price: 3.82 })
+    prices.set('ORCA', { price: 4.67 })
+    prices.set('MNGO', { price: 0.025 })
+    prices.set('JUP', { price: 1.15 })
+  }
+
+  // Helper to get price or fallback
+  const getPrice = (symbol: string, fallback: number): number => {
+    return prices.get(symbol)?.price || fallback
+  }
 
   const mockPositions: DLMMPosition[] = [
     // Profitable SOL/USDC position
@@ -21,7 +47,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Solana',
         decimals: 9,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png',
-        price: 165.45,
+        price: getPrice('SOL', 165.45),
       },
       tokenY: {
         address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
@@ -29,7 +55,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'USD Coin',
         decimals: 6,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
-        price: 1.00,
+        price: getPrice('USDC', 1.00),
       },
       activeBin: 8388608,
       liquidityAmount: '15750000000',
@@ -53,7 +79,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Raydium',
         decimals: 6,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png',
-        price: 3.82,
+        price: getPrice('RAY', 3.82),
       },
       tokenY: {
         address: new PublicKey('So11111111111111111111111111111111111111112'),
@@ -61,7 +87,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Solana',
         decimals: 9,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png',
-        price: 165.45,
+        price: getPrice('SOL', 165.45),
       },
       activeBin: 8388590,
       liquidityAmount: '8200000000',
@@ -85,7 +111,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Orca',
         decimals: 6,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE/logo.png',
-        price: 4.67,
+        price: getPrice('ORCA', 4.67),
       },
       tokenY: {
         address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
@@ -93,7 +119,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'USD Coin',
         decimals: 6,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
-        price: 1.00,
+        price: getPrice('USDC', 1.00),
       },
       activeBin: 8388620,
       liquidityAmount: '12500000000',
@@ -117,7 +143,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Mango',
         decimals: 6,
         logoURI: undefined,
-        price: 0.025,
+        price: getPrice('MNGO', 0.025),
       },
       tokenY: {
         address: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
@@ -125,7 +151,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'USD Coin',
         decimals: 6,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
-        price: 1.00,
+        price: getPrice('USDC', 1.00),
       },
       activeBin: 8388580,
       liquidityAmount: '0',
@@ -149,7 +175,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Jupiter',
         decimals: 6,
         logoURI: 'https://static.jup.ag/jup/icon.png',
-        price: 1.15,
+        price: getPrice('JUP', 1.15),
       },
       tokenY: {
         address: new PublicKey('So11111111111111111111111111111111111111112'),
@@ -157,7 +183,7 @@ export function generateMockPositions(userAddress?: PublicKey): DLMMPosition[] {
         name: 'Solana',
         decimals: 9,
         logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png',
-        price: 165.45,
+        price: getPrice('SOL', 165.45),
       },
       activeBin: 8388595,
       liquidityAmount: '5250000000',

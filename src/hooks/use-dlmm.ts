@@ -46,11 +46,8 @@ export function useUserPositions(enableRealtime: boolean = true) {
   const { client, publicKey, connected, handleError } = useDLMM()
   const { dataMode, isMockDataMode } = useDataSource()
 
-  // Initialize with mock data by default to prevent empty state on first render
-  const [positions, setPositions] = useState<DLMMPosition[]>(() => {
-    // Always start with mock data to avoid empty state during hydration
-    return generateMockPositions()
-  })
+  // Initialize with empty array to prevent issues with async mock generation
+  const [positions, setPositions] = useState<DLMMPosition[]>([])
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -61,11 +58,11 @@ export function useUserPositions(enableRealtime: boolean = true) {
     console.log(`🔄 useUserPositions: Fetching in ${dataMode} mode`)
 
     if (isMockDataMode) {
-      console.log('🎭 Using mock positions data')
+      console.log('🎭 Using mock positions data with real-time prices')
 
-      // Generate mock positions immediately - no delay for first render
-      const mockPositions = generateMockPositions(publicKey || undefined)
-      console.log('✅ Generated', mockPositions.length, 'mock positions')
+      // Generate mock positions with real-time pricing
+      const mockPositions = await generateMockPositions(publicKey || undefined)
+      console.log('✅ Generated', mockPositions.length, 'mock positions with real prices')
 
       setPositions(mockPositions)
       setLastUpdate(new Date())

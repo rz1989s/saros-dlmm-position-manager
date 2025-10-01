@@ -19,7 +19,8 @@ import {
   Star,
   Award,
   Sparkles,
-  Database
+  Database,
+  Layers
 } from 'lucide-react'
 import { ClientOnlyWalletButton } from '@/components/ui/client-only-wallet-button'
 import { AnimatedNumber } from '@/components/animations/animated-number'
@@ -125,16 +126,23 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <Link href="/demos">
-                <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6">
-                  <PlayCircle className="mr-2 h-5 w-5" />
-                  Launch App - 69 Interactive Demos
+              <Link href="/app">
+                <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg px-8 py-6">
+                  <Layers className="mr-2 h-5 w-5" />
+                  Launch Live Applications
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
 
+              <Link href="/demos">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2">
+                  <PlayCircle className="mr-2 h-5 w-5" />
+                  69 Interactive Demos
+                </Button>
+              </Link>
+
               <Link href="/showcase">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2">
                   <Trophy className="mr-2 h-5 w-5" />
                   SDK Showcase
                 </Button>
