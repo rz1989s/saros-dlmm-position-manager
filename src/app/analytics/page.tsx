@@ -270,24 +270,30 @@ function AnalyticsPageComponent() {
 
       {/* Analytics Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="pnl" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            P&L Tracking
-          </TabsTrigger>
-          <TabsTrigger value="portfolio" className="flex items-center gap-2">
-            <PieChart className="h-4 w-4" />
-            Portfolio
-          </TabsTrigger>
-          <TabsTrigger value="pools" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Pool Analysis
-          </TabsTrigger>
-          <TabsTrigger value="charts" className="flex items-center gap-2">
-            <LineChart className="h-4 w-4" />
-            Charts
-          </TabsTrigger>
-        </TabsList>
+        <div className="relative">
+          <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+            <TabsList className="inline-flex w-full sm:grid sm:grid-cols-4 min-w-max sm:min-w-0">
+              <TabsTrigger value="pnl" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <DollarSign className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">P&L</span>
+                <span className="hidden sm:inline text-xs xs:text-sm">Tracking</span>
+              </TabsTrigger>
+              <TabsTrigger value="portfolio" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <PieChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Portfolio</span>
+              </TabsTrigger>
+              <TabsTrigger value="pools" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <BarChart3 className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Pool</span>
+                <span className="hidden sm:inline text-xs xs:text-sm">Analysis</span>
+              </TabsTrigger>
+              <TabsTrigger value="charts" className="flex items-center gap-1.5 xs:gap-2 whitespace-nowrap px-3 xs:px-4">
+                <LineChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                <span className="text-xs xs:text-sm">Charts</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
 
         {/* P&L Tracking Tab */}
         <TabsContent value="pnl" className="space-y-6">

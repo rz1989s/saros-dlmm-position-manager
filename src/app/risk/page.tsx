@@ -15,20 +15,21 @@ export default function RiskPage() {
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-shrink">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4 xs:w-5 xs:h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold gradient-text">Risk Management Dashboard</h1>
+              <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold gradient-text truncate">Risk Management Dashboard</h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/app">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Applications
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Applications</span>
+                  <span className="xs:hidden">App</span>
                 </Button>
               </Link>
             </div>
@@ -39,22 +40,26 @@ export default function RiskPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl xs:text-3xl font-bold text-gray-900 mb-2">
             Risk Monitoring & Management
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm xs:text-base text-gray-600">
             Real-time risk assessment, impermanent loss tracking, and stress testing for your DLMM positions
           </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 gap-2">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="assessment">Assessment</TabsTrigger>
-            <TabsTrigger value="il-tracker">IL Tracker</TabsTrigger>
-            <TabsTrigger value="stress-test">Stress Test</TabsTrigger>
-            <TabsTrigger value="alerts">Alerts</TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <TabsList className="inline-flex w-full sm:grid sm:grid-cols-5 min-w-max sm:min-w-0 gap-1">
+                <TabsTrigger value="overview" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Overview</TabsTrigger>
+                <TabsTrigger value="assessment" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Assessment</TabsTrigger>
+                <TabsTrigger value="il-tracker" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">IL Tracker</TabsTrigger>
+                <TabsTrigger value="stress-test" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Stress Test</TabsTrigger>
+                <TabsTrigger value="alerts" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Alerts</TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <RiskOverview />

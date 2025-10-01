@@ -16,6 +16,9 @@ module.exports = {
       },
     },
     extend: {
+      screens: {
+        'xs': '475px', // Extra small breakpoint for better mobile control
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

@@ -16,20 +16,21 @@ export default function MigrationPage() {
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center">
-                <ArrowLeftRight className="w-5 h-5 text-white" />
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-shrink">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center flex-shrink-0">
+                <ArrowLeftRight className="w-4 h-4 xs:w-5 xs:h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold gradient-text">Migration Management Hub</h1>
+              <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold gradient-text truncate">Migration Management Hub</h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/app">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Applications
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Applications</span>
+                  <span className="xs:hidden">App</span>
                 </Button>
               </Link>
             </div>
@@ -40,23 +41,27 @@ export default function MigrationPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl xs:text-3xl font-bold text-gray-900 mb-2">
             Cross-Pool Position Migration
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm xs:text-base text-gray-600">
             Discover, analyze, plan, and execute position migrations with advanced risk assessment and automation
           </p>
         </div>
 
         <Tabs defaultValue="discovery" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2">
-            <TabsTrigger value="discovery">Discovery</TabsTrigger>
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="wizard">Wizard</TabsTrigger>
-            <TabsTrigger value="simulation">Simulation</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+              <TabsList className="inline-flex w-full lg:grid lg:grid-cols-6 min-w-max lg:min-w-0 gap-1">
+                <TabsTrigger value="discovery" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Discovery</TabsTrigger>
+                <TabsTrigger value="analysis" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Analysis</TabsTrigger>
+                <TabsTrigger value="wizard" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Wizard</TabsTrigger>
+                <TabsTrigger value="simulation" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Simulation</TabsTrigger>
+                <TabsTrigger value="automation" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">Automation</TabsTrigger>
+                <TabsTrigger value="history" className="whitespace-nowrap px-3 py-2 text-xs xs:text-sm">History</TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           <TabsContent value="discovery" className="space-y-6">
             <MigrationDiscovery />

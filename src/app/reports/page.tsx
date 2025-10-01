@@ -60,23 +60,24 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4">
+          <div className="flex items-center justify-between gap-2 xs:gap-3">
+            <div className="flex items-center gap-2 xs:gap-3 min-w-0 flex-1">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-4 h-4 xs:w-5 xs:h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Reports & Exports</h1>
-                <p className="text-sm text-gray-500">Generate comprehensive reports and tax documents</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">Reports & Exports</h1>
+                <p className="text-[10px] xs:text-xs sm:text-sm text-gray-500 truncate hidden xs:block">Generate comprehensive reports and tax documents</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Link href="/app">
-                <Button variant="ghost" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Applications
+                <Button variant="ghost" size="sm" className="text-xs xs:text-sm px-2 xs:px-3 py-1.5 xs:py-2">
+                  <Home className="h-3 w-3 xs:h-4 xs:w-4 mr-1 xs:mr-2" />
+                  <span className="hidden xs:inline">Applications</span>
+                  <span className="xs:hidden">App</span>
                 </Button>
               </Link>
             </div>
@@ -114,32 +115,36 @@ export default function ReportsPage() {
         {/* Reports Tabs */}
         {!loading && (
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden sm:inline">Dashboard</span>
-              </TabsTrigger>
-              <TabsTrigger value="portfolio" className="flex items-center gap-2">
-                <PieChart className="h-4 w-4" />
-                <span className="hidden sm:inline">Portfolio</span>
-              </TabsTrigger>
-              <TabsTrigger value="tax" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                <span className="hidden sm:inline">Tax</span>
-              </TabsTrigger>
-              <TabsTrigger value="builder" className="flex items-center gap-2">
-                <Layout className="h-4 w-4" />
-                <span className="hidden sm:inline">Builder</span>
-              </TabsTrigger>
-              <TabsTrigger value="export" className="flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4" />
-                <span className="hidden sm:inline">Export</span>
-              </TabsTrigger>
-              <TabsTrigger value="templates" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Templates</span>
-              </TabsTrigger>
-            </TabsList>
+            <div className="relative">
+              <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+                <TabsList className="inline-flex w-full lg:grid lg:grid-cols-6 min-w-max lg:min-w-0 gap-1">
+                  <TabsTrigger value="dashboard" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <LayoutDashboard className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Dashboard</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="portfolio" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <PieChart className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Portfolio</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="tax" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <Receipt className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Tax</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="builder" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <Layout className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Builder</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="export" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <FileSpreadsheet className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Export</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="templates" className="flex items-center gap-1.5 whitespace-nowrap px-2 xs:px-3 py-2">
+                    <FileText className="h-3 w-3 xs:h-4 xs:w-4" />
+                    <span className="text-xs xs:text-sm">Templates</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
 
             {/* Dashboard Tab */}
             <TabsContent value="dashboard" className="space-y-6">
